@@ -1,0 +1,16 @@
+<package>
+  <description brief="roscompile">
+
+     roscompile
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/roscompile</url>
+  <depend package="rospy"/>
+  <depend package="rospack"/>
+
+</package>
+
+
