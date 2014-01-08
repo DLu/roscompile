@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+import roslib; roslib.load_manifest('roscompile')       
+from roscompile.package import Package, get_packages
+
+for package in get_packages():
+    print package.name
+    print package.get_dependencies()
+    print
+
+    
