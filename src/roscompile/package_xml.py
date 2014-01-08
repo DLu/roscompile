@@ -4,6 +4,7 @@ class PackageXML:
     def __init__(self, fn):
         self.tree = parse(fn)
         self.root = self.tree.childNodes[0]
+        self.fn = fn
 
     def get_packages(self, build=True):
         if build:
@@ -50,7 +51,9 @@ class PackageXML:
                 state = 3
             i += 1
 
-    def output(self, new_fn):
+    def output(self, new_fn=None):
+        if new_fn is None:
+            new_fn = self.fn
         f = open(new_fn, 'w')
         s = self.tree.toxml()
         s = s.replace('?><package>', '?>\n<package>')

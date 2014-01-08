@@ -79,7 +79,7 @@ class Package:
                 self.manifest.add_packages(dependencies, build)
             self.manifest.add_packages(dependencies, False)
 
-        self.manifest.output(self.root + '/package.xml1')
+        self.manifest.output()
 
 def get_packages(root_fn='.'):
     packages = []
