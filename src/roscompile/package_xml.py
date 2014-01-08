@@ -28,6 +28,10 @@ class PackageXML:
         self.root.childNodes = self.root.childNodes[:i-1] + x  + self.root.childNodes[i-1:]
 
     def add_packages(self, pkgs, build=True):
+        for pkg in self.get_packages(build):
+            if pkg in pkgs:
+                pkgs.remove(pkg)
+
         state = 0
         i = 0
         while i < len(self.root.childNodes):

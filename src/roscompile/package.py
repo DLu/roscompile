@@ -74,7 +74,6 @@ class Package:
     def update_manifest(self):
         for build in [True, False]:
             dependencies = self.get_dependencies(build)
-            print build, dependencies
             if build:
                 self.manifest.add_packages(dependencies, build)
             self.manifest.add_packages(dependencies, False)
