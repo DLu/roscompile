@@ -2,6 +2,7 @@ import os
 import os.path
 import collections
 from roscompile.launch import Launch 
+from roscompile.package_xml import PackageXML
 
 SRC_EXTS = ['.py', '.cpp', '.h']
 CONFIG_EXTS = ['.yaml', '.rviz']
@@ -21,7 +22,8 @@ def match(ext):
 class Package:
     def __init__(self, root):
         self.root = root
-        self.name = os.path.split(root)[-1]
+        self.name = os.path.split(os.path.abspath(root))[-1]
+        self.manifest = PackageXML(self.root + '/package.xml')
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
@@ -50,7 +52,10 @@ class Package:
 
         return data
 
-    def get_dependencies(self):
+    def get_build_dependencies(self):
+        return []
+
+    def get_run_dependencies(self):
         files = self.sort_files()
         packages = set()
         for launch in files['launch']:
@@ -60,7 +65,21 @@ class Package:
             packages.remove(self.name)
         return sorted(list(packages))
 
+    def get_dependencies(self, build=True):
+        if build:
+            return self.get_build_dependencies()
+        else:
+            return self.get_run_dependencies()
 
+    def update_manifest(self):
+        for build in [True, False]:
+            dependencies = self.get_dependencies(build)
+            print build, dependencies
+            if build:
+                self.manifest.add_packages(dependencies, build)
+            self.manifest.add_packages(dependencies, False)
+
+        self.manifest.output(self.root + '/package.xml1')
 
 def get_packages(root_fn='.'):
     packages = []
