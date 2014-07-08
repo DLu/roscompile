@@ -20,6 +20,7 @@ class PackageXML:
     def insert_new_elements(self, name, values, i):
         x = []
         for pkg in values:
+            print '\tInserting %s: %s'%(name, pkg)
             x.append(self.tree.createTextNode('\n  '))
             node = self.tree.createElement(name)
             node.appendChild(self.tree.createTextNode(pkg))
@@ -54,12 +55,17 @@ class PackageXML:
                     i += len(pkgs)*2
                 state = 3
             i += 1
+            
+        if state == 2 and not build:
+            self.insert_new_elements('run_depend', pkgs, i)
+            
 
     def output(self, new_fn=None):
         if new_fn is None:
             new_fn = self.fn
         f = open(new_fn, 'w')
         s = self.tree.toxml()
-        s = s.replace('?><package>', '?>\n<package>')
+        #s = s.replace('?><package>', '?>\n<package>')
+        s = s.replace('<?xml version="1.0" ?>', '').strip()
         f.write(s)
         f.close()
