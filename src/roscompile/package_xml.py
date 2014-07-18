@@ -45,7 +45,7 @@ class PackageXML:
             if name == 'build_depend':
                 state = 1
             elif name == 'run_depend':
-                if state == 1 and build:
+                if state <= 1 and build:
                     self.insert_new_elements('build_depend', pkgs, i)
                     i += len(pkgs)*2
                 state = 2

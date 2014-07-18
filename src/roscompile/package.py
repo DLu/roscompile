@@ -2,6 +2,7 @@ import os
 import os.path
 import collections
 from roscompile.launch import Launch 
+from roscompile.source import Source
 from roscompile.package_xml import PackageXML
 
 SRC_EXTS = ['.py', '.cpp', '.h']
@@ -53,7 +54,14 @@ class Package:
         return data
 
     def get_build_dependencies(self):
-        return []
+        files = self.sort_files()
+        packages = set()
+        for source in files['source']:
+            x = Source(source)
+            packages.update(x.get_dependencies())
+        if self.name in packages:
+            packages.remove(self.name)            
+        return sorted(list(packages))
 
     def get_run_dependencies(self):
         files = self.sort_files()
