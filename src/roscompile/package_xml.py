@@ -68,4 +68,5 @@ class PackageXML:
         #s = s.replace('?><package>', '?>\n<package>')
         s = s.replace('<?xml version="1.0" ?>', '').strip()
         f.write(s)
+        f.write('\n')
         f.close()

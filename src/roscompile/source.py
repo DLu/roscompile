@@ -14,8 +14,10 @@ def get_root(package):
 
 class Source:
     def __init__(self, fn):
+        self.fn = fn
         self.lines = map(str.strip, open(fn, 'r').readlines())
-
+        self.python = '.py' in self.fn or (len(self.lines)>0 and 'python' in self.lines[0])  
+        
     def get_dependencies(self):
         d = set()
         for line in self.lines:
@@ -26,3 +28,5 @@ class Source:
                         d.add(m.group(1))
         return sorted(list(d))
 
+    def __repr__(self):
+        return self.fn
