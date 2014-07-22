@@ -68,12 +68,17 @@ class PackageXML:
     def output(self, new_fn=None):
         if new_fn is None:
             new_fn = self.fn
-        f = open(new_fn, 'w')
         s = self.tree.toxml()
         if not self.header:
             s = s.replace('<?xml version="1.0" ?>', '').strip()
         else:
-            s = s.replace('?><package>', '?>\n<package>')
+            s = s.replace(' ?><package>', '?>\n<package>')
+        
+        old_s = open(new_fn, 'r').read()
+        if old_s.strip() == s:
+            return       
+            
+        f = open(new_fn, 'w')
         f.write(s)
         f.write('\n')
         f.close()
