@@ -23,7 +23,7 @@ class Launch:
         
     def get_misc_pkgs(self):
         s = set()
-        for x in re.finditer('\$\(find (.*)\)', self.tree.toxml()):
+        for x in re.finditer('\$\(find ([^\)]*)\)', self.tree.toxml()):
             s.add(x.group(1))
         return s
 
