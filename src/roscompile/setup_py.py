@@ -19,14 +19,17 @@ class SetupPy:
         self.name = name
         self.files = files
         
+        self.valid = False
+        for source in self.files:
+            if 'src/%s'%self.name in source.fn:
+                self.valid = True
+                break
+        
+        
     def write(self):
         f = open(self.root + '/setup.py', 'w')
         s1 = PACKAGES%self.name
-        
-        for source in self.files:
-            if 'src' in source.fn:
-                s1 += PDIR
-                break
+        s1 += PDIR
         
         f.write( TEMPLATE % s1 )
         f.close()

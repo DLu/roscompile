@@ -99,7 +99,10 @@ class Package:
             return
             
         setup = SetupPy(self.name, self.root, sources)
-        setup.write()
+
+        if setup.valid:
+            print "    Writing setup.py"
+            setup.write()
 
         return
 
