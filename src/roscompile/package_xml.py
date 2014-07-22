@@ -1,5 +1,7 @@
 from  xml.dom.minidom import parse
 
+IGNORE_PACKAGES = ['roslib']
+
 class PackageXML:
     def __init__(self, fn):
         self.tree = parse(fn)
@@ -21,6 +23,8 @@ class PackageXML:
     def insert_new_elements(self, name, values, i):
         x = []
         for pkg in values:
+            if pkg in IGNORE_PACKAGES:
+                continue
             print '\tInserting %s: %s'%(name, pkg)
             x.append(self.tree.createTextNode('\n  '))
             node = self.tree.createElement(name)
