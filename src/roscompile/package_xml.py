@@ -54,6 +54,11 @@ class PackageXML:
                     i += len(pkgs)*2
                 state = 3
             i += 1
+        if state==0:
+            if build:
+                self.insert_new_elements('build_depend', pkgs, i)
+            else:
+                self.insert_new_elements('run_depend', pkgs, i)
 
     def output(self, new_fn=None):
         if new_fn is None:
