@@ -4,8 +4,9 @@ import subprocess
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
 PYTHON2 = 'from ' + PKG + ' import .*'
+CPLUS = '#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]'
 
-EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2)]
+EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), re.compile(CPLUS)]
 
 def get_root(package):
     p = subprocess.Popen(['rospack', 'find', package], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
