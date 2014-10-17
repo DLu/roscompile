@@ -6,6 +6,7 @@ from roscompile.package import Package, get_packages
 for package in get_packages():
     print package.name
     package.update_manifest()
+    package.generate_setup()
     
 
     

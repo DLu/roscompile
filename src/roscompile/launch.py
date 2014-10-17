@@ -1,4 +1,5 @@
 from  xml.dom.minidom import parse
+import re
 
 class Launch:
     def __init__(self, fn):
@@ -19,10 +20,17 @@ class Launch:
                 i2 = el.index(')', i)
                 s.add( el[i+5:i2] )
         return sorted(list(s))
+        
+    def get_misc_pkgs(self):
+        s = set()
+        for x in re.finditer('\$\(find ([^\)]*)\)', self.tree.toxml()):
+            s.add(x.group(1))
+        return s
 
     def get_dependencies(self):
         d = set()
         d.update(self.get_node_pkgs())
         d.update(self.get_include_pkgs())
+        d.update(self.get_misc_pkgs())
         return sorted(list(d))
 

@@ -2,6 +2,8 @@ import os
 import os.path
 import collections
 from roscompile.launch import Launch 
+from roscompile.source import Source
+from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
 
 SRC_EXTS = ['.py', '.cpp', '.h']
@@ -24,6 +26,7 @@ class Package:
         self.root = root
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
+        self.files = self.sort_files()
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
@@ -53,12 +56,17 @@ class Package:
         return data
 
     def get_build_dependencies(self):
-        return []
+        packages = set()
+        for source in self.files['source']:
+            x = Source(source)
+            packages.update(x.get_dependencies())
+        if self.name in packages:
+            packages.remove(self.name)            
+        return sorted(list(packages))
 
     def get_run_dependencies(self):
-        files = self.sort_files()
         packages = set()
-        for launch in files['launch']:
+        for launch in self.files['launch']:
             x = Launch(launch)
             packages.update(x.get_dependencies())
         if self.name in packages:
@@ -79,6 +87,24 @@ class Package:
             self.manifest.add_packages(dependencies, False)
 
         self.manifest.output()
+        
+    def generate_setup(self):
+        sources = []        
+        for source in self.files['source']:
+            x = Source(source)
+            if x.python and 'setup.py' not in source:
+                sources.append(x)
+        
+        if len(sources)==0:
+            return
+            
+        setup = SetupPy(self.name, self.root, sources)
+
+        if setup.valid:
+            print "    Writing setup.py"
+            setup.write()
+
+        return
 
 def get_packages(root_fn='.'):
     packages = []
