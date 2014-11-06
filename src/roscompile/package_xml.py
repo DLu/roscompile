@@ -65,7 +65,7 @@ class PackageXML:
                 self.insert_new_elements('build_depend', pkgs, i)
             else:
                 self.insert_new_elements('run_depend', pkgs, i)
-		elif state == 2 and not build:
+        elif state == 2 and not build:
             self.insert_new_elements('run_depend', pkgs, i)
 
     def output(self, new_fn=None):
