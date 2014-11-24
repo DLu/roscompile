@@ -5,6 +5,7 @@ from roscompile.launch import Launch
 from roscompile.source import Source
 from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
+from roscompile.cmake import CMake
 
 SRC_EXTS = ['.py', '.cpp', '.h']
 CONFIG_EXTS = ['.yaml', '.rviz']
@@ -26,6 +27,7 @@ class Package:
         self.root = root
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
+        self.cmake = CMake(self.root + '/CMakeLists.txt')
         self.files = self.sort_files()
 
     def sort_files(self, print_extras=False):
@@ -87,6 +89,9 @@ class Package:
             self.manifest.add_packages(dependencies, False)
 
         self.manifest.output()
+        
+    def update_cmake(self):
+        self.cmake.output()
         
     def generate_setup(self):
         sources = []        
