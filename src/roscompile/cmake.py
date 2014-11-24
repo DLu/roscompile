@@ -1,7 +1,18 @@
+from collections import defaultdict
+
+class Command:
+    def __init__(self, cmd, params):
+        self.cmd = cmd
+        self.params = params
+        
+    def __repr__(self):
+        return '%s(%s)'%(self.cmd, str(self.params))
+
 class CMake:
     def __init__(self, fn):
         self.fn = fn
         self.contents = []
+        self.content_map = defaultdict(list)
         original = open(fn).read()
         state = 0
         s = ''
@@ -31,7 +42,9 @@ class CMake:
                     s += c
             elif state == 3:
                 if c == ')':
-                    self.contents.append( (s, params) )
+                    cmd = Command(s,params)
+                    self.contents.append( cmd )
+                    self.content_map[s].append(cmd)
                     s = ''
                     params = ''
                     state = 0
@@ -39,13 +52,9 @@ class CMake:
                     params += c
         if len(s)>0:
             self.contents.append(s)
-        print self.contents
                     
     def output(self):
         with open(self.fn, 'w') as cmake:
             for x in self.contents:
-                if type(x)==str:
-                    cmake.write(x)
-                else:
-                    fne, params = x
-                    cmake.write('%s(%s)'%(fne, params))
+                cmake.write(str(x))
+
