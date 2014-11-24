@@ -1,12 +1,37 @@
 from collections import defaultdict
+import re
+
+ALL_CAPS = re.compile('[A-Z_]+')
 
 class Command:
     def __init__(self, cmd, params):
         self.cmd = cmd
-        self.params = params
+        key = ''
+        values = []
+        self.params = []
+        for word in re.split('\s+', params):
+            if not ALL_CAPS.match(word):
+                if len(word) > 0:
+                    values.append(word)
+            else:
+                if len(values)>0 or len(key)>0:
+                    self.params.append( (key, values) )
+                key = word
+                values = []
+        if len(values)>0 or len(key)>0:
+            self.params.append( (key, values) )
         
     def __repr__(self):
-        return '%s(%s)'%(self.cmd, str(self.params))
+        s = self.cmd + '('
+        p = ''
+        for key, values in self.params:
+            if key != '':
+                p += ' ' + key + ' '
+                
+            p += ' '.join(values)
+        s += p.strip()
+        
+        return s + ')'
 
 class CMake:
     def __init__(self, fn):
