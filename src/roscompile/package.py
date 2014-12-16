@@ -31,6 +31,8 @@ class Package:
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
         for root,dirs,files in os.walk(self.root):
+            if '.git' in root or '.svn' in root:
+                continue
             extras = []
             for fn in files:
                 ext = os.path.splitext(fn)[-1]
