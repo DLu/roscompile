@@ -14,6 +14,7 @@ MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
 EXTS = {'source': SRC_EXTS, 'config': CONFIG_EXTS, 'data': DATA_EXTS, 'model': MODEL_EXTS}
 BASIC = ['package.xml', 'CMakeLists.txt']
 SIMPLE = ['.launch', '.msg', '.srv', '.action', '.cfg']
+EXTRA = 'Extra!'
 
 def match(ext):
     for name, exts in EXTS.iteritems():
@@ -33,7 +34,6 @@ class Package:
         for root,dirs,files in os.walk(self.root):
             if '.git' in root or '.svn' in root:
                 continue
-            extras = []
             for fn in files:
                 ext = os.path.splitext(fn)[-1]
                 full = '%s/%s'%(root, fn)
@@ -49,11 +49,10 @@ class Package:
                 elif fn in BASIC:
                     data[None].append(full)
                 else:
-                    extras.append(full)
-            if print_extras and len(extras)>0:
-                print '  ', root
-                for fn in extras:
-                    print '    ', fn
+                    data[EXTRA].append(full)
+        if print_extras and len(data[EXTRA])>0:
+            for fn in data[EXTRA]:
+                print '    ', fn
 
         return data
 
