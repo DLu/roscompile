@@ -8,6 +8,9 @@ CPLUS = '#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]'
 
 EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), re.compile(CPLUS)]
 
+PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+), ([^:]+)::([^,]+)\)'
+PLUGIN_RE = re.compile(PLUGIN_PATTERN)
+
 def get_root(package):
     p = subprocess.Popen(['rospack', 'find', package], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
@@ -28,6 +31,14 @@ class Source:
                     if get_root( m.group(1) ):
                         d.add(m.group(1))
         return sorted(list(d))
+        
+    def get_plugins(self):
+        a = []
+        for line in self.lines:
+            m = PLUGIN_RE.search(line)
+            if m:
+                a.append( m.groups() )
+        return a
 
     def __repr__(self):
         return self.fn
