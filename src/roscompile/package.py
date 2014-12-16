@@ -28,6 +28,7 @@ class Package:
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
         self.files = self.sort_files()
+        self.sources = [Source(source) for source in self.files['source']]
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
@@ -58,9 +59,8 @@ class Package:
 
     def get_build_dependencies(self):
         packages = set()
-        for source in self.files['source']:
-            x = Source(source)
-            packages.update(x.get_dependencies())
+        for source in self.sources:
+            packages.update(source.get_dependencies())
         if self.name in packages:
             packages.remove(self.name)            
         return sorted(list(packages))
@@ -90,12 +90,7 @@ class Package:
         self.manifest.output()
         
     def generate_setup(self):
-        sources = []        
-        for source in self.files['source']:
-            x = Source(source)
-            if x.python and 'setup.py' not in source:
-                sources.append(x)
-        
+        sources = [src for src in self.sources if src.python and 'setup.py' not in src.fn]
         if len(sources)==0:
             return
             
@@ -106,6 +101,12 @@ class Package:
             setup.write()
 
         return
+        
+    def check_plugins(self):
+        plugins = []
+        for source in self.sources:
+            plugins += source.get_plugins()
+        #TODO: Generate XML if needed
 
 def get_packages(root_fn='.'):
     packages = []
