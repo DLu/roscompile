@@ -19,6 +19,24 @@ class PackageXML:
         for el in self.root.getElementsByTagName(key):
             pkgs.append( str(el.childNodes[0].nodeValue) )
         return pkgs
+        
+    def get_people(self, tag):
+        people = {}
+        for el in self.root.getElementsByTagName(tag):
+            name = str(el.childNodes[0].nodeValue)
+            email = el.getAttribute('email')
+            people[name] = email
+        return people
+
+    def update_people(self, tag, people, replace={}):
+        for el in self.root.getElementsByTagName(tag):
+            name = str(el.childNodes[0].nodeValue)
+            if name in replace:
+                nn = replace[name]
+                el.childNodes[0].nodeValue = nn
+                el.setAttribute( 'email', people[nn] )
+            elif name in people:
+                el.setAttribute( 'email', people[name] )
 
     def insert_new_elements(self, name, values, i):
         x = []

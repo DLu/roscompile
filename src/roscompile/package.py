@@ -107,6 +107,16 @@ class Package:
         for source in self.sources:
             plugins += source.get_plugins()
         #TODO: Generate XML if needed
+        
+    def get_people(self):
+        people = {}
+        people['maintainers'] = self.manifest.get_people('maintainer')
+        people['authors'] = self.manifest.get_people('author')
+        return people
+
+    def update_people(self, people, replace={}):
+        self.manifest.update_people('maintainer', people, replace)
+        self.manifest.update_people('author', people, replace)
 
 def get_packages(root_fn='.'):
     packages = []

@@ -3,8 +3,20 @@
 import roslib; roslib.load_manifest('roscompile')       
 from roscompile.package import Package, get_packages
 
-for package in get_packages():
+pkgs = get_packages()
+
+people = {}
+for package in pkgs:
+    for k,v in package.get_people().iteritems():
+        people.update(v)
+
+# TODO: Replace this with interactive version
+people['David V. Lu!!'] = 'davidvlu@gmail.com'
+replace = {'David!!': 'David V. Lu!!'}
+
+for package in pkgs:
     print package.name
+    package.update_people(people, replace)
     package.update_manifest()
     package.generate_setup()
     package.check_plugins()
