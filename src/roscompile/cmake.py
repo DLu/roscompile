@@ -1,7 +1,7 @@
 from collections import defaultdict
 import re
 
-ALL_CAPS = re.compile('[A-Z_]+')
+ALL_CAPS = re.compile('^[A-Z_]+$')
 
 class Command:
     def __init__(self, cmd, params):
