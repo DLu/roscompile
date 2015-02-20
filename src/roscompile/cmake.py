@@ -77,6 +77,11 @@ class CMake:
                     params += c
         if len(s)>0:
             self.contents.append(s)
+
+    def add_command(self, name, params):
+        cmd = Command(name, params)
+        self.contents.append(cmd)
+        self.content_map[name].append(cmd)        
                     
     def output(self):
         with open(self.fn, 'w') as cmake:

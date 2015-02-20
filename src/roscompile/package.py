@@ -91,14 +91,22 @@ class Package:
         self.manifest.output()
         
     def update_cmake(self):
+        if len(self.get_python_source())>0 and \
+            'catkin_python_setup' not in self.cmake.content_map:
+            self.cmake.add_command('catkin_python_setup', '')
+                
         self.cmake.output()
-        
-    def generate_setup(self):
+
+    def get_python_source(self):
         sources = []        
         for source in self.files['source']:
             x = Source(source)
             if x.python and 'setup.py' not in source:
                 sources.append(x)
+        return sources                
+        
+    def generate_setup(self):
+        sources = self.get_python_source()
         
         if len(sources)==0:
             return
