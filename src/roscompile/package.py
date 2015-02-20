@@ -111,10 +111,7 @@ class Package:
             return
             
         setup = SetupPy(self.name, self.root, sources)
-
-        if setup.valid:
-            print "    Writing setup.py"
-            setup.write()
+        setup.write_if_needed()
 
         return
 
