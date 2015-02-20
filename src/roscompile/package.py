@@ -29,6 +29,7 @@ class Package:
         self.manifest = PackageXML(self.root + '/package.xml')
         self.cmake = CMake(self.root + '/CMakeLists.txt')
         self.files = self.sort_files()
+        self.sources = [Source(source) for source in self.files['source']]
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
@@ -59,9 +60,8 @@ class Package:
 
     def get_build_dependencies(self):
         packages = set()
-        for source in self.files['source']:
-            x = Source(source)
-            packages.update(x.get_dependencies())
+        for source in self.sources:
+            packages.update(source.get_dependencies())
         if self.name in packages:
             packages.remove(self.name)            
         return sorted(list(packages))
@@ -99,10 +99,9 @@ class Package:
 
     def get_python_source(self):
         sources = []        
-        for source in self.files['source']:
-            x = Source(source)
-            if x.python and 'setup.py' not in source:
-                sources.append(x)
+        for source in self.sources:
+            if source.python and 'setup.py' not in source.fn:
+                sources.append(source)
         return sources                
         
     def generate_setup(self):
