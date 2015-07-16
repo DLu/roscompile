@@ -6,9 +6,9 @@ BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
 ORDERING = ['cmake_minimum_required', 'project', 'find_package', 
-            'add_message_files', 'add_service_files', 'add_action_files', 
+            'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package', 
-            ['add_library', 'add_executable', 'target_link_libraries'],
+            ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies'],
             'catkin_add_gtest', 'install']
 
 def get_ordering_index(cmd):
@@ -18,6 +18,7 @@ def get_ordering_index(cmd):
                 return i
         elif cmd==o:
             return i
+    print '\tUnsure of ordering for', cmd        
     return len(ORDERING)                
 
 
@@ -81,8 +82,9 @@ class Command:
             if lines and p[-1]!='\n':
                 p+='\n'
         
-        s += p
-        return s + ')'
+        s += p + ')'
+        s = s.replace(' )', ')')
+        return s
 
 class CMake:
     def __init__(self, fn):
@@ -136,7 +138,7 @@ class CMake:
         if cmd_name not in self.content_map:
             params = section_name + ' '  + ' '.join(items)
             self.add_command(cmd_name, params)
-            print 'Adding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
+            print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
             return    
             
         section = None
@@ -150,13 +152,13 @@ class CMake:
             section += items
         else:
             cmd.add_section(section_name, items)
-        print 'Adding %s to the %s/%s section of your CMakeLists.txt'%(str(items), cmd_name, section_name)
+        print '\tAdding %s to the %s/%s section of your CMakeLists.txt'%(str(items), cmd_name, section_name)
             
     def check_dependencies(self, pkgs):
         self.section_check(pkgs, 'find_package', 'COMPONENTS')
         self.section_check(pkgs, 'catkin_package', 'DEPENDS')
         
-    def check_generators(self, msgs, srvs, actions):
+    def check_generators(self, msgs, srvs, actions, cfgs):
         self.section_check( map(os.path.basename, msgs), 'add_message_files', 'FILES')
         self.section_check( map(os.path.basename, srvs), 'add_service_files', 'FILES')
         self.section_check( map(os.path.basename, actions), 'add_action_files', 'FILES')
@@ -164,6 +166,10 @@ class CMake:
         if len(msgs)+len(srvs)+len(actions) > 0:
             self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
             self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
+            
+        self.section_check( map(os.path.basename, cfgs), 'generate_dynamic_reconfigure_options', '')
+        if len(cfgs)>0:
+            self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
     def add_command(self, name, params):
         cmd = Command(name, params)

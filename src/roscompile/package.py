@@ -101,7 +101,7 @@ class Package:
     def update_cmake(self):
         self.cmake.check_dependencies( self.get_dependencies() )        
 
-        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'])
+        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
         
         if len(self.get_python_source())>0 and \
             'catkin_python_setup' not in self.cmake.content_map:
