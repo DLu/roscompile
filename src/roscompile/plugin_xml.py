@@ -29,10 +29,29 @@ class PluginXML:
                 
                 desc = ''
                 for tag in clstag.getElementsByTagName('description'):
+                    if len(tag.childNodes)==0:
+                        continue
                     desc += str(tag.childNodes[0].nodeValue)
                 d['description'] = desc    
                 
                 cls[ d['type'] ] = d
+                
+    def insert_if_needed(self, tipo, base_class, description='', library=None):
+        if library is None:
+            if len(self.libraries)==0:
+                library = 'INSERT_NAME_OF_LIBRARY'
+            else:
+                library = self.libraries.keys()[0]
+
+        if library not in self.libraries:
+            self.libraries[library] = OrderedDict()
+        
+        if tipo not in self.libraries[library]:
+            self.libraries[library][tipo] = {'base_class_type': base_class, 'type': tipo, 'description': description}
+                
+    def write(self):
+        with open(self.fn, 'w') as f:
+            f.write(str(self))            
     
     def __repr__(self):
         s = ''

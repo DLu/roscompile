@@ -49,8 +49,18 @@ class PackageXML:
                 if n.nodeType != self.root.TEXT_NODE:
                     plugin = n.getAttribute('plugin').replace('${prefix}/', '')
                     xmls.append(( n.nodeName, plugin))
-        return xmls            
+        return xmls      
         
+    def add_plugin_export(self, fn, tipo):
+        exports = self.root.getElementsByTagName('export')
+        if len(exports)==0:
+            ex = self.tree.createElement('export')
+            self.root.appendChild(ex)
+        else:
+            ex = exports[0]
+        pe = self.tree.createElement(tipo)
+        pe.setAttribute('plugin', '${prefix}/' + fn )
+        ex.appendChild(pe)
 
     def insert_new_elements(self, name, values, i):
         x = []

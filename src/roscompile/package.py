@@ -5,6 +5,7 @@ from roscompile.launch import Launch
 from roscompile.source import Source
 from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
+from roscompile.plugin_xml import PluginXML
 
 SRC_EXTS = ['.py', '.cpp', '.h']
 CONFIG_EXTS = ['.yaml', '.rviz']
@@ -14,6 +15,7 @@ MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
 EXTS = {'source': SRC_EXTS, 'config': CONFIG_EXTS, 'data': DATA_EXTS, 'model': MODEL_EXTS}
 BASIC = ['package.xml', 'CMakeLists.txt']
 SIMPLE = ['.launch', '.msg', '.srv', '.action', '.cfg']
+PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
 def match(ext):
@@ -32,6 +34,9 @@ class Package:
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
+        
+        plugins = self.manifest.get_plugin_xmls()
+        
         for root,dirs,files in os.walk(self.root):
             if '.git' in root or '.svn' in root:
                 continue
@@ -50,6 +55,14 @@ class Package:
                 elif fn in BASIC:
                     data[None].append(full)
                 else:
+                    found = False
+                    for tipo, pfilename in plugins:
+                        if os.path.samefile(pfilename, full):
+                            data[PLUGIN_CONFIG].append( (pfilename, tipo) )
+                            found = True
+                            break
+                    if found:
+                        continue        
                     data[EXTRA].append(full)
         if print_extras and len(data[EXTRA])>0:
             for fn in data[EXTRA]:
@@ -106,7 +119,21 @@ class Package:
         plugins = []
         for source in self.sources:
             plugins += source.get_plugins()
-        #TODO: Generate XML if needed
+            
+        configs = {}
+        for filename, tipo in self.files[PLUGIN_CONFIG]:
+            configs[tipo] = PluginXML(filename)
+            
+        pattern = '%s::%s'    
+        for pkg1, name1, pkg2, name2 in plugins:
+            if pkg2 not in configs:
+                configs[pkg2] = PluginXML( self.root + '/plugins.xml')
+                self.manifest.add_plugin_export('plugins.xml', pkg2)
+            configs[pkg2].insert_if_needed(pattern%(pkg1, name1), pattern%(pkg2, name2))
+
+        for config in configs.values():
+            config.write()
+        self.manifest.output()    
         
     def get_people(self):
         people = {}
