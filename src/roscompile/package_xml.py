@@ -38,6 +38,19 @@ class PackageXML:
             elif name in people:
                 if len(people[name])>0:
                     el.setAttribute( 'email', people[name] )
+                    
+    def get_plugin_xmls(self):
+        xmls = []
+        export = self.root.getElementsByTagName('export')
+        if len(export)<1:
+            return xmls
+        for ex in export:
+            for n in ex.childNodes:
+                if n.nodeType != self.root.TEXT_NODE:
+                    plugin = n.getAttribute('plugin').replace('${prefix}/', '')
+                    xmls.append(( n.nodeName, plugin))
+        return xmls            
+        
 
     def insert_new_elements(self, name, values, i):
         x = []
