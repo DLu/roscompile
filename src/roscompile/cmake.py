@@ -172,7 +172,7 @@ class CMake:
             
     def check_dependencies(self, pkgs):
         self.section_check(pkgs, 'find_package', 'COMPONENTS')
-        self.section_check(pkgs, 'catkin_package', 'DEPENDS')
+        self.section_check(pkgs, 'catkin_package', 'CATKIN_DEPENDS')
         
     def check_generators(self, msgs, srvs, actions, cfgs):
         self.section_check( map(os.path.basename, msgs), 'add_message_files', 'FILES')
