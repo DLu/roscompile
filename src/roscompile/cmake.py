@@ -5,6 +5,22 @@ import os.path
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
+ORDERING = ['cmake_minimum_required', 'project', 'find_package', 
+            'add_message_files', 'add_service_files', 'add_action_files', 
+            'generate_messages', 'catkin_package', 
+            ['add_library', 'add_executable', 'target_link_libraries'],
+            'catkin_add_gtest', 'install']
+
+def get_ordering_index(cmd):
+    for i, o in enumerate(ORDERING):
+        if type(o)==list:
+            if cmd in o:
+                return i
+        elif cmd==o:
+            return i
+    return len(ORDERING)                
+
+
 def split_comments_and_words(s):
     words = []
     while '#' in s:
@@ -153,8 +169,25 @@ class CMake:
         cmd = Command(name, params)
         self.contents.append(cmd)
         self.content_map[name].append(cmd)
-                    
+
+    def enforce_ordering(self):
+        chunks = []
+        current = []
+        for x in self.contents:
+            current.append(x)
+            if x.__class__==Command:
+                chunks.append( (x.cmd, current) )
+                current = []
+        if len(current)>0:
+            chunks.append( (None, current) )
+        
+        self.contents = []
+            
+        for a,b in sorted(chunks, key=lambda d: get_ordering_index(d[0])):
+            self.contents += b
+
     def output(self):
+        self.enforce_ordering()
         with open(self.fn, 'w') as cmake:
             for x in self.contents:
                 if x.__class__==Command:
