@@ -36,7 +36,8 @@ class PackageXML:
                 el.childNodes[0].nodeValue = nn
                 el.setAttribute( 'email', people[nn] )
             elif name in people:
-                el.setAttribute( 'email', people[name] )
+                if len(people[name])>0:
+                    el.setAttribute( 'email', people[name] )
 
     def insert_new_elements(self, name, values, i):
         x = []
