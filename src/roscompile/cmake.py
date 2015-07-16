@@ -7,7 +7,7 @@ BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/cmake.ignore').read().split('\n') if len(s)>0]
 
-ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'add_definitions',
+ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package', 
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
@@ -20,7 +20,8 @@ def get_ordering_index(cmd):
                 return i
         elif cmd==o:
             return i
-    print '\tUnsure of ordering for', cmd        
+    if cmd:        
+        print '\tUnsure of ordering for', cmd        
     return len(ORDERING)                
 
 

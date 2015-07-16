@@ -101,6 +101,9 @@ class Package:
             if build:
                 self.manifest.add_packages(dependencies, build)
             self.manifest.add_packages(dependencies, False)
+            
+        if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
+            self.manifest.add_packages(['message_runtime'], True)
 
         self.manifest.output()
 
