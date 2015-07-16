@@ -90,6 +90,14 @@ class Package:
 
         self.manifest.output()
         
+    def print_files(self):
+        for name, files in sorted(self.files.items()):
+            if len(files)==0:
+                continue
+            print name
+            for fn in sorted(files):
+                print '\t',fn
+        
     def update_cmake(self):
         self.cmake.check_dependencies( self.get_dependencies() )        
         
