@@ -5,11 +5,11 @@ import os.path
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
-ORDERING = ['cmake_minimum_required', 'project', 'find_package', 
+ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package', 
-            ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies'],
-            'catkin_add_gtest', 'install']
+            ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
+            'catkin_add_gtest', 'group', 'install']
 
 def get_ordering_index(cmd):
     for i, o in enumerate(ORDERING):
@@ -179,11 +179,19 @@ class CMake:
     def enforce_ordering(self):
         chunks = []
         current = []
+        group = None
         for x in self.contents:
             current.append(x)
             if x.__class__==Command:
-                chunks.append( (x.cmd, current) )
-                current = []
+                if x.cmd == 'if':
+                    group = 'endif'
+                elif x.cmd == group:
+                    chunks.append( ('group', current))
+                    current = []
+                    group = None
+                elif group is None:    
+                    chunks.append( (x.cmd, current) )
+                    current = []
         if len(current)>0:
             chunks.append( (None, current) )
         
