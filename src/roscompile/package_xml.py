@@ -46,7 +46,7 @@ class PackageXML:
             return xmls
         for ex in export:
             for n in ex.childNodes:
-                if n.nodeType != self.root.TEXT_NODE:
+                if n.nodeType == self.root.ELEMENT_NODE:
                     plugin = n.getAttribute('plugin').replace('${prefix}/', '')
                     xmls.append(( n.nodeName, plugin))
         return xmls      
