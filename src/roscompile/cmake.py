@@ -1,7 +1,24 @@
 from collections import defaultdict
 import re
 
+BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
+
+def split_comments_and_words(s):
+    words = []
+    while '#' in s:
+        i = s.index('#')
+        words += re.split('\s+', s[:i])
+        if '\n' in s:
+            i2 = s.index('\n', i)
+            words.append( s[i:i2+1] )
+            s = s[i2+1:]
+        else:
+            words.append( s[i:] + '\n' )
+            s = ''
+    words += re.split('\s+', s)        
+        
+    return words
 
 class Command:
     def __init__(self, cmd, params):
@@ -9,7 +26,7 @@ class Command:
         key = ''
         values = []
         self.params = []
-        for word in re.split('\s+', params):
+        for word in split_comments_and_words(params):
             if not ALL_CAPS.match(word):
                 if len(word) > 0:
                     values.append(word)
@@ -21,16 +38,24 @@ class Command:
         if len(values)>0 or len(key)>0:
             self.params.append( (key, values) )
         
-    def __repr__(self):
+    def __repr__(self, lines=False):
         s = self.cmd + '('
         p = ''
+        if lines:
+            p += '\n'
         for key, values in self.params:
             if key != '':
-                p += ' ' + key + ' '
+                if lines:
+                    p += '    '
+                elif len(p)>0:
+                    p += ' '
+                p += key + ' '
                 
             p += ' '.join(values)
-        s += p.strip()
+            if lines and p[-1]!='\n':
+                p+='\n'
         
+        s += p
         return s + ')'
 
 class CMake:
@@ -86,5 +111,9 @@ class CMake:
     def output(self):
         with open(self.fn, 'w') as cmake:
             for x in self.contents:
-                cmake.write(str(x))
+                if x.__class__==Command:
+                    lines = x.cmd in BREAKERS
+                    cmake.write(x.__repr__(lines))
+                else:    
+                    cmake.write(str(x))
 
