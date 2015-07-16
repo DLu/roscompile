@@ -93,7 +93,7 @@ class Command:
     def __repr__(self):
         s = self.cmd + '('
         s += self.joiner.join(map(str,self.sections.values()))
-        if '\n' in self.joiner:
+        if '\n' in s:
             s += '\n'
         s += ')'
         return s
@@ -155,9 +155,11 @@ class CMake:
             
         section = None
         for cmd in self.content_map[cmd_name]:
-            section = cmd.get_section(section_name)
-            if section:
-                items = [item for item in items if item not in section.values]
+            s = cmd.get_section(section_name)
+            if s:
+                if section is None:
+                    section = s
+                items = [item for item in items if item not in s.values]
         if len(items)==0:
             return        
         if section:        
@@ -178,8 +180,9 @@ class CMake:
         if len(msgs)+len(srvs)+len(actions) > 0:
             self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
             self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
-            
-        self.section_check( map(os.path.basename, cfgs), 'generate_dynamic_reconfigure_options', '')
+        
+        cfgs = ['cfg/' + os.path.basename(cfg) for cfg in cfgs]    
+        self.section_check( cfgs, 'generate_dynamic_reconfigure_options', '')
         if len(cfgs)>0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
