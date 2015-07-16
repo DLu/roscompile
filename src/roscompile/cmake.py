@@ -1,5 +1,6 @@
 from collections import defaultdict
 import re
+import os.path
 
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
@@ -43,6 +44,9 @@ class Command:
             if search_key == key:
                 return values
         return None        
+
+    def add_section(self, key, values=[]):
+        self.params.append( (key, values) )
         
     def __repr__(self, lines=False):
         s = self.cmd + '('
@@ -109,16 +113,41 @@ class CMake:
         if len(s)>0:
             self.contents.append(s)
             
-    def package_check(self, pkgs, cmd_name, section_name):        
+    def section_check(self, items, cmd_name, section_name):        
+        if len(items)==0:
+            return
+            
+        if cmd_name not in self.content_map:
+            params = section_name + ' '  + ' '.join(items)
+            self.add_command(cmd_name, params)
+            print 'Adding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
+            return    
+            
+        section = None
         for cmd in self.content_map[cmd_name]:
             section = cmd.get_section(section_name)
             if section:
-                pkgs = [pkg for pkg in pkgs if pkg not in section]
-        section += pkgs
+                items = [item for item in items if item not in section]
+        if len(items)==0:
+            return        
+        if section:        
+            section += items
+        else:
+            cmd.add_section(section_name, items)
+        print 'Adding %s to the %s/%s section of your CMakeLists.txt'%(str(items), cmd_name, section_name)
             
     def check_dependencies(self, pkgs):
-        self.package_check(pkgs, 'find_package', 'COMPONENTS')
-        self.package_check(pkgs, 'catkin_package', 'DEPENDS')
+        self.section_check(pkgs, 'find_package', 'COMPONENTS')
+        self.section_check(pkgs, 'catkin_package', 'DEPENDS')
+        
+    def check_generators(self, msgs, srvs, actions):
+        self.section_check( map(os.path.basename, msgs), 'add_message_files', 'FILES')
+        self.section_check( map(os.path.basename, srvs), 'add_service_files', 'FILES')
+        self.section_check( map(os.path.basename, actions), 'add_action_files', 'FILES')
+        
+        if len(msgs)+len(srvs)+len(actions) > 0:
+            self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
+            self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
 
     def add_command(self, name, params):
         cmd = Command(name, params)
