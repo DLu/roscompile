@@ -18,6 +18,7 @@ for package in pkgs:
     print package.name
     package.update_people(people, replace)
     package.update_manifest()
+    package.update_cmake()
     package.generate_setup()
     package.check_plugins()
     

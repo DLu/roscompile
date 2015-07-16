@@ -6,6 +6,7 @@ from roscompile.source import Source
 from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
 from roscompile.plugin_xml import PluginXML
+from roscompile.cmake import CMake
 
 SRC_EXTS = ['.py', '.cpp', '.h']
 CONFIG_EXTS = ['.yaml', '.rviz']
@@ -29,6 +30,7 @@ class Package:
         self.root = root
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
+        self.cmake = CMake(self.root + '/CMakeLists.txt')
         self.files = self.sort_files()
         self.sources = [Source(source) for source in self.files['source']]
 
@@ -101,17 +103,40 @@ class Package:
             self.manifest.add_packages(dependencies, False)
 
         self.manifest.output()
+
+    def print_files(self):
+        for name, files in sorted(self.files.items()):
+            if len(files)==0:
+                continue
+            print name
+            for fn in sorted(files):
+                print '\t',fn
+        
+    def update_cmake(self):
+        self.cmake.check_dependencies( self.get_dependencies() )        
+
+        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
+        
+        if len(self.get_python_source())>0 and \
+            'catkin_python_setup' not in self.cmake.content_map:
+            self.cmake.add_command('catkin_python_setup', '')
+            
+        self.cmake.output()
+
+    def get_python_source(self):
+        sources = []        
+        for source in self.sources:
+            if source.python and 'setup.py' not in source.fn:
+                sources.append(source)
+        return sources                
         
     def generate_setup(self):
-        sources = [src for src in self.sources if src.python and 'setup.py' not in src.fn]
+        sources = self.get_python_source()
         if len(sources)==0:
             return
             
         setup = SetupPy(self.name, self.root, sources)
-
-        if setup.valid:
-            print "    Writing setup.py"
-            setup.write()
+        setup.write_if_needed()
 
         return
         

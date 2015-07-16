@@ -1,5 +1,5 @@
 import re
-import subprocess
+from roscompile.package_list import is_package
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
@@ -10,11 +10,6 @@ EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), re.compile(CPLUS)]
 
 PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+), ([^:]+)::([^,]+)\)'
 PLUGIN_RE = re.compile(PLUGIN_PATTERN)
-
-def get_root(package):
-    p = subprocess.Popen(['rospack', 'find', package], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    return out.strip()
 
 class Source:
     def __init__(self, fn):
@@ -28,7 +23,7 @@ class Source:
             for EXP in EXPRESSIONS:
                 m = EXP.search(line)
                 if m:
-                    if get_root( m.group(1) ):
+                    if is_package( m.group(1) ):
                         d.add(m.group(1))
         return sorted(list(d))
         
