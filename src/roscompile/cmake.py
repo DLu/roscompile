@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import re
 import os.path
 
@@ -37,53 +37,65 @@ def split_comments_and_words(s):
     words += re.split('\s+', s)        
         
     return words
+    
+class Section:
+    def __init__(self, name='', values=None):
+        self.name = name
+        if values is None:
+            self.values = []
+        else:    
+            self.values = values
+        
+    def add(self, v):
+        self.values.append(v)
+        
+    def is_valid(self):
+        return len(self.name)>0 or len(self.values)>0    
+        
+    def __repr__(self):
+        s = ''
+        if len(self.name)>0:
+            s = self.name
+            if len(self.values)>0:
+                s += ' '
+        s += ' '.join(self.values)
+        return s
 
 class Command:
     def __init__(self, cmd, params):
         self.cmd = cmd
-        key = ''
-        values = []
-        self.params = []
+        self.joiner = '\n    ' if '\n' in params else ' '
+        sections = []        
+        sect = Section()
+        sections.append(sect)
+
+
         for word in split_comments_and_words(params):
-            if not ALL_CAPS.match(word):
-                if len(word) > 0:
-                    values.append(word)
+            if len(word)==0:
+                continue
+            if ALL_CAPS.match(word):
+                sect = Section(word)
+                sections.append(sect)
             else:
-                if len(values)>0 or len(key)>0:
-                    self.params.append( (key, values) )
-                key = word
-                values = []
-        if len(values)>0 or len(key)>0:
-            self.params.append( (key, values) )
+                sect.add(word)
+                
+        self.sections = OrderedDict()
+        for sect in sections:
+            if sect.is_valid():
+                self.sections[sect.name] = sect
             
-    def get_section(self, search_key):
-        for key, values in self.params:
-            if search_key == key:
-                return values
-        return None        
+    def get_section(self, key):
+        return self.sections.get(key, None)
 
     def add_section(self, key, values=[]):
-        self.params.append( (key, values) )
+        self.sections[key] = Section(key, values)
         
-    def __repr__(self, lines=False):
+    def __repr__(self):
         s = self.cmd + '('
-        p = ''
-        if lines:
-            p += '\n'
-        for key, values in self.params:
-            if key != '':
-                if lines:
-                    p += '    '
-                elif len(p)>0:
-                    p += ' '
-                p += key + ' '
-                
-            p += ' '.join(values)
-            if lines and p[-1]!='\n':
-                p+='\n'
-        
-        s += p + ')'
-        s = s.replace(' )', ')')
+        s += self.joiner.join(map(str,self.sections.values()))
+        if '\n' in self.joiner:
+            s += '\n'
+        s += ')'
         return s
 
 class CMake:
@@ -145,11 +157,11 @@ class CMake:
         for cmd in self.content_map[cmd_name]:
             section = cmd.get_section(section_name)
             if section:
-                items = [item for item in items if item not in section]
+                items = [item for item in items if item not in section.values]
         if len(items)==0:
             return        
         if section:        
-            section += items
+            section.values += items
         else:
             cmd.add_section(section_name, items)
         print '\tAdding %s to the %s/%s section of your CMakeLists.txt'%(str(items), cmd_name, section_name)
@@ -204,9 +216,5 @@ class CMake:
         self.enforce_ordering()
         with open(self.fn, 'w') as cmake:
             for x in self.contents:
-                if x.__class__==Command:
-                    lines = x.cmd in BREAKERS
-                    cmake.write(x.__repr__(lines))
-                else:    
-                    cmake.write(str(x))
+                cmake.write(str(x))
 
