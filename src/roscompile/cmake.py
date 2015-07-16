@@ -37,6 +37,12 @@ class Command:
                 values = []
         if len(values)>0 or len(key)>0:
             self.params.append( (key, values) )
+            
+    def get_section(self, search_key):
+        for key, values in self.params:
+            if search_key == key:
+                return values
+        return None        
         
     def __repr__(self, lines=False):
         s = self.cmd + '('
@@ -102,11 +108,22 @@ class CMake:
                     params += c
         if len(s)>0:
             self.contents.append(s)
+            
+    def package_check(self, pkgs, cmd_name, section_name):        
+        for cmd in self.content_map[cmd_name]:
+            section = cmd.get_section(section_name)
+            if section:
+                pkgs = [pkg for pkg in pkgs if pkg not in section]
+        section += pkgs
+            
+    def check_dependencies(self, pkgs):
+        self.package_check(pkgs, 'find_package', 'COMPONENTS')
+        self.package_check(pkgs, 'catkin_package', 'DEPENDS')
 
     def add_command(self, name, params):
         cmd = Command(name, params)
         self.contents.append(cmd)
-        self.content_map[name].append(cmd)        
+        self.content_map[name].append(cmd)
                     
     def output(self):
         with open(self.fn, 'w') as cmake:
