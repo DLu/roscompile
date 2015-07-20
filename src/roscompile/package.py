@@ -7,6 +7,7 @@ from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
 from roscompile.plugin_xml import PluginXML
 from roscompile.cmake import CMake
+from roscompile.config import CFG
 
 SRC_EXTS = ['.py', '.cpp', '.h']
 CONFIG_EXTS = ['.yaml', '.rviz']
@@ -74,19 +75,21 @@ class Package:
 
     def get_build_dependencies(self):
         packages = set()
-        for source in self.sources:
-            packages.update(source.get_dependencies())
-        if self.name in packages:
-            packages.remove(self.name)            
+        if CFG.should('read_source'):
+            for source in self.sources:
+                packages.update(source.get_dependencies())
+            if self.name in packages:
+                packages.remove(self.name)            
         return sorted(list(packages))
 
     def get_run_dependencies(self):
         packages = set()
-        for launch in self.files['launch']:
-            x = Launch(launch)
-            packages.update(x.get_dependencies())
-        if self.name in packages:
-            packages.remove(self.name)
+        if CFG.should('read_launches'):
+            for launch in self.files['launch']:
+                x = Launch(launch)
+                packages.update(x.get_dependencies())
+            if self.name in packages:
+                packages.remove(self.name)
         return sorted(list(packages))
 
     def get_dependencies(self, build=True):
