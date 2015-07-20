@@ -30,7 +30,7 @@ class Package:
         self.root = root
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
-        self.cmake = CMake(self.root + '/CMakeLists.txt')
+        self.cmake = CMake(self.root + '/CMakeLists.txt', self.name)
         self.files = self.sort_files()
         self.sources = [Source(source) for source in self.files['source']]
 

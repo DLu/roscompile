@@ -6,6 +6,7 @@ from resource_retriever import get
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/cmake.ignore').read().split('\n') if len(s)>0]
+IGNORE_PATTERNS = [s + '\n' for s in get('package://roscompile/data/cmake_patterns.ignore').read().split('\n') if len(s)>0]
 
 ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
@@ -102,8 +103,9 @@ class Command:
         return s
 
 class CMake:
-    def __init__(self, fn):
+    def __init__(self, fn, name=None):
         self.fn = fn
+        self.name = name
         self.contents = []
         self.content_map = defaultdict(list)
         original = open(fn).read()
@@ -227,8 +229,11 @@ class CMake:
         s = str(self)
         
         if remove_dumb_comments:    
+            D = {'package': self.name}
             for line in IGNORE_LINES:
                 s = s.replace(line, '')
+            for pattern in IGNORE_PATTERNS:
+                s = s.replace(pattern % D, '')    
             while '\n\n\n' in s:    
                 s = s.replace('\n\n\n', '\n\n')    
         
