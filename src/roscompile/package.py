@@ -185,3 +185,47 @@ def get_packages(root_fn='.'):
             packages.append(Package(root))
     return packages
 
+def get_people_info(pkgs):
+    people = {}
+    replace = {}
+    
+    for package in pkgs:
+        for k,v in package.get_people().iteritems():
+            people.update(v)
+            
+    if 'canonical_names' not in CFG:
+        name = raw_input('What is your name (exactly as you\'d like to see it in the documentation)? ')
+        email = raw_input('What is your email (for documentation purposes)? ')
+        
+        CFG['canonical_names'] = [{'name': name, 'email': email}]
+        
+    for d in CFG['canonical_names']:
+        people[ d['name'] ] = d['email']     
+        
+    while len(people)>1:
+        print
+        values = sorted(people.keys(), key=lambda d: d.lower())
+        for i, n in enumerate(values):
+            print '%d) %s %s'%(i, n, '(%s)'%people[n] if n in people else '')
+        print 
+        c = raw_input('Which name would you like to replace? (Enter #, or q to quit)')
+        if c=='q':
+            break
+        try:
+            c = int(c)
+        except:
+            continue
+        if c < 0 or c > len(values):
+            continue
+        c2 = raw_input('Which do you want to replace it with? ')
+        if c2=='q':
+            break
+        try:
+            c2 = int(c2)            
+        except:
+            continue
+        if c2 < 0 or c2>len(values) or c==c2:
+            continue
+        replace[ values[c] ] = values[c2]
+        del people[ values[c] ] 
+    return people, replace    

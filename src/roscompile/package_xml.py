@@ -37,9 +37,13 @@ class PackageXML:
                 nn = replace[name]
                 el.childNodes[0].nodeValue = nn
                 el.setAttribute( 'email', people[nn] )
+                print '\tReplacing %s with %s as %s'%(name, nn, tag)
             elif name in people:
                 if len(people[name])>0:
+                    if el.hasAttribute('email') and el.getAttribute('email')==people[name]:
+                        continue
                     el.setAttribute( 'email', people[name] )
+                    print '\tSetting %s\'s email to %s'%(name, people[name])
                     
     def get_plugin_xmls(self):
         xmls = []
