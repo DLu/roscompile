@@ -2,6 +2,7 @@
 
 import roslib; roslib.load_manifest('roscompile')       
 from roscompile.package import Package, get_packages
+from roscompile.config import CFG
 
 pkgs = get_packages()
 
@@ -17,10 +18,16 @@ replace = {'David!!': 'David V. Lu!!'}
 for package in pkgs:
     print package.name
     package.update_people(people, replace)
-    package.update_manifest()
-    package.update_cmake()
-    package.generate_setup()
-    package.check_plugins()
-    
+    if CFG.should('update_manifest'):
+        package.update_manifest()
 
-    
+    if CFG.should('update_cmake'):
+        package.update_cmake()
+
+    if CFG.should('generate_setup_py'):
+        package.generate_setup()
+
+    if CFG.should('check_plugins'):
+        package.check_plugins()
+
+CFG.write()
