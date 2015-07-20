@@ -2,6 +2,7 @@ from collections import defaultdict, OrderedDict
 import re
 import os.path
 from resource_retriever import get
+from roscompile.config import CFG
 
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
@@ -228,12 +229,13 @@ class CMake:
         
         s = str(self)
         
-        if remove_dumb_comments:    
+        if CFG.should('remove_dumb_cmake_comments'):    
             D = {'package': self.name}
             for line in IGNORE_LINES:
                 s = s.replace(line, '')
             for pattern in IGNORE_PATTERNS:
                 s = s.replace(pattern % D, '')    
+        if CFG.should('remove_empty_cmake_lines'):        
             while '\n\n\n' in s:    
                 s = s.replace('\n\n\n', '\n\n')    
         

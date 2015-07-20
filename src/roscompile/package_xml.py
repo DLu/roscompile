@@ -1,5 +1,6 @@
 from  xml.dom.minidom import parse
 from resource_retriever import get
+from roscompile.config import CFG
 
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
@@ -116,7 +117,7 @@ class PackageXML:
         elif state == 2 and not build:
             self.insert_new_elements('run_depend', pkgs, i)
 
-    def output(self, new_fn=None, remove_dumb_comments=True):
+    def output(self, new_fn=None):
         if new_fn is None:
             new_fn = self.fn
         s = self.tree.toxml()
@@ -125,15 +126,17 @@ class PackageXML:
         else:
             s = s.replace(' ?><package>', '?>\n<package>')
             
-        if remove_dumb_comments:    
+        if CFG.should('remove_dumb_package_comments'):
             for line in IGNORE_LINES:
                 s = s.replace(line, '')
+                
+        if CFG.should('remove_empty_package_lines'):        
             while '\n\n\n' in s:    
-                s = s.replace('\n\n\n', '\n\n')    
+                s = s.replace('\n\n\n', '\n\n')
         
         old_s = open(new_fn, 'r').read()
         if old_s.strip() == s:
-            return       
+            return
             
         f = open(new_fn, 'w')
         f.write(s)
