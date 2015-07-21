@@ -123,7 +123,8 @@ class Package:
 
         self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
         
-        if len(self.get_python_source())>0 and \
+        setup = self.get_setup_py()
+        if setup and setup.valid and \
             'catkin_python_setup' not in self.cmake.content_map:
             self.cmake.add_command('catkin_python_setup()')
             
@@ -134,16 +135,21 @@ class Package:
         for source in self.sources:
             if source.python and 'setup.py' not in source.fn:
                 sources.append(source)
-        return sources                
+        return sources     
         
-    def generate_setup(self):
+    def get_setup_py(self):
         sources = self.get_python_source()
         if len(sources)==0:
             return
             
         setup = SetupPy(self.name, self.root, sources)
+        return setup           
+        
+    def generate_setup(self):
+        setup = self.get_setup_py()
+        if not setup:
+            return
         setup.write_if_needed()
-
         return
         
     def check_plugins(self):
