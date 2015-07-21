@@ -26,30 +26,15 @@ def get_ordering_index(cmd):
         print '\tUnsure of ordering for', cmd        
     return len(ORDERING)                
 
-
-def split_comments_and_words(s):
-    words = []
-    while '#' in s:
-        i = s.index('#')
-        words += re.split('\s+', s[:i])
-        if '\n' in s:
-            i2 = s.index('\n', i)
-            words.append( s[i:i2+1] )
-            s = s[i2+1:]
-        else:
-            words.append( s[i:] + '\n' )
-            s = ''
-    words += re.split('\s+', s)        
-        
-    return words
-    
 class Section:
-    def __init__(self, name='', values=None):
+    def __init__(self, name='', values=None, pre='', tab=None):
         self.name = name
         if values is None:
             self.values = []
         else:    
             self.values = values
+        self.pre = pre
+        self.tab = tab
         
     def add(self, v):
         self.values.append(v)
@@ -58,97 +43,61 @@ class Section:
         return len(self.name)>0 or len(self.values)>0    
         
     def __repr__(self):
-        s = ''
+        s = self.pre
         if len(self.name)>0:
-            s = self.name
-            if len(self.values)>0:
+            s += self.name
+            if self.tab is None and len(self.values)>0:
                 s += ' '
-        s += ' '.join(self.values)
+            elif len(self.values)>0:
+                s += '\n' + ' ' *self.tab
+        if self.tab is None:
+            s += ' '.join(self.values)
+        else:
+            s += ('\n' + ' '*self.tab).join(self.values)
         return s
 
 class Command:
-    def __init__(self, cmd, params):
+    def __init__(self, cmd):
         self.cmd = cmd
-        self.joiner = '\n    ' if '\n' in params else ' '
-        sections = []        
-        sect = Section()
-        sections.append(sect)
+        self.inline_count = -1
+        self.tab = 0
 
-
-        for word in split_comments_and_words(params):
-            if len(word)==0:
-                continue
-            if ALL_CAPS.match(word):
-                sect = Section(word)
-                sections.append(sect)
-            else:
-                sect.add(word)
-                
-        self.sections = OrderedDict()
-        for sect in sections:
-            if sect.is_valid():
-                self.sections[sect.name] = sect
+        self.sections = []
             
     def get_section(self, key):
-        return self.sections.get(key, None)
+        for s in self.sections:
+            if s.name==key:
+                return s
+        return None
 
     def add_section(self, key, values=[]):
-        self.sections[key] = Section(key, values)
+        self.sections.append(Section(key, values))
+        
+    def add(self, section):
+        if section:
+            self.sections.append(section)
         
     def __repr__(self):
         s = self.cmd + '('
-        s += self.joiner.join(map(str,self.sections.values()))
+        s += ''.join(map(str,self.sections))
         if '\n' in s:
             s += '\n'
         s += ')'
         return s
 
+from roscompile.cmake_parser import scanner
+
 class CMake:
     def __init__(self, fn, name=None):
         self.fn = fn
-        self.name = name
-        self.contents = []
+        self.name = name        
+        self.contents = scanner.parse(fn)
         self.content_map = defaultdict(list)
-        original = open(fn).read()
-        state = 0
-        s = ''
-        params = ''
-        
-        for c in original:
-            if state == 0:
-                if c.isspace():
-                    s += c
-                elif c=='#':
-                    state = 1
-                    s += c
-                else:
-                    if len(s)>0:
-                        self.contents.append(s)
-                    state = 2
-                    s = c
-            elif state == 1:
-                s += c
-                if c=='\n':
-                    state = 0
-            elif state == 2:
-                if c == '(':
-                    state = 3
-                
-                else:
-                    s += c
-            elif state == 3:
-                if c == ')':
-                    cmd = Command(s,params)
-                    self.contents.append( cmd )
-                    self.content_map[s].append(cmd)
-                    s = ''
-                    params = ''
-                    state = 0
-                else:
-                    params += c
-        if len(s)>0:
-            self.contents.append(s)
-            
+        for c in self.contents:
+            if type(c)==str:
+                continue
+            self.content_map[ c.cmd ] = c    
+
     def section_check(self, items, cmd_name, section_name):        
         if len(items)==0:
             return
@@ -224,8 +173,9 @@ class CMake:
     def __repr__(self):
         return ''.join(map(str, self.contents))
 
-    def output(self, remove_dumb_comments=True):
-        self.enforce_ordering()
+    def output(self, fn=None):
+        if CFG.should('enforce_cmake_ordering'):
+            self.enforce_ordering()
         
         s = str(self)
         
@@ -239,6 +189,8 @@ class CMake:
             while '\n\n\n' in s:    
                 s = s.replace('\n\n\n', '\n\n')    
         
-        with open(self.fn, 'w') as cmake:
+        if fn is None:
+            fn = self.fn
+        with open(fn, 'w') as cmake:
             cmake.write(s)
 
