@@ -1,24 +1,27 @@
 import os
+import re
 
 TEMPLATE = """#!/usr/bin/env python
 
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
-package_info = generate_distutils_setup(
-%s)
+%(var)s = generate_distutils_setup(
+    packages=['%(name)s'],
+    package_dir={'': 'src'},
+)
 
-setup(**package_info)
+setup(**%(var)s)
 """
 
-PACKAGES = "    packages=['%s'],\n"
-PDIR = "    package_dir={'': 'src'},\n"
+VAR_PATTERN = re.compile('\*\*([\w_]+)\)')
 
 class SetupPy:
     def __init__(self, name, root, files):
         self.root = root
         self.name = name
         self.files = files
+        self.var = 'package_info'
         
         self.valid = False
         for source in self.files:
@@ -30,18 +33,24 @@ class SetupPy:
         if not self.valid:
             return
         fn = self.root + '/setup.py'
-        output = str(self)
+        
         if os.path.exists(fn):
             original = open(fn, 'r').read()
+            m = VAR_PATTERN.search(original)
+            if m:
+                self.var = m.group(1)
+                
+            output = str(self)
             if original == output:
                 return
+        else:
+            output = str(self)
+            
         print "    Writing setup.py"   
         with open(fn, 'w') as f:
             f.write(output)
         
         
     def __repr__(self):
-        s1 = PACKAGES%self.name
-        s1 += PDIR
-        return TEMPLATE % s1
+        return TEMPLATE % {'name': self.name, 'var': self.var}
 
