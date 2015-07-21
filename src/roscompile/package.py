@@ -125,7 +125,7 @@ class Package:
         
         if len(self.get_python_source())>0 and \
             'catkin_python_setup' not in self.cmake.content_map:
-            self.cmake.add_command('catkin_python_setup', '')
+            self.cmake.add_command('catkin_python_setup()')
             
         self.cmake.output()
 

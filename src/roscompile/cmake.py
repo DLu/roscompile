@@ -85,7 +85,7 @@ class Command:
         s += ')'
         return s
 
-from roscompile.cmake_parser import scanner
+from roscompile.cmake_parser import scanner, c_scanner
 
 class CMake:
     def __init__(self, fn, name=None):
@@ -96,7 +96,7 @@ class CMake:
         for c in self.contents:
             if type(c)==str:
                 continue
-            self.content_map[ c.cmd ] = c    
+            self.content_map[ c.cmd ].append(c) 
 
     def section_check(self, items, cmd_name, section_name):        
         if len(items)==0:
@@ -104,7 +104,7 @@ class CMake:
             
         if cmd_name not in self.content_map:
             params = section_name + ' '  + ' '.join(items)
-            self.add_command(cmd_name, params)
+            self.add_command('%s(%s)'%(cmd_name,params))
             print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
             return    
             
@@ -141,10 +141,10 @@ class CMake:
         if len(cfgs)>0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
-    def add_command(self, name, params):
-        cmd = Command(name, params)
+    def add_command(self, s):
+        cmd = c_scanner.parse(s)
         self.contents.append(cmd)
-        self.content_map[name].append(cmd)
+        self.content_map[cmd.cmd].append(cmd)
 
     def enforce_ordering(self):
         chunks = []
