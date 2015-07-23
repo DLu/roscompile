@@ -5,15 +5,15 @@ ALL_CAPS = re.compile('^[A-Z_]+$')
 class CommandScanner(re.Scanner):
     def __init__(self):
         re.Scanner.__init__(self, [
-            (r'\w+\(', CommandScanner.c_command),
+            (r'\w+ ?\(', CommandScanner.c_command),
             (r'\n', CommandScanner.c_nl),
             (r'[ \t]+', CommandScanner.c_ws),
-            (r'[\w\.\$\{\}/\-:"]+', CommandScanner.c_token),
+            (r'[\w\.\$\{\}/\-:"\*,>=]+', CommandScanner.c_token),
             (r'#[^\n]*\n', CommandScanner.c_comment),
             (r'\)', None)
         ])
 
-    def c_command(self, token): return ('name', token)
+    def c_command(self, token): return ('name', token.replace(' ', ''))
     def c_nl(self, token): return ('nl', token)
     def c_ws(self, token): return ('white', token)
     def c_token(self, token):
@@ -28,6 +28,7 @@ class CommandScanner(re.Scanner):
         
         if len(extra)>0:
             print 'Could not parse command %s. Please report the error.'%s
+            print extra
             exit(0)
             
            
@@ -40,9 +41,11 @@ class CommandScanner(re.Scanner):
             cmd.add(self.parse_section())
                     
         for x in self.tokens:
-            print x
-        print cmd
-        print '*'*50
+            if x[0]=='nl' or x[0]=='white':
+                continue
+            print '\tCould not parse CMake properly. Please report the error.'
+            print s
+            exit(0)
         
         return cmd
         
@@ -76,7 +79,8 @@ class CommandScanner(re.Scanner):
                         tab = 0
                         self._match()
                     elif self.get_type()=='white' and tab == 0:
-                        tab = len( self._match() )
+                        ws = self._match().replace('\t', '    ')                        
+                        tab = len( ws )
                     else:
                         self._match()
                 else:
@@ -117,7 +121,7 @@ c_scanner = CommandScanner()
 class CMakeScanner(re.Scanner):
     def __init__(self):
         re.Scanner.__init__(self, [
-     (r'\w+\([^\)]*\)', CMakeScanner.s_command),
+     (r'\w+ ?\([^\)]*\)', CMakeScanner.s_command),
      (r'((#[^\n]*\n)*\s*)*', CMakeScanner.s_comment),
      ])
      
@@ -131,6 +135,7 @@ class CMakeScanner(re.Scanner):
         contents, extra = self.scan(s)
         if len(extra)>0:
             print 'Could not parse %s. Please report the error.'%filename
+            print extra
             exit(0)
         return contents    
 
