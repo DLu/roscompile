@@ -21,6 +21,20 @@ def get_ordering_index(name):
         print '\tUnsure of ordering for', name
     return len(ORDERING)                
 
+def get_sort_key(node, alphabetize_depends=True):
+    if node:
+        name = node.nodeName
+    else:
+        name = None
+    
+    index = get_ordering_index(name)
+        
+    if not alphabetize_depends:
+        return index
+    if name and 'depend' in name:
+        return index, node.firstChild.data
+    else:
+        return index, None
 
 class PackageXML:
     def __init__(self, fn):
@@ -163,10 +177,8 @@ class PackageXML:
         
         self.root.childNodes = []
         
-        if CFG.should('alphabetize_depends'):
-            key = lambda d: (get_ordering_index( d[0].nodeName if d[0] else None), d[0].firstChild.data if d[0] else None)
-        else:
-            key = lambda d: get_ordering_index( d[0].nodeName if d[0] else None)
+        alpha = CFG.should('alphabetize_depends')
+        key = lambda d: get_sort_key(d[0], alpha)
         
         for a,b in sorted(chunks, key=key):
             self.root.childNodes += b
