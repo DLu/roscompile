@@ -5,6 +5,23 @@ from roscompile.config import CFG
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
 
+ORDERING = ['name', 'version', 'description', 
+            ['maintainer', 'license', 'author', 'url'],
+            'buildtool_depend', 'build_depend', 'run_depend', 'test_depend', 
+            'export']
+
+def get_ordering_index(name):
+    for i, o in enumerate(ORDERING):
+        if type(o)==list:
+            if name in o:
+                return i
+        elif name==o:
+            return i
+    if name:        
+        print '\tUnsure of ordering for', name
+    return len(ORDERING)                
+
+
 class PackageXML:
     def __init__(self, fn):
         self.tree = parse(fn)
@@ -132,7 +149,33 @@ class PackageXML:
         elif state == 2 and not build:
             self.insert_new_elements('run_depend', pkgs, i)
 
+    def enforce_ordering(self):
+        chunks = []
+        current = []
+        group = None
+        for x in self.root.childNodes:
+            current.append(x)
+            if x.nodeType==x.ELEMENT_NODE:
+                chunks.append( (x, current) )
+                current = []
+        if len(current)>0:
+            chunks.append( (None, current) )
+        
+        self.root.childNodes = []
+        
+        if CFG.should('alphabetize_depends'):
+            key = lambda d: (get_ordering_index( d[0].nodeName if d[0] else None), d[0].firstChild.data if d[0] else None)
+        else:
+            key = lambda d: get_ordering_index( d[0].nodeName if d[0] else None)
+        
+        for a,b in sorted(chunks, key=key):
+            self.root.childNodes += b
+
+
     def output(self, new_fn=None):
+        if CFG.should('enforce_manifest_ordering'):
+            self.enforce_ordering()
+            
         if new_fn is None:
             new_fn = self.fn
         s = self.tree.toxml()
