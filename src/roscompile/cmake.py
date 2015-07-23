@@ -15,6 +15,8 @@ ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
             'catkin_add_gtest', 'group', 'install']
 
+SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
+
 def get_ordering_index(cmd):
     for i, o in enumerate(ORDERING):
         if type(o)==list:
@@ -43,6 +45,9 @@ class Section:
         return len(self.name)>0 or len(self.values)>0    
         
     def __repr__(self):
+        if CFG.should('alphabetize_cmake_options') and self.name in SHOULD_ALPHABETIZE:
+            self.values = sorted(self.values)
+    
         s = self.pre
         if len(self.name)>0:
             s += self.name
