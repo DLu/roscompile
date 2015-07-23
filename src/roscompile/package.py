@@ -60,7 +60,7 @@ class Package:
                 else:
                     found = False
                     for tipo, pfilename in plugins:
-                        if os.path.samefile(pfilename, full):
+                        if os.path.exists(pfilename) and os.path.samefile(pfilename, full):
                             data[PLUGIN_CONFIG].append( (pfilename, tipo) )
                             found = True
                             break
@@ -107,6 +107,9 @@ class Package:
             
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
             self.manifest.add_packages(['message_runtime'], True)
+            
+        if CFG.should('remove_empty_export_tag'):
+            self.manifest.remove_empty_export()
 
         self.manifest.output()
 

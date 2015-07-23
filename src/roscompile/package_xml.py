@@ -68,6 +68,21 @@ class PackageXML:
         pe = self.tree.createElement(tipo)
         pe.setAttribute('plugin', '${prefix}/' + fn )
         ex.appendChild(pe)
+        
+    def remove_empty_export(self):
+        exports = self.root.getElementsByTagName('export')
+        if len(exports)==0:
+            return
+        for export in exports:
+            remove = True
+            
+            for c in export.childNodes:
+                if c.nodeType == c.ELEMENT_NODE:
+                    remove = False
+            
+            if remove:
+                export.parentNode.removeChild(export)
+                print '\tRemoving empty export tag'
 
     def insert_new_elements(self, name, values, i):
         x = []
