@@ -1,6 +1,7 @@
 from  xml.dom.minidom import parse
 from resource_retriever import get
 from roscompile.config import CFG
+import operator, collections
 
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
@@ -35,6 +36,12 @@ def get_sort_key(node, alphabetize_depends=True):
         return index, node.firstChild.data
     else:
         return index, None
+        
+def count_trailing_spaces(s):
+    c = 0
+    while s[-c-1]==' ':
+        c += 1
+    return c
 
 class PackageXML:
     def __init__(self, fn):
@@ -42,6 +49,22 @@ class PackageXML:
         self.root = self.tree.childNodes[0]
         self.header = '<?xml' in open(fn).read()
         self.fn = fn
+        
+        tab_ct = collections.defaultdict(int)
+        for c in self.root.childNodes:
+            if c.nodeType == c.TEXT_NODE:
+                spaces = count_trailing_spaces(c.data)
+                tab_ct[spaces] += 1
+        self.std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
+        
+        if CFG.should('enforce_package_tabbing'):
+            for c in self.root.childNodes:
+                if c.nodeType == c.TEXT_NODE and c!=self.root.childNodes[-1]:
+                    spaces = count_trailing_spaces(c.data)
+                    if spaces > self.std_tab:
+                        c.data = c.data[: self.std_tab-spaces]
+                    elif spaces < self.std_tab:
+                        c.data = c.data + ' '*(self.std_tab-spaces)
 
     def get_packages(self, build=True):
         if build:
@@ -121,7 +144,7 @@ class PackageXML:
             if pkg in IGNORE_PACKAGES:
                 continue
             print '\tInserting %s: %s'%(name, pkg)
-            x.append(self.tree.createTextNode('\n  '))
+            x.append(self.tree.createTextNode('\n' + ' '*self.std_tab))
             node = self.tree.createElement(name)
             node.appendChild(self.tree.createTextNode(pkg))
             x.append(node)
