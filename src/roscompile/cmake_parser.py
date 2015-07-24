@@ -73,6 +73,9 @@ class CommandScanner(re.Scanner):
 
         tab = None
         
+        while self.get_type()=='comment':
+            tokens.append( self._match('comment') )
+
         while self.next_real_type()=='token':
             while self.get_type() == 'nl' or self.get_type()=='white':
                 if len(tokens)<2 :
@@ -101,7 +104,7 @@ class CommandScanner(re.Scanner):
             
     def next_real_type(self):
         for x,y in self.tokens:
-            if x!='white' and x!='nl':
+            if x!='white' and x!='nl' and x!='comment':
                 return x
                 
         
