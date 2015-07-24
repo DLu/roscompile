@@ -1,3 +1,4 @@
+import sys
 import re
 from roscompile.cmake import *
 ALL_CAPS = re.compile('^[A-Z_]+$')
@@ -27,9 +28,9 @@ class CommandScanner(re.Scanner):
         contents,extra = self.scan(s)
         
         if len(extra)>0:
-            print 'Could not parse command %s. Please report the error.'%s
-            print extra
-            exit(0)
+            sys.stderr.write('Could not parse command %s. Please report the error.\n'%s)
+            sys.stderr.write(extra + '\n')
+            exit(-1)
             
            
         self.tokens = contents
@@ -43,9 +44,9 @@ class CommandScanner(re.Scanner):
         for x in self.tokens:
             if x[0]=='nl' or x[0]=='white':
                 continue
-            print '\tCould not parse CMake properly. Please report the error.'
-            print s
-            exit(0)
+            sys.stderr.write('Could not parse CMake properly. Please report the error.\n')
+            sys.stderr.write(s + '\n')
+            exit(-1)
         
         return cmd
         
@@ -110,10 +111,10 @@ class CommandScanner(re.Scanner):
             self.tokens.pop(0)
             return tok
         else:
-            print 'Expected type "%s" but got "%s"'%(tipo, self.get_type())
+            sys.stderr.write('Expected type "%s" but got "%s"\n'%(tipo, self.get_type()))
             for a in self.tokens:
-                print a
-            exit(0)
+                sys.stderr.write(a + '\n')
+            exit(-1)
             
 
 c_scanner = CommandScanner()
@@ -134,9 +135,9 @@ class CMakeScanner(re.Scanner):
         s = open(filename).read()
         contents, extra = self.scan(s)
         if len(extra)>0:
-            print 'Could not parse %s. Please report the error.'%filename
-            print extra
-            exit(0)
+            sys.stderr.write('Could not parse %s. Please report the error.\n'%filename)
+            sys.stderr.write(extra + '\n')
+            exit(-1)
         return contents    
 
 scanner = CMakeScanner()
