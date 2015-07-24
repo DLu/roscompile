@@ -84,7 +84,7 @@ class Command:
         
     def __repr__(self):
         s = self.cmd + '('
-        s += ''.join(map(str,self.sections))
+        s += ' '.join(map(str,self.sections))
         if '\n' in s:
             s += '\n'
         s += ')'
