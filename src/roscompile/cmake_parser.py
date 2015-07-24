@@ -77,8 +77,10 @@ class CommandScanner(re.Scanner):
             tokens.append( self._match('comment') )
 
         while self.next_real_type()=='token':
-            while self.get_type() == 'nl' or self.get_type()=='white':
-                if len(tokens)<2 :
+            while self.get_type() == 'nl' or self.get_type()=='white' or self.get_type() == 'comment':
+                if self.get_type() == 'comment':
+                    tokens.append( self._match('comment') )
+                elif len(tokens)<2 :
                     if self.get_type()=='nl':
                         tab = 0
                         self._match()
@@ -90,6 +92,13 @@ class CommandScanner(re.Scanner):
                 else:
                     self._match()
             tokens.append( self._match('token') )
+            
+        while self.get_type() in ['comment', 'white', 'nl']:
+            if self.get_type() == 'comment':
+                tokens.append( self._match() )
+            else:
+                self._match()
+
         return tokens, tab
         
     def get_type(self, peek=False):
