@@ -3,7 +3,7 @@
   <name>roscompile</name>
   <version>0.0.0</version>
   <description>The roscompile package</description>
-  <maintainer email="davidlu@gmail.com">David!!</maintainer>
+  <maintainer email="davidvlu@gmail.com">David!!</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospack</build_depend>
