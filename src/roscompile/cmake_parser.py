@@ -116,7 +116,7 @@ class CommandScanner(re.Scanner):
         else:
             sys.stderr.write('Expected type "%s" but got "%s"\n'%(tipo, self.get_type()))
             for a in self.tokens:
-                sys.stderr.write(a + '\n')
+                sys.stderr.write(str(a) + '\n')
             exit(-1)
             
 
