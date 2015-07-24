@@ -60,12 +60,13 @@ class Package:
                 else:
                     found = False
                     for tipo, pfilename in plugins:
-                        if os.path.exists(pfilename) and os.path.samefile(pfilename, full):
-                            data[PLUGIN_CONFIG].append( (pfilename, tipo) )
+                        if fn==pfilename:
+                            data[PLUGIN_CONFIG].append( (full, tipo) )
                             found = True
                             break
                     if found:
-                        continue        
+                        continue   
+
                     data[EXTRA].append(full)
         if print_extras and len(data[EXTRA])>0:
             for fn in data[EXTRA]:
