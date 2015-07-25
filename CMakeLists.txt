@@ -3,6 +3,7 @@ project(roscompile)
 find_package(catkin REQUIRED COMPONENTS
   rospack
   rospy
+  resource_retriever
 )
 catkin_python_setup()
-catkin_package()
+catkin_package(CATKIN_DEPENDS resource_retriever)

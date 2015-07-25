@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import roslib; roslib.load_manifest('roscompile')       
 from roscompile.package import Package, get_packages, get_people_info
 from roscompile.config import CFG
 
