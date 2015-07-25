@@ -16,7 +16,7 @@ MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
 
 EXTS = {'source': SRC_EXTS, 'config': CONFIG_EXTS, 'data': DATA_EXTS, 'model': MODEL_EXTS}
 BASIC = ['package.xml', 'CMakeLists.txt']
-SIMPLE = ['.launch', '.msg', '.srv', '.action', '.cfg']
+SIMPLE = ['.launch', '.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
@@ -55,6 +55,8 @@ class Package:
                 elif ext in SIMPLE:
                     name = ext[1:]
                     data[name].append(full)
+                elif ext == '.cfg' and 'cfg/' in fn:
+                    data['cfg'].append(full)
                 elif fn in BASIC:
                     data[None].append(full)
                 else:
