@@ -39,7 +39,7 @@ def get_sort_key(node, alphabetize_depends=True):
         
 def count_trailing_spaces(s):
     c = 0
-    while s[-c-1]==' ':
+    while c < len(s) and s[-c-1]==' ':
         c += 1
     return c
 
