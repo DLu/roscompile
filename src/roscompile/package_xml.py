@@ -49,7 +49,11 @@ class PackageXML:
         self.root = self.tree.childNodes[0]
         self.header = '<?xml' in open(fn).read()
         self.fn = fn
-        
+        self._format = None
+
+        if self.format > 1:
+            raise Exception('Only catkin format 1 is supported')
+
         tab_ct = collections.defaultdict(int)
         for c in self.root.childNodes:
             if c.nodeType == c.TEXT_NODE:
@@ -65,6 +69,16 @@ class PackageXML:
                         c.data = c.data[: self.std_tab-spaces]
                     elif spaces < self.std_tab:
                         c.data = c.data + ' '*(self.std_tab-spaces)
+
+    @property
+    def format(self):
+        if self._format is not None:
+            return self._format
+        if not self.root.hasAttribute('format'):
+            self._format = 1
+        else:
+            self._format = int(self.root.attributes['format'].value)
+        return self._format
 
     def get_packages(self, build=True):
         if build:
