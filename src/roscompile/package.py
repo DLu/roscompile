@@ -21,6 +21,9 @@ SIMPLE = ['.launch', '.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
+def query(s):
+    return raw_input(s).decode(sys.stdin.encoding)
+
 def match(ext):
     for name, exts in EXTS.iteritems():
         if ext in exts:
@@ -207,8 +210,8 @@ def get_people_info(pkgs):
             people.update(v)
             
     if 'canonical_names' not in CFG:
-        name = raw_input('What is your name (exactly as you\'d like to see it in the documentation)? ').decode(sys.stdin.encoding)
-        email = raw_input('What is your email (for documentation purposes)? ').decode(sys.stdin.encoding)
+        name = query('What is your name (exactly as you\'d like to see it in the documentation)? ')
+        email = query('What is your email (for documentation purposes)? ')
 
         CFG['canonical_names'] = [{'name': name, 'email': email}]
         
@@ -221,7 +224,7 @@ def get_people_info(pkgs):
         for i, n in enumerate(values):
             print '%d) %s %s'%(i, n, '(%s)'%people[n] if n in people else '')
         print
-        c = raw_input('Which name would you like to replace? (Enter #, or q to quit)').decode(sys.stdin.encoding)
+        c = query('Which name would you like to replace? (Enter #, or q to quit)')
         if c=='q':
             break
         try:
@@ -230,7 +233,7 @@ def get_people_info(pkgs):
             continue
         if c < 0 or c > len(values):
             continue
-        c2 = raw_input('What do you want to replace it with? ').decode(sys.stdin.encoding)
+        c2 = query('What do you want to replace it with? ')
         if c2=='q':
             break
         try:
