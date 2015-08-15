@@ -9,7 +9,7 @@ class CommandScanner(re.Scanner):
             (r'\w+ ?\(', CommandScanner.c_command),
             (r'\n', CommandScanner.c_nl),
             (r'[ \t]+', CommandScanner.c_ws),
-            (r'[\w\.\$\{\}/\-:"\*,>=]+', CommandScanner.c_token),
+            (r'[\w\.\$\{\}/\-:"\*,>=\+]+', CommandScanner.c_token),
             (r'#[^\n]*\n', CommandScanner.c_comment),
             (r'\)', None)
         ])
