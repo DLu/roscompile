@@ -74,20 +74,20 @@ class PackageXML:
 
         pkgs = []
         for el in self.root.getElementsByTagName(key):
-            pkgs.append( str(el.childNodes[0].nodeValue) )
+            pkgs.append(el.childNodes[0].nodeValue)
         return pkgs
         
     def get_people(self, tag):
         people = {}
         for el in self.root.getElementsByTagName(tag):
-            name = str(el.childNodes[0].nodeValue)
+            name = el.childNodes[0].nodeValue
             email = el.getAttribute('email')
             people[name] = email
         return people
 
     def update_people(self, tag, people, replace={}):
         for el in self.root.getElementsByTagName(tag):
-            name = str(el.childNodes[0].nodeValue)
+            name = el.childNodes[0].nodeValue
             if name in replace:
                 nn = replace[name]
                 el.childNodes[0].nodeValue = nn
@@ -164,7 +164,7 @@ class PackageXML:
                 i += 1
                 continue
 
-            name = str(child.nodeName)
+            name = child.nodeName
             if name == 'build_depend':
                 state = 1
             elif name == 'run_depend':
@@ -226,12 +226,12 @@ class PackageXML:
         if CFG.should('remove_empty_package_lines'):        
             while '\n\n\n' in s:    
                 s = s.replace('\n\n\n', '\n\n')
-        
-        old_s = open(new_fn, 'r').read()
+
+        old_s = open(new_fn, 'r').read().decode('UTF-8')
         if old_s.strip() == s:
             return
             
         f = open(new_fn, 'w')
-        f.write(s)
+        f.write(s.encode('UTF-8'))
         f.write('\n')
         f.close()

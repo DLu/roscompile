@@ -1,7 +1,8 @@
 import os
 import os.path
 import collections
-from roscompile.launch import Launch 
+import sys
+from roscompile.launch import Launch
 from roscompile.source import Source
 from roscompile.setup_py import SetupPy
 from roscompile.package_xml import PackageXML
@@ -206,9 +207,9 @@ def get_people_info(pkgs):
             people.update(v)
             
     if 'canonical_names' not in CFG:
-        name = raw_input('What is your name (exactly as you\'d like to see it in the documentation)? ')
-        email = raw_input('What is your email (for documentation purposes)? ')
-        
+        name = raw_input('What is your name (exactly as you\'d like to see it in the documentation)? ').decode(sys.stdin.encoding)
+        email = raw_input('What is your email (for documentation purposes)? ').decode(sys.stdin.encoding)
+
         CFG['canonical_names'] = [{'name': name, 'email': email}]
         
     for d in CFG['canonical_names']:
@@ -219,8 +220,8 @@ def get_people_info(pkgs):
         values = sorted(people.keys(), key=lambda d: d.lower())
         for i, n in enumerate(values):
             print '%d) %s %s'%(i, n, '(%s)'%people[n] if n in people else '')
-        print 
-        c = raw_input('Which name would you like to replace? (Enter #, or q to quit)')
+        print
+        c = raw_input('Which name would you like to replace? (Enter #, or q to quit)').decode(sys.stdin.encoding)
         if c=='q':
             break
         try:
@@ -229,7 +230,7 @@ def get_people_info(pkgs):
             continue
         if c < 0 or c > len(values):
             continue
-        c2 = raw_input('Which do you want to replace it with? ')
+        c2 = raw_input('What do you want to replace it with? ').decode(sys.stdin.encoding)
         if c2=='q':
             break
         try:
