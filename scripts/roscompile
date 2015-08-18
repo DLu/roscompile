@@ -1,21 +1,19 @@
 #!/usr/bin/python
 
-from __future__ import print_function
-
 from roscompile.package import Package, get_packages, get_people_info
 from roscompile.config import CFG
 
 try:
     pkgs = get_packages()
 except:
-    print('roscompile only supports catkin format 1')
+    print 'roscompile only supports catkin format 1'
     exit()
 
 if CFG.should('check_names'):
     people, replace = get_people_info(pkgs)
 
 for package in pkgs:
-    print(package.name)
+    print package.name
     if CFG.should('check_names'):
         package.update_people(people, replace)
 
