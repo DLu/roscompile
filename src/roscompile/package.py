@@ -50,7 +50,7 @@ class Package:
             for fn in files:
                 ext = os.path.splitext(fn)[-1]
                 full = '%s/%s'%(root, fn)
-                if fn[-1]=='~':
+                if fn[-1]=='~' or fn[-4:]=='.pyc':
                     continue
                 ext_match = match(ext)
 
@@ -72,6 +72,12 @@ class Package:
                             break
                     if found:
                         continue   
+                        
+                    with open(full) as f:
+                        l = f.readline()
+                        if '#!' in l and 'python' in l:
+                            data['source'].append(full)
+                            continue
 
                     data[EXTRA].append(full)
         if print_extras and len(data[EXTRA])>0:
