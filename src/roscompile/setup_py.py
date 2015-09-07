@@ -1,14 +1,17 @@
 import os
 import re
 
+EXEC_TEMPLATE = """
+    scripts=[%s],"""
+
 TEMPLATE = """#!/usr/bin/env python
 
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 %(var)s = generate_distutils_setup(
-    packages=['%(name)s'],
-    package_dir={'': 'src'},
+    packages=['%(name)s'],%(exec)s
+    package_dir={'': 'src'}
 )
 
 setup(**%(var)s)
@@ -24,10 +27,12 @@ class SetupPy:
         self.var = 'package_info'
         
         self.valid = False
+        self.execs = []
         for source in self.files:
             if 'src/%s'%self.name in source.fn:
                 self.valid = True
-                break
+            if source.is_executable():
+                self.execs.append(source.rel_fn)
 
     def write_if_needed(self):
         if not self.valid:
@@ -52,5 +57,9 @@ class SetupPy:
         
         
     def __repr__(self):
-        return TEMPLATE % {'name': self.name, 'var': self.var}
+        if len(self.execs)>0:
+            execs = EXEC_TEMPLATE % ', '.join(["'%s'"%s for s in self.execs])
+        else:
+            execs = ''
+        return TEMPLATE % {'name': self.name, 'var': self.var, 'exec': execs}
 

@@ -37,7 +37,7 @@ class Package:
         self.manifest = PackageXML(self.root + '/package.xml')
         self.cmake = CMake(self.root + '/CMakeLists.txt', self.name)
         self.files = self.sort_files()
-        self.sources = [Source(source) for source in self.files['source']]
+        self.sources = [Source(source, self.root) for source in self.files['source']]
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)

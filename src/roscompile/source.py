@@ -1,4 +1,5 @@
 import re
+import os
 from roscompile.package_list import is_package
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
@@ -12,8 +13,12 @@ PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+), ([^:]+)::([^,]+)\)'
 PLUGIN_RE = re.compile(PLUGIN_PATTERN)
 
 class Source:
-    def __init__(self, fn):
+    def __init__(self, fn, root=None):
         self.fn = fn
+        if root:
+            self.rel_fn = fn.replace(root + '/', '')
+        else:
+            self.rel_fn = fn
         self.lines = map(str.strip, open(fn, 'r').readlines())
         self.python = '.py' in self.fn or (len(self.lines)>0 and 'python' in self.lines[0])  
         
@@ -34,6 +39,9 @@ class Source:
             if m:
                 a.append( m.groups() )
         return a
+
+    def is_executable(self):
+        return os.access(self.fn, os.X_OK)
 
     def __repr__(self):
         return self.fn
