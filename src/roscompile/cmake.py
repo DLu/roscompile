@@ -160,6 +160,8 @@ class CMake:
             if x.__class__==Command:
                 if x.cmd == 'if':
                     group = 'endif'
+                elif x.cmd == 'foreach':
+                    group = 'endforeach'
                 elif x.cmd == group:
                     chunks.append( ('group', current))
                     current = []

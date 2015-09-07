@@ -3,7 +3,11 @@
 from roscompile.package import Package, get_packages, get_people_info
 from roscompile.config import CFG
 
-pkgs = get_packages()
+try:
+    pkgs = get_packages()
+except:
+    print 'roscompile only supports catkin format 1'
+    exit()
 
 if CFG.should('check_names'):
     people, replace = get_people_info(pkgs)
