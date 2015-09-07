@@ -227,11 +227,12 @@ class PackageXML:
             
         if new_fn is None:
             new_fn = self.fn
-        s = self.tree.toxml()
+        s = self.tree.toxml(self.tree.encoding)
         if not self.header:
             s = s.replace('<?xml version="1.0" ?>', '').strip()
         else:
-            s = s.replace(' ?><package>', '?>\n<package>')
+            s = s.replace('?><package>', '?>\n<package>')
+            s = s.replace(' ?>', '?>')
             
         if CFG.should('remove_dumb_package_comments'):
             for line in IGNORE_LINES:
