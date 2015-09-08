@@ -7,6 +7,7 @@ def get_output_lines(cmd):
     
 PACKAGES = {}
 MESSAGES = set()
+SERVICES = set()
 
 for line in get_output_lines(['rospack', 'list']):
     pkg, folder = line.split()
@@ -15,9 +16,16 @@ for line in get_output_lines(['rospack', 'list']):
 for line in get_output_lines(['rosmsg', 'list']):
     pkg, msg = line.split('/')
     MESSAGES.add( (pkg, msg) )
-    
+
+for line in get_output_lines(['rossrv', 'list']):
+    pkg, srv = line.split('/')
+    SERVICES.add( (pkg, srv) )
+
 def is_package(pkg):
     return pkg in PACKAGES    
     
 def is_message(pkg, msg):
     return (pkg, msg) in MESSAGES
+    
+def is_service(pkg, srv):
+    return (pkg, srv) in SERVICES
