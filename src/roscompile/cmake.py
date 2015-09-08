@@ -167,6 +167,7 @@ class CMake:
             if target in targets:
                 targets.remove(target)
                 cmd.sections[0].remove_pattern('_generate_messages_cpp')
+                cmd.sections[0].remove_pattern('_gencpp')
                 cmd.sections[0].add('${catkin_EXPORTED_TARGETS}')
         for target in targets:
             self.add_command('add_dependencies(%s ${catkin_EXPORTED_TARGETS})'%target)
