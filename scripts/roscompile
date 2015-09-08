@@ -24,6 +24,9 @@ for package in pkgs:
 
     if CFG.should('update_cmake'):
         package.update_cmake()
+        
+    if CFG.should('remove_useless'):
+        package.remove_useless()
 
     if CFG.should('generate_setup_py'):
         package.generate_setup()

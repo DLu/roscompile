@@ -2,6 +2,7 @@ import os
 import os.path
 import collections
 import sys
+import re
 from roscompile.launch import Launch
 from roscompile.source import Source
 from roscompile.setup_py import SetupPy
@@ -20,6 +21,8 @@ BASIC = ['package.xml', 'CMakeLists.txt']
 SIMPLE = ['.launch', '.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
+
+MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
 
 def query(s):
     return raw_input(s).decode(sys.stdin.encoding)
@@ -208,6 +211,14 @@ class Package:
     def update_people(self, people, replace={}):
         self.manifest.update_people('maintainer', people, replace)
         self.manifest.update_people('author', people, replace)
+
+    def remove_useless(self):
+        mainpage_pattern = re.compile(MAINPAGE_S % self.name)
+        for fn in self.files[EXTRA]:
+            if 'mainpage.dox' in fn:
+                s = open(fn).read()
+                if mainpage_pattern.match(s):
+                    os.remove(fn)
 
 def get_packages(root_fn='.'):
     packages = []
