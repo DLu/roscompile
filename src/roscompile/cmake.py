@@ -41,6 +41,9 @@ class Section:
     def add(self, v):
         self.values.append(v)
         
+    def remove_pattern(self, pattern):
+        self.values = [v for v in self.values if pattern not in v]
+        
     def is_valid(self):
         return len(self.name)>0 or len(self.values)>0    
         
@@ -81,6 +84,9 @@ class Command:
     def add(self, section):
         if section:
             self.sections.append(section)
+            
+    def first_token(self):
+        return self.sections[0].values[0]
         
     def __repr__(self):
         s = self.cmd + '('
@@ -150,6 +156,20 @@ class CMake:
         cmd = c_scanner.parse(s)
         self.contents.append(cmd)
         self.content_map[cmd.cmd].append(cmd)
+        
+    def check_exported_dependencies(self):
+        targets = []
+        for cmd in self.content_map['add_library'] + self.content_map['add_executable']:
+            targets.append(cmd.first_token())
+            
+        for cmd in self.content_map['add_dependencies']:
+            target = cmd.first_token()
+            if target in targets:
+                targets.remove(target)
+                cmd.sections[0].remove_pattern('_generate_messages_cpp')
+                cmd.sections[0].add('${catkin_EXPORTED_TARGETS}')
+        for target in targets:
+            self.add_command('add_dependencies(%s ${catkin_EXPORTED_TARGETS})'%target)
 
     def enforce_ordering(self):
         chunks = []

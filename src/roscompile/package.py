@@ -137,6 +137,9 @@ class Package:
     def update_cmake(self):
         self.cmake.check_dependencies( self.get_dependencies() )        
 
+        if CFG.should('check_exported_dependencies'):
+            self.cmake.check_exported_dependencies()
+
         self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
         
         setup = self.get_setup_py()
