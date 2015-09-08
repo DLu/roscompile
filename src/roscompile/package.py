@@ -10,7 +10,7 @@ from roscompile.plugin_xml import PluginXML
 from roscompile.cmake import CMake
 from roscompile.config import CFG
 
-SRC_EXTS = ['.py', '.cpp', '.h']
+SRC_EXTS = ['.py', '.cpp', '.h', '.hpp']
 CONFIG_EXTS = ['.yaml', '.rviz']
 DATA_EXTS = ['.dae', '.jpg', '.stl', '.png']
 MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
@@ -111,6 +111,14 @@ class Package:
         else:
             return self.get_run_dependencies()
 
+    def get_message_dependencies(self, exclude_python=True):
+        d = set()
+        for src in self.sources:
+            if exclude_python and src.python:
+                continue
+            d.update( src.get_message_dependencies() )
+        return sorted(list(d))
+
     def update_manifest(self):
         for build in [True, False]:
             dependencies = self.get_dependencies(build)
@@ -138,7 +146,7 @@ class Package:
         self.cmake.check_dependencies( self.get_dependencies() )        
 
         if CFG.should('check_exported_dependencies'):
-            self.cmake.check_exported_dependencies()
+            self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())
 
         self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
         

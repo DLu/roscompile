@@ -1,13 +1,13 @@
 import re
 import os
-from roscompile.resource_list import is_package
+from roscompile.resource_list import is_package, is_message, is_service
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
 PYTHON2 = 'from ' + PKG + ' import .*'
-CPLUS = '#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]'
+CPLUS = re.compile('#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')
 
-EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), re.compile(CPLUS)]
+EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), CPLUS]
 
 PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+), ([^:]+)::([^,]+)\)'
 PLUGIN_RE = re.compile(PLUGIN_PATTERN)
@@ -30,6 +30,19 @@ class Source:
                 if m:
                     if is_package( m.group(1) ):
                         d.add(m.group(1))
+        return sorted(list(d))
+        
+    def get_message_dependencies(self):
+        d = set()
+        for line in self.lines:
+            m = CPLUS.search(line)
+            if m:
+                pkg, name = m.groups()
+                if len(name)==0 or name[-2:]!='.h':
+                    continue
+                name = name.replace('.h', '')
+                if is_message(pkg, name) or is_service(pkg, name):
+                    d.add(pkg)
         return sorted(list(d))
         
     def get_plugins(self):

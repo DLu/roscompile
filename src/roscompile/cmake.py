@@ -157,7 +157,25 @@ class CMake:
         self.contents.append(cmd)
         self.content_map[cmd.cmd].append(cmd)
         
-    def check_exported_dependencies(self):
+    def check_exported_dependencies(self, pkg_name, deps):
+        if len(deps)==0:
+            return
+        if pkg_name in deps:
+            self_depend = True
+            if len(deps)==1:
+                cat_depend = False
+            else:
+                cat_depend = True
+        else:
+            self_depend = False
+            cat_depend = True
+
+        marks = []
+        if cat_depend:
+            marks.append('${catkin_EXPORTED_TARGETS}')
+        if self_depend:
+            marks.append('${%s_EXPORTED_TARGETS}'%pkg_name)
+
         targets = []
         for cmd in self.content_map['add_library'] + self.content_map['add_executable']:
             targets.append(cmd.first_token())
@@ -168,9 +186,13 @@ class CMake:
                 targets.remove(target)
                 cmd.sections[0].remove_pattern('_generate_messages_cpp')
                 cmd.sections[0].remove_pattern('_gencpp')
-                cmd.sections[0].add('${catkin_EXPORTED_TARGETS}')
+                if cat_depend and '${catkin_EXPORTED_TARGETS}' not in cmd.sections[0].values:
+                    cmd.sections[0].add('${catkin_EXPORTED_TARGETS}')
+                if self_depend and '${%s_EXPORTED_TARGETS}'%pkg_name not in cmd.sections[0].values:
+                    cmd.sections[0].add('${%s_EXPORTED_TARGETS}'%pkg_name)
+
         for target in targets:
-            self.add_command('add_dependencies(%s ${catkin_EXPORTED_TARGETS})'%target)
+            self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
     def enforce_ordering(self):
         chunks = []
