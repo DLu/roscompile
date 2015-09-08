@@ -1,6 +1,6 @@
 import re
 import os
-from roscompile.package_list import is_package
+from roscompile.resource_list import is_package
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
