@@ -5,4 +5,5 @@
 # target_link_libraries(%(package)s_node
 # install(TARGETS %(package)s %(package)s_node
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_%(package)s.cpp)
-
+# add_dependencies(%(package)s ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(%(package)s_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
