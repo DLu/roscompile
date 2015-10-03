@@ -154,6 +154,8 @@ class CMake:
 
     def add_command(self, s):
         cmd = c_scanner.parse(s)
+        if len(self.contents)>0 and type(self.contents[-1])!=str:
+            self.contents.append('\n')
         self.contents.append(cmd)
         self.content_map[cmd.cmd].append(cmd)
         
