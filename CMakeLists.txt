@@ -7,3 +7,4 @@ find_package(catkin REQUIRED COMPONENTS
 )
 catkin_python_setup()
 catkin_package(CATKIN_DEPENDS resource_retriever)
+catkin_install_python(PROGRAMS scripts/roscompile DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
