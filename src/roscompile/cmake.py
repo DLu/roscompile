@@ -194,6 +194,13 @@ class CMake:
         for target in targets:
             self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
+    def update_python_installs(self, execs):
+        cmd = 'catkin_install_python'
+        if cmd not in self.content_map:
+            self.add_command('%s(PROGRAMS %s\n                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'%(cmd, ' '.join(execs)))
+        else:
+            self.section_check(execs, cmd, 'PROGRAMS')    
+
     def enforce_ordering(self):
         chunks = []
         current = []
