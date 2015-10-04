@@ -31,7 +31,7 @@ class SetupPy:
         for source in self.files:
             if 'src/%s'%self.name in source.fn:
                 self.valid = True
-            if source.is_executable():
+            if source.is_executable() and '.cfg'!=source.fn[-4:]:
                 self.execs.append(source.rel_fn)
 
     def write_if_needed(self):
