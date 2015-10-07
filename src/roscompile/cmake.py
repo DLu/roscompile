@@ -17,6 +17,15 @@ ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 
+INSTALL_CONFIGS = {
+    'exec': ('TARGETS', ['RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}']),
+    'library': ('TARGETS', ['ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}', 
+                            'LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}',
+                            'RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}']),
+    'headers': ('FILES', ['DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}']),
+    'misc': ('FILES', ['DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}'])
+    }
+
 def get_ordering_index(cmd):
     for i, o in enumerate(ORDERING):
         if type(o)==list:
@@ -159,6 +168,12 @@ class CMake:
         self.contents.append(cmd)
         self.content_map[cmd.cmd].append(cmd)
         
+    def get_libraries(self):
+        return [cmd.first_token() for cmd in self.content_map['add_library']]
+        
+    def get_executables(self):
+        return [cmd.first_token() for cmd in self.content_map['add_executable']]    
+        
     def check_exported_dependencies(self, pkg_name, deps):
         if len(deps)==0:
             return
@@ -178,9 +193,7 @@ class CMake:
         if self_depend:
             marks.append('${%s_EXPORTED_TARGETS}'%pkg_name)
 
-        targets = []
-        for cmd in self.content_map['add_library'] + self.content_map['add_executable']:
-            targets.append(cmd.first_token())
+        targets = self.get_libraries() + self.get_executables()
             
         for cmd in self.content_map['add_dependencies']:
             target = cmd.first_token()
@@ -195,6 +208,16 @@ class CMake:
 
         for target in targets:
             self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
+
+    def update_cplusplus_installs(self):
+        #'exec': ('TARGETS', ['RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}']),
+        for cmd in self.content_map['install']:
+            print cmd
+        for name, (section, targets) in INSTALL_CONFIGS.iteritems():
+            print name
+        
+    def update_misc_installs(self):
+        None
 
     def update_python_installs(self, execs):
         if len(execs)==0:
