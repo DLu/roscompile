@@ -18,12 +18,11 @@ ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 
 INSTALL_CONFIGS = {
-    'exec': ('TARGETS', ['RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}']),
-    'library': ('TARGETS', ['ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}', 
-                            'LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}',
-                            'RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}']),
-    'headers': ('FILES', ['DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}']),
-    'misc': ('FILES', ['DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}'])
+    'exec':    ('TARGETS', {'${CATKIN_PACKAGE_BIN_DESTINATION}': 'RUNTIME DESTINATION'}),
+    'library': ('TARGETS', {'${CATKIN_PACKAGE_LIB_DESTINATION}': ('ARCHIVE DESTINATION', 'LIBRARY DESTINATION'),
+                            '${CATKIN_GLOBAL_BIN_DESTINATION}':  'RUNTIME DESTINATION'}),
+    'headers': ('FILES',   {'${CATKIN_PACKAGE_INCLUDE_DESTINATION}': 'DESTINATION'}),
+    'misc':    ('FILES',   {'${CATKIN_PACKAGE_SHARE_DESTINATION}':   'DESTINATION'})
     }
 
 def get_ordering_index(cmd):
@@ -36,6 +35,20 @@ def get_ordering_index(cmd):
     if cmd:        
         print '\tUnsure of ordering for', cmd        
     return len(ORDERING)                
+
+def get_install_type(destination):
+    for name, (ft, m) in INSTALL_CONFIGS.iteritems():
+        if destination in m:
+            return name
+            
+def install_sections(cmd, D):
+    for destination, value in D.iteritems():
+        if type(value)==str:
+            keys = [value]
+        else:
+            keys = value
+        for key in keys:
+            cmd.check_complex_section(key, destination)
 
 class Section:
     def __init__(self, name='', values=None, pre='', tab=None):
@@ -86,6 +99,9 @@ class Command:
             if s.name==key:
                 return s
         return None
+        
+    def get_sections(self, key):
+        return [s for s in self.sections if s.name==key]
 
     def add_section(self, key, values=[]):
         self.sections.append(Section(key, values))
@@ -94,6 +110,29 @@ class Command:
         if section:
             self.sections.append(section)
             
+    def check_complex_section(self, key, value):
+        words = key.split()
+        if len(words)==1:
+            section = self.get_section(key)
+        else:
+            i = 0
+            section = None
+            for section_i in self.sections:
+                if section_i.name == words[i]:
+                    if i < len(words)-1:
+                        i += 1
+                    else:
+                        section = section_i
+                        break
+                else:
+                    i = 0
+            
+        if section:
+            if value not in section.values:
+                section.add(value)
+        else:
+            self.add_section(key, [value])
+
     def first_token(self):
         return self.sections[0].values[0]
         
@@ -161,12 +200,18 @@ class CMake:
         if len(cfgs)>0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
-    def add_command(self, s):
-        cmd = c_scanner.parse(s)
+    def add_command(self, s='', cmd=None):
+        if cmd is None:
+            cmd = c_scanner.parse(s)
         if len(self.contents)>0 and type(self.contents[-1])!=str:
             self.contents.append('\n')
         self.contents.append(cmd)
         self.content_map[cmd.cmd].append(cmd)
+        
+    def remove_command(self, cmd):
+        print '\tRemoving %s'%str(cmd).replace('\n', ' ').replace('  ', '')
+        self.contents.remove(cmd)
+        self.content_map[cmd.cmd].remove(cmd)
         
     def get_libraries(self):
         return [cmd.first_token() for cmd in self.content_map['add_library']]
@@ -209,12 +254,53 @@ class CMake:
         for target in targets:
             self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
-    def update_cplusplus_installs(self):
-        #'exec': ('TARGETS', ['RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}']),
+    def get_commands_by_type(self, name):
+        matches = []
         for cmd in self.content_map['install']:
-            print cmd
-        for name, (section, targets) in INSTALL_CONFIGS.iteritems():
-            print name
+            found = False
+            for section in cmd.get_sections('DESTINATION'):
+                destination = section.values[0]
+                if get_install_type(destination)==name:
+                    matches.append(cmd)
+                    found = True
+                    break
+        return matches  
+            
+    def install_section_check(self, items, install_type):
+        section_name, destination_map = INSTALL_CONFIGS[install_type]
+        cmds = self.get_commands_by_type(install_type)
+        if len(items)==0:
+            for cmd in cmds:
+                self.remove_command(cmd)
+            return
+            
+        cmd = None
+        for cmd in cmds:
+            install_sections(cmd, destination_map)
+            section = cmd.get_section(section_name)
+            section.values = [value for value in section.values if value in items]
+            items = [item for item in items if item not in section.values]
+            
+        if len(items)==0:
+            return
+            
+        if cmd is None:
+            print '\tInstalling ', ', '.join(items)
+            cmd = Command('install')
+            cmd.add_section(section_name, items)
+            self.add_command('', cmd)
+            install_sections(cmd, destination_map)
+        else:
+            section = cmd.get_section(section_name)
+            section.values += items
+        
+                    
+        
+
+    def update_cplusplus_installs(self):
+        self.install_section_check( self.get_executables(), 'exec' )
+        self.install_section_check( self.get_libraries(), 'library' )
+		# install include directory
         
     def update_misc_installs(self):
         None
