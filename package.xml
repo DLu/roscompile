@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>roscompile</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>The roscompile package</description>
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
   <license>BSD</license>
