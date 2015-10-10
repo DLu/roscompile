@@ -266,8 +266,10 @@ class CMake:
                     break
         return matches  
             
-    def install_section_check(self, items, install_type):
+    def install_section_check(self, items, install_type, directory=False):
         section_name, destination_map = INSTALL_CONFIGS[install_type]
+        if directory and section_name == 'FILES':
+            section_name = 'DIRECTORY'
         cmds = self.get_commands_by_type(install_type)
         if len(items)==0:
             for cmd in cmds:
@@ -300,7 +302,7 @@ class CMake:
     def update_cplusplus_installs(self):
         self.install_section_check( self.get_executables(), 'exec' )
         self.install_section_check( self.get_libraries(), 'library' )
-		# install include directory
+        self.install_section_check( ['include/${PROJECT_NAME}/'], 'headers', True)
         
     def update_misc_installs(self):
         None
