@@ -304,8 +304,8 @@ class CMake:
         self.install_section_check( self.get_libraries(), 'library' )
         self.install_section_check( ['include/${PROJECT_NAME}/'], 'headers', True)
         
-    def update_misc_installs(self):
-        None
+    def update_misc_installs(self, items, directory=False):
+        self.install_section_check( items, 'misc', directory)
 
     def update_python_installs(self, execs):
         if len(execs)==0:
