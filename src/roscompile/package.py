@@ -130,7 +130,8 @@ class Package:
             self.manifest.add_packages(dependencies, False)
             
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
-            self.manifest.add_packages(['message_runtime'], True)
+            self.manifest.add_packages(['message_generation'], True)
+            self.manifest.add_packages(['message_runtime'], False)
             
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
