@@ -50,23 +50,6 @@ def install_sections(cmd, D):
         for key in keys:
             cmd.check_complex_section(key, destination)
 
-def get_msg_dependencies(filenames):
-    deps = set()
-    for fn in filenames:
-        with open(fn) as f:
-            for line in f:
-                if '#' in line:
-                    line = line[ : line.index('#')]
-                line = line.strip()
-                if line=='---' or line=='':
-                    continue
-                tipo, name = line.split()
-                if '/' not in tipo:
-                    continue 
-                package, part = tipo.split('/')
-                deps.add(package)
-    return sorted(list(deps))
-
 class Section:
     def __init__(self, name='', values=None, pre='', tab=None):
         self.name = name
@@ -203,7 +186,7 @@ class CMake:
         self.section_check(pkgs, 'find_package', 'COMPONENTS')
         self.section_check(pkgs, 'catkin_package', 'CATKIN_DEPENDS')
         
-    def check_generators(self, msgs, srvs, actions, cfgs):
+    def check_generators(self, msgs, srvs, actions, cfgs, deps):
         self.section_check( map(os.path.basename, msgs), 'add_message_files', 'FILES')
         self.section_check( map(os.path.basename, srvs), 'add_service_files', 'FILES')
         self.section_check( map(os.path.basename, actions), 'add_action_files', 'FILES')
@@ -211,8 +194,6 @@ class CMake:
         if len(msgs)+len(srvs)+len(actions) > 0:
             self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
             self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
-            
-            deps = get_msg_dependencies(msgs + srvs + actions)
             
             self.section_check(deps, 'generate_messages', 'DEPENDENCIES')
         

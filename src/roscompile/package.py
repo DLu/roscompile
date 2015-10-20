@@ -122,6 +122,23 @@ class Package:
             d.update( src.get_message_dependencies() )
         return sorted(list(d))
 
+    def get_dependencies_from_msgs(self):
+        deps = set()
+        for fn in self.files['msg'] + self.files['srv'] + self.files['action']:
+            with open(fn) as f:
+                for line in f:
+                    if '#' in line:
+                        line = line[ : line.index('#')]
+                    line = line.strip()
+                    if line=='---' or line=='':
+                        continue
+                    tipo, name = line.split()
+                    if '/' not in tipo:
+                        continue 
+                    package, part = tipo.split('/')
+                    deps.add(package)
+        return sorted(list(deps))
+
     def update_manifest(self):
         for build in [True, False]:
             dependencies = self.get_dependencies(build)
@@ -130,8 +147,9 @@ class Package:
             self.manifest.add_packages(dependencies, False)
             
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
-            self.manifest.add_packages(['message_generation'], True)
-            self.manifest.add_packages(['message_runtime'], False)
+            md = self.get_dependencies_from_msgs()
+            self.manifest.add_packages(['message_generation'] + md, True)
+            self.manifest.add_packages(['message_runtime'] + md, False)
             
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
@@ -147,12 +165,13 @@ class Package:
                 print '\t',fn
         
     def update_cmake(self):
-        self.cmake.check_dependencies( self.get_dependencies() )        
+        deps = self.get_dependencies_from_msgs()
+        self.cmake.check_dependencies( self.get_dependencies() + deps)        
 
         if CFG.should('check_exported_dependencies'):
             self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())
 
-        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'])
+        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
         
         setup = self.get_setup_py()
         if setup and setup.valid and \
