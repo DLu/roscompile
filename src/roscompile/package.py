@@ -132,11 +132,14 @@ class Package:
                     line = line.strip()
                     if line=='---' or line=='':
                         continue
+                    if '=' in line.split():
+                        line = line[ : line.index('=') ]
                     tipo, name = line.split()
                     if '/' not in tipo:
                         continue 
                     package, part = tipo.split('/')
-                    deps.add(package)
+                    if package != self.name:
+                        deps.add(package)
         return sorted(list(deps))
 
     def update_manifest(self):
