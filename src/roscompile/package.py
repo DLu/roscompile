@@ -140,6 +140,8 @@ class Package:
                     package, part = tipo.split('/')
                     if package != self.name:
                         deps.add(package)
+        if len(self.files['action']):
+            deps.add('actionlib_msgs')
         return sorted(list(deps))
 
     def update_manifest(self):
