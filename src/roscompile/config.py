@@ -1,5 +1,6 @@
 import os.path
 import yaml
+import argparse
 
 FILENAME = os.path.expanduser('~/.ros/roscompile.yaml')
 
@@ -19,10 +20,16 @@ class Config(dict):
                     del self[key]
                 self['flags'] = flags
 
+        parser = argparse.ArgumentParser()
+        for name, value in sorted(self['flags'].items()):
+            action = 'store_true' if value else 'store_false'
+            parser.add_argument('--' + name, action=action)
+        self.args = parser.parse_args()
+
     def should(self, verb):
         if verb not in self['flags']:
             self['flags'][verb] = False
-        return self['flags'][verb]
+        return self['flags'][verb] or self.args[verb]
 
     def write(self):
         yaml.dump(dict(self), open(FILENAME, 'w'), default_flow_style=False)
