@@ -29,7 +29,7 @@ class Config(dict):
     def should(self, verb):
         if verb not in self['flags']:
             self['flags'][verb] = False
-        return self['flags'][verb] or self.args[verb]
+        return self['flags'][verb] or (hasattr(self.args, verb) and getattr(self.args, verb))
 
     def write(self):
         yaml.dump(dict(self), open(FILENAME, 'w'), default_flow_style=False)
