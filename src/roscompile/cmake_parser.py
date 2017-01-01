@@ -23,33 +23,33 @@ class CommandScanner(re.Scanner):
         else:
             return ('token', token)
     def c_comment(self, token): return ('comment', token)
-    
+
     def parse(self, s):
         contents,extra = self.scan(s)
-        
+
         if len(extra)>0:
             sys.stderr.write('Could not parse command %s. Please report the error.\n'%s)
             sys.stderr.write(extra + '\n')
             exit(-1)
-            
-           
+
+
         self.tokens = contents
-        
+
         cmd = Command(self._match('name')[:-1])
         cmd.add(self.parse_section(False))
-        
+
         while self.next_real_type()=='caps':
             cmd.add(self.parse_section())
-                    
+
         for x in self.tokens:
             if x[0]=='nl' or x[0]=='white':
                 continue
             sys.stderr.write('Could not parse CMake properly. Please report the error.\n')
             sys.stderr.write(s + '\n')
             exit(-1)
-        
+
         return cmd
-        
+
     def parse_section(self, caps_required=True):
         cat = ''
         inline = True
@@ -57,22 +57,22 @@ class CommandScanner(re.Scanner):
         pre = ''
         while self.get_type() == 'nl' or self.get_type()=='white':
             pre += self._match()
-            
+
         if self.get_type()=='caps':
             cat = self._match('caps')
         elif caps_required:
             print 'Error'
-            
+
         t, tab = self.parse_tokens()
-        
+
         return Section(cat, t, pre, tab)
-        
-        
+
+
     def parse_tokens(self):
         tokens = []
 
         tab = None
-        
+
         while self.get_type()=='comment':
             tokens.append( self._match('comment') )
 
@@ -85,14 +85,14 @@ class CommandScanner(re.Scanner):
                         tab = 0
                         self._match()
                     elif self.get_type()=='white' and tab == 0:
-                        ws = self._match().replace('\t', '    ')                        
+                        ws = self._match().replace('\t', '    ')
                         tab = len( ws )
                     else:
                         self._match()
                 else:
                     self._match()
             tokens.append( self._match('token') )
-            
+
         while self.get_type() in ['comment', 'white', 'nl']:
             if self.get_type() == 'comment':
                 tokens.append( self._match() )
@@ -100,7 +100,7 @@ class CommandScanner(re.Scanner):
                 self._match()
 
         return tokens, tab
-        
+
     def get_type(self, peek=False):
         if peek:
             i = 1
@@ -110,13 +110,13 @@ class CommandScanner(re.Scanner):
             return self.tokens[i][0]
         else:
             return None
-            
+
     def next_real_type(self):
         for x,y in self.tokens:
             if x!='white' and x!='nl' and x!='comment':
                 return x
-                
-        
+
+
     def _match(self, tipo=None):
         if tipo is None or self.get_type() == tipo:
             tok = self.tokens[0][1]
@@ -127,7 +127,7 @@ class CommandScanner(re.Scanner):
             for a in self.tokens:
                 sys.stderr.write(str(a) + '\n')
             exit(-1)
-            
+
 
 c_scanner = CommandScanner()
 
@@ -137,12 +137,12 @@ class CMakeScanner(re.Scanner):
      (r'\w+ ?\([^\)]*\)', CMakeScanner.s_command),
      (r'((#[^\n]*\n)*\s*)*', CMakeScanner.s_comment),
      ])
-     
+
     def s_command(self, token): return c_scanner.parse(token)
-        
-        
+
+
     def s_comment(self, token): return token
-    
+
     def parse(self, filename):
         s = open(filename).read()
         contents, extra = self.scan(s)
@@ -150,6 +150,6 @@ class CMakeScanner(re.Scanner):
             sys.stderr.write('Could not parse %s. Please report the error.\n'%filename)
             sys.stderr.write(extra + '\n')
             exit(-1)
-        return contents    
+        return contents
 
 scanner = CMakeScanner()

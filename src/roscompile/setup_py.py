@@ -25,7 +25,7 @@ class SetupPy:
         self.name = name
         self.files = files
         self.var = 'package_info'
-        
+
         self.valid = False
         self.execs = []
         for source in self.files:
@@ -38,24 +38,24 @@ class SetupPy:
         if not self.valid:
             return
         fn = self.root + '/setup.py'
-        
+
         if os.path.exists(fn):
             original = open(fn, 'r').read()
             m = VAR_PATTERN.search(original)
             if m:
                 self.var = m.group(1)
-                
+
             output = str(self)
             if original == output:
                 return
         else:
             output = str(self)
-            
-        print "    Writing setup.py"   
+
+        print "    Writing setup.py"
         with open(fn, 'w') as f:
             f.write(output)
-        
-        
+
+
     def __repr__(self):
         if len(self.execs)>0:
             execs = EXEC_TEMPLATE % ', '.join(["'%s'"%s for s in self.execs])

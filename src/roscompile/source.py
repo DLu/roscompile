@@ -20,8 +20,8 @@ class Source:
         else:
             self.rel_fn = fn
         self.lines = map(str.strip, open(fn, 'r').readlines())
-        self.python = '.py' in self.fn or (len(self.lines)>0 and 'python' in self.lines[0])  
-        
+        self.python = '.py' in self.fn or (len(self.lines)>0 and 'python' in self.lines[0])
+
     def get_dependencies(self):
         d = set()
         for line in self.lines:
@@ -31,7 +31,7 @@ class Source:
                     if is_package( m.group(1) ):
                         d.add(m.group(1))
         return sorted(list(d))
-        
+
     def get_message_dependencies(self):
         d = set()
         for line in self.lines:
@@ -44,7 +44,7 @@ class Source:
                 if is_message(pkg, name) or is_service(pkg, name):
                     d.add(pkg)
         return sorted(list(d))
-        
+
     def get_plugins(self):
         a = []
         for line in self.lines:

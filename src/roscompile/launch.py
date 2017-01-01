@@ -14,13 +14,13 @@ class Launch:
     def get_include_pkgs(self):
         s = set()
         for node in self.tree.getElementsByTagName('include'):
-            el = node.getAttribute('file') 
+            el = node.getAttribute('file')
             if 'find' in el:
                 i = el.index('find')
                 i2 = el.index(')', i)
                 s.add( el[i+5:i2] )
         return sorted(list(s))
-        
+
     def get_misc_pkgs(self):
         s = set()
         xml_str = self.tree.toxml()

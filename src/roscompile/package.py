@@ -44,9 +44,9 @@ class Package:
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
-        
+
         plugins = self.manifest.get_plugin_xmls()
-        
+
         for root,dirs,files in os.walk(self.root):
             if '.git' in root or '.svn' in root:
                 continue
@@ -74,8 +74,8 @@ class Package:
                             found = True
                             break
                     if found:
-                        continue   
-                        
+                        continue
+
                     with open(full) as f:
                         l = f.readline()
                         if '#!' in l and 'python' in l:
@@ -95,7 +95,7 @@ class Package:
             for source in self.sources:
                 packages.update(source.get_dependencies())
             if self.name in packages:
-                packages.remove(self.name)            
+                packages.remove(self.name)
         return sorted(list(packages))
 
     def get_run_dependencies(self):
@@ -136,7 +136,7 @@ class Package:
                         line = line[ : line.index('=') ]
                     tipo, name = line.split()
                     if '/' not in tipo:
-                        continue 
+                        continue
                     package, part = tipo.split('/')
                     if package != self.name:
                         deps.add(package)
@@ -150,12 +150,12 @@ class Package:
             if build:
                 self.manifest.add_packages(dependencies, build)
             self.manifest.add_packages(dependencies, False)
-            
+
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
             md = self.get_dependencies_from_msgs()
             self.manifest.add_packages(['message_generation'] + md, True)
             self.manifest.add_packages(['message_runtime'] + md, False)
-            
+
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
 
@@ -168,60 +168,60 @@ class Package:
             print name
             for fn in sorted(files):
                 print '\t',fn
-        
+
     def update_cmake(self):
         deps = self.get_dependencies_from_msgs()
-        self.cmake.check_dependencies( self.get_dependencies() + deps)        
+        self.cmake.check_dependencies( self.get_dependencies() + deps)
 
         if CFG.should('check_exported_dependencies'):
             self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())
 
         self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
-        
+
         setup = self.get_setup_py()
         if setup and setup.valid and \
             'catkin_python_setup' not in self.cmake.content_map:
             self.cmake.add_command('catkin_python_setup()')
-            
-        if CFG.should('check_installs'):    
+
+        if CFG.should('check_installs'):
             self.cmake.update_cplusplus_installs()
             if setup:
-                self.cmake.update_python_installs(setup.execs)    
+                self.cmake.update_python_installs(setup.execs)
 
         self.cmake.output()
 
     def get_python_source(self):
-        sources = []        
+        sources = []
         for source in self.sources:
             if source.python and 'setup.py' not in source.fn:
                 sources.append(source)
-        return sources     
-        
+        return sources
+
     def get_setup_py(self):
         sources = self.get_python_source()
         if len(sources)==0:
             return
-            
+
         setup = SetupPy(self.name, self.root, sources)
-        return setup           
-        
+        return setup
+
     def generate_setup(self):
         setup = self.get_setup_py()
         if not setup:
             return
         setup.write_if_needed()
         return
-        
+
     def check_plugins(self):
         plugins = []
         for source in self.sources:
             plugins += source.get_plugins()
-            
+
         configs = {}
         for filename, tipo in self.files[PLUGIN_CONFIG]:
             configs[tipo] = PluginXML(filename)
-            
-        pattern = '%s::%s'    
+
+        pattern = '%s::%s'
         for pkg1, name1, pkg2, name2 in plugins:
             if pkg2 not in configs:
                 configs[pkg2] = PluginXML( self.root + '/plugins.xml')
@@ -230,8 +230,8 @@ class Package:
 
         for config in configs.values():
             config.write()
-        self.manifest.output()    
-        
+        self.manifest.output()
+
     def get_people(self):
         people = {}
         people['maintainers'] = self.manifest.get_people('maintainer')
@@ -262,20 +262,20 @@ def get_packages(root_fn='.'):
 def get_people_info(pkgs):
     people = {}
     replace = {}
-    
+
     for package in pkgs:
         for k,v in package.get_people().iteritems():
             people.update(v)
-            
+
     if 'canonical_names' not in CFG:
         name = query('What is your name (exactly as you\'d like to see it in the documentation)? ')
         email = query('What is your email (for documentation purposes)? ')
 
         CFG['canonical_names'] = [{'name': name, 'email': email}]
-        
+
     for d in CFG['canonical_names']:
-        people[ d['name'] ] = d['email']     
-        
+        people[ d['name'] ] = d['email']
+
     while len(people)>1:
         print
         values = sorted(people.keys(), key=lambda d: d.lower())
@@ -295,11 +295,11 @@ def get_people_info(pkgs):
         if c2=='q':
             break
         try:
-            c2 = int(c2)            
+            c2 = int(c2)
         except:
             continue
         if c2 < 0 or c2>len(values) or c==c2:
             continue
         replace[ values[c] ] = values[c2]
-        del people[ values[c] ] 
-    return people, replace    
+        del people[ values[c] ]
+    return people, replace

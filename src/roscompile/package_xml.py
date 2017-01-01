@@ -6,9 +6,9 @@ import operator, collections
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
 
-ORDERING = ['name', 'version', 'description', 
+ORDERING = ['name', 'version', 'description',
             ['maintainer', 'license', 'author', 'url'],
-            'buildtool_depend', 'build_depend', 'run_depend', 'test_depend', 
+            'buildtool_depend', 'build_depend', 'run_depend', 'test_depend',
             'export']
 
 def get_ordering_index(name):
@@ -18,25 +18,25 @@ def get_ordering_index(name):
                 return i
         elif name==o:
             return i
-    if name:        
+    if name:
         print '\tUnsure of ordering for', name
-    return len(ORDERING)                
+    return len(ORDERING)
 
 def get_sort_key(node, alphabetize_depends=True):
     if node:
         name = node.nodeName
     else:
         name = None
-    
+
     index = get_ordering_index(name)
-        
+
     if not alphabetize_depends:
         return index
     if name and 'depend' in name:
         return index, node.firstChild.data
     else:
         return index, None
-        
+
 def count_trailing_spaces(s):
     c = 0
     while c < len(s) and s[-c-1]==' ':
@@ -60,7 +60,7 @@ class PackageXML:
                 spaces = count_trailing_spaces(c.data)
                 tab_ct[spaces] += 1
         self.std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
-        
+
         if CFG.should('enforce_package_tabbing'):
             for c in self.root.childNodes:
                 if c.nodeType == c.TEXT_NODE and c!=self.root.childNodes[-1]:
@@ -90,7 +90,7 @@ class PackageXML:
         for el in self.root.getElementsByTagName(key):
             pkgs.append(el.childNodes[0].nodeValue)
         return pkgs
-        
+
     def get_people(self, tag):
         people = {}
         for el in self.root.getElementsByTagName(tag):
@@ -113,7 +113,7 @@ class PackageXML:
                         continue
                     el.setAttribute( 'email', people[name] )
                     print '\tSetting %s\'s email to %s'%(name, people[name])
-                    
+
     def get_plugin_xmls(self):
         xmls = []
         export = self.root.getElementsByTagName('export')
@@ -124,8 +124,8 @@ class PackageXML:
                 if n.nodeType == self.root.ELEMENT_NODE:
                     plugin = n.getAttribute('plugin').replace('${prefix}/', '')
                     xmls.append(( n.nodeName, plugin))
-        return xmls      
-        
+        return xmls
+
     def add_plugin_export(self, fn, tipo):
         exports = self.root.getElementsByTagName('export')
         if len(exports)==0:
@@ -136,18 +136,18 @@ class PackageXML:
         pe = self.tree.createElement(tipo)
         pe.setAttribute('plugin', '${prefix}/' + fn )
         ex.appendChild(pe)
-        
+
     def remove_empty_export(self):
         exports = self.root.getElementsByTagName('export')
         if len(exports)==0:
             return
         for export in exports:
             remove = True
-            
+
             for c in export.childNodes:
                 if c.nodeType == c.ELEMENT_NODE:
                     remove = False
-            
+
             if remove:
                 export.parentNode.removeChild(export)
                 print '\tRemoving empty export tag'
@@ -211,12 +211,12 @@ class PackageXML:
                 current = []
         if len(current)>0:
             chunks.append( (None, current) )
-        
+
         self.root.childNodes = []
-        
+
         alpha = CFG.should('alphabetize_depends')
         key = lambda d: get_sort_key(d[0], alpha)
-        
+
         for a,b in sorted(chunks, key=key):
             self.root.childNodes += b
 
@@ -224,7 +224,7 @@ class PackageXML:
     def output(self, new_fn=None):
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
-            
+
         if new_fn is None:
             new_fn = self.fn
         s = self.tree.toxml(self.tree.encoding)
@@ -233,19 +233,19 @@ class PackageXML:
         else:
             s = s.replace('?><package>', '?>\n<package>')
             s = s.replace(' ?>', '?>')
-            
+
         if CFG.should('remove_dumb_package_comments'):
             for line in IGNORE_LINES:
                 s = s.replace(line, '')
-                
-        if CFG.should('remove_empty_package_lines'):        
-            while '\n\n\n' in s:    
+
+        if CFG.should('remove_empty_package_lines'):
+            while '\n\n\n' in s:
                 s = s.replace('\n\n\n', '\n\n')
 
         old_s = open(new_fn, 'r').read().decode('UTF-8')
         if old_s.strip() == s:
             return
-            
+
         f = open(new_fn, 'w')
         f.write(s.encode('UTF-8'))
         f.write('\n')

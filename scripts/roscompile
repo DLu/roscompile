@@ -20,11 +20,11 @@ for package in pkgs:
     if CFG.should('update_manifest'):
         package.update_manifest()
     elif CFG.should('check_names'):
-        package.manifest.output()        
+        package.manifest.output()
 
     if CFG.should('update_cmake'):
         package.update_cmake()
-        
+
     if CFG.should('remove_useless'):
         package.remove_useless()
 
