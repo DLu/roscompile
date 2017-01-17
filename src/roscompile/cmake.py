@@ -70,7 +70,7 @@ class Section:
         return len(self.name)>0 or len(self.values)>0
 
     def __repr__(self):
-        if CFG.should('alphabetize_cmake_options') and self.name in SHOULD_ALPHABETIZE:
+        if CFG.should('alphabetize') and self.name in SHOULD_ALPHABETIZE:
             self.values = sorted(self.values)
 
         s = self.pre

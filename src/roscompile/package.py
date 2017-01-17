@@ -91,21 +91,19 @@ class Package:
 
     def get_build_dependencies(self):
         packages = set()
-        if CFG.should('read_source'):
-            for source in self.sources:
-                packages.update(source.get_dependencies())
-            if self.name in packages:
-                packages.remove(self.name)
+        for source in self.sources:
+            packages.update(source.get_dependencies())
+        if self.name in packages:
+            packages.remove(self.name)
         return sorted(list(packages))
 
     def get_run_dependencies(self):
         packages = set()
-        if CFG.should('read_launches'):
-            for launch in self.files['launch']:
-                x = Launch(launch)
-                packages.update(x.get_dependencies())
-            if self.name in packages:
-                packages.remove(self.name)
+        for launch in self.files['launch']:
+            x = Launch(launch)
+            packages.update(x.get_dependencies())
+        if self.name in packages:
+            packages.remove(self.name)
         return sorted(list(packages))
 
     def get_dependencies(self, build=True):

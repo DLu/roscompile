@@ -214,7 +214,7 @@ class PackageXML:
 
         self.root.childNodes = []
 
-        alpha = CFG.should('alphabetize_depends')
+        alpha = CFG.should('alphabetize')
         key = lambda d: get_sort_key(d[0], alpha)
 
         for a,b in sorted(chunks, key=key):
