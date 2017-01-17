@@ -259,7 +259,7 @@ def get_packages(root_fn='.'):
 
 def get_people_info(pkgs):
     people = {}
-    replace = {}
+    replace = dict(CFG.get('replace_names', {}))
 
     for package in pkgs:
         for k,v in package.get_people().iteritems():
@@ -298,6 +298,13 @@ def get_people_info(pkgs):
             continue
         if c2 < 0 or c2>len(values) or c==c2:
             continue
-        replace[ values[c] ] = values[c2]
-        del people[ values[c] ]
+        name = values[c]
+        email = values[c2]
+        replace[ name ] = values[ email]
+        c3 = query('Always do this? (y/n) ')
+        if c3 == 'y':
+            if 'replace_names' not in CFG:
+                CFG['replace_names'] = {}
+            CFG['replace_names'][name] = email
+        del people[ name ]
     return people, replace
