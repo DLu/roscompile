@@ -300,7 +300,7 @@ def get_people_info(pkgs):
             continue
         name = values[c]
         email = values[c2]
-        replace[ name ] = values[ email]
+        replace[ name ] = email
         c3 = query('Always do this? (y/n) ')
         if c3 == 'y':
             if 'replace_names' not in CFG:

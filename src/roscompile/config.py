@@ -19,10 +19,12 @@ class Config(dict):
                 for key in keys:
                     del self[key]
                 self['flags'] = flags
+        else:
+            self['flags'] = {}
 
         parser = argparse.ArgumentParser(description='Tool for fixing up your ros code. Most options start False by default, unless they are flipped in %s'%FILENAME)
         for name, value in sorted(self['flags'].items()):
-            action = 'store_true' if value else 'store_false'
+            action = 'store_true' if not value else 'store_false'
             parser.add_argument('--' + name, action=action, help='(disable)' if value else '')
         self.args = parser.parse_args()
 
