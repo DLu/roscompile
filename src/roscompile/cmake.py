@@ -89,6 +89,9 @@ class Section:
 class Command:
     def __init__(self, cmd):
         self.cmd = cmd
+        self.original = None
+        self.changed = False
+
         self.inline_count = -1
         self.tab = 0
 
@@ -105,10 +108,12 @@ class Command:
 
     def add_section(self, key, values=[]):
         self.sections.append(Section(key, values))
+        self.changed = True
 
     def add(self, section):
         if section:
             self.sections.append(section)
+            self.changed = True
 
     def check_complex_section(self, key, value):
         words = key.split()
@@ -130,6 +135,7 @@ class Command:
         if section:
             if value not in section.values:
                 section.add(value)
+                self.changed = True
         else:
             self.add_section(key, [value])
 
@@ -137,6 +143,9 @@ class Command:
         return self.sections[0].values[0]
 
     def __repr__(self):
+        if self.original and not self.changed:
+            return self.original
+
         s = self.cmd + '('
         s += ' '.join(map(str,self.sections))
         if '\n' in s:
