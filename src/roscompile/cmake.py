@@ -153,13 +153,13 @@ class Command:
         s += ')'
         return s
 
-from roscompile.cmake_parser import scanner, c_scanner
+from roscompile.cmake_parser import parse_file
 
 class CMake:
     def __init__(self, fn, name=None):
         self.fn = fn
         self.name = name
-        self.contents = scanner.parse(fn)
+        self.contents = parse_file(open(fn).read())
         self.content_map = defaultdict(list)
         for c in self.contents:
             if type(c)==str:
@@ -213,7 +213,7 @@ class CMake:
 
     def add_command(self, s='', cmd=None):
         if cmd is None:
-            cmd = c_scanner.parse(s)
+            cmd = parse_file(s)
         if len(self.contents)>0 and type(self.contents[-1])!=str:
             self.contents.append('\n')
         self.contents.append(cmd)
