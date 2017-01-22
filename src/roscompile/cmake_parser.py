@@ -83,11 +83,11 @@ class AwesomeParser:
         style = SectionStyle()
         tokens = []
         cat = ''
-        while self.get_type() in ALL_WHITESPACE:
+        while self.get_type() in NOT_REAL:
             s = self.match()
             original += s
             style.prename += s
-            
+
         if self.get_type() == 'caps':
             cat = self.match('caps')
             original += cat
@@ -118,7 +118,8 @@ class AwesomeParser:
             if len(delims)==1:
                 style.val_sep = list(delims)[0]
             else:
-                print delims
+                #TODO: Smarter multi delim parsing 
+                # print delims
                 style.val_sep = list(delims)[0]
 
         #print cat, tokens, style
@@ -127,6 +128,7 @@ class AwesomeParser:
     def match(self, typ=None):
         if typ is None or self.get_type() == typ:
             typ, tok = self.tokens.pop(0)
+            # print '[%s]%s'%(typ, repr(tok))
             return tok
         else:
             sys.stderr.write('Expected type "%s" but got "%s"\n'%(typ, self.get_type()))
