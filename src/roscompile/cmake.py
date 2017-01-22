@@ -354,7 +354,19 @@ class CMake:
             self.contents += b
 
     def __repr__(self):
-        return ''.join(map(str, self.contents))
+        s = ''
+        last = False
+        for chunk in self.contents:
+            if type(chunk)==str:
+                s += str
+                last = False
+            else:
+                if last:
+                    s += '\n'
+                last = True
+                s += str(chunk)
+
+        return s
 
     def output(self, fn=None):
         if CFG.should('enforce_cmake_ordering'):
