@@ -52,7 +52,7 @@ class PackageXML:
         self._format = None
 
         if self.format > 1:
-            raise Exception('Only catkin format 1 is supported')
+            raise Exception('Only catkin format 1 is supported. %s is in format %d'%(self.fn, self.format))
 
         tab_ct = collections.defaultdict(int)
         for c in self.root.childNodes:
