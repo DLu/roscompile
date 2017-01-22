@@ -9,7 +9,7 @@ ALL_CAPS = re.compile('^[A-Z_]+$')
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/cmake.ignore').read().split('\n') if len(s)>0]
 IGNORE_PATTERNS = [s + '\n' for s in get('package://roscompile/data/cmake_patterns.ignore').read().split('\n') if len(s)>0]
 
-ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_setup', 'add_definitions',
+ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modules', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package',
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
@@ -50,15 +50,22 @@ def install_sections(cmd, D):
         for key in keys:
             cmd.check_complex_section(key, destination)
 
+class SectionStyle:
+    def __init__(self):
+        self.prename = ''
+        self.name_val_sep = ' '
+        self.val_sep = ' '
+    def __repr__(self):
+        return 'SectionStyle(%s, %s, %s)'%(repr(self.prename), repr(self.name_val_sep), repr(self.val_sep))
+
 class Section:
-    def __init__(self, name='', values=None, pre='', tab=None):
+    def __init__(self, name='', values=None, style=SectionStyle()):
         self.name = name
         if values is None:
             self.values = []
         else:
             self.values = values
-        self.pre = pre
-        self.tab = tab
+        self.style = style
 
     def add(self, v):
         self.values.append(v)
@@ -73,30 +80,27 @@ class Section:
         if CFG.should('alphabetize') and self.name in SHOULD_ALPHABETIZE:
             self.values = sorted(self.values)
 
-        s = self.pre
+        s = self.style.prename
         if len(self.name)>0:
             s += self.name
-            if self.tab is None and len(self.values)>0:
-                s += ' '
-            elif len(self.values)>0:
-                s += '\n' + ' ' *self.tab
-        if self.tab is None:
-            s += ' '.join(self.values)
-        else:
-            s += ('\n' + ' '*self.tab).join(self.values)
+            s+= self.style.name_val_sep
+        s += self.style.val_sep.join(self.values)
         return s
 
 class Command:
     def __init__(self, cmd):
         self.cmd = cmd
+        self.original = None
+        self.changed = False
+        self.pre_paren = ''
+
         self.inline_count = -1
-        self.tab = 0
 
         self.sections = []
 
     def get_section(self, key):
         for s in self.sections:
-            if s.name==key:
+            if type(s)!=str and s.name==key:
                 return s
         return None
 
@@ -105,10 +109,12 @@ class Command:
 
     def add_section(self, key, values=[]):
         self.sections.append(Section(key, values))
+        self.changed = True
 
     def add(self, section):
         if section:
             self.sections.append(section)
+            self.changed = True
 
     def check_complex_section(self, key, value):
         words = key.split()
@@ -130,6 +136,7 @@ class Command:
         if section:
             if value not in section.values:
                 section.add(value)
+                self.changed = True
         else:
             self.add_section(key, [value])
 
@@ -137,20 +144,24 @@ class Command:
         return self.sections[0].values[0]
 
     def __repr__(self):
-        s = self.cmd + '('
-        s += ' '.join(map(str,self.sections))
-        if '\n' in s:
-            s += '\n'
+        if self.original and not self.changed:
+            return self.original
+
+        s = self.cmd + self.pre_paren + '('
+        s += ''.join(map(str,self.sections))
         s += ')'
         return s
 
-from roscompile.cmake_parser import scanner, c_scanner
+from roscompile.cmake_parser import parse_file
 
 class CMake:
     def __init__(self, fn, name=None):
         self.fn = fn
         self.name = name
-        self.contents = scanner.parse(fn)
+        if os.path.exists(fn):
+            self.contents = parse_file(open(fn).read())
+        else:
+            self.contents = []
         self.content_map = defaultdict(list)
         for c in self.contents:
             if type(c)==str:
@@ -163,7 +174,7 @@ class CMake:
 
         if cmd_name not in self.content_map:
             params = section_name + ' '  + ' '.join(items)
-            self.add_command('%s(%s)'%(cmd_name,params))
+            self.add_command_string('%s(%s)'%(cmd_name,params))
             print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
             return
 
@@ -202,9 +213,11 @@ class CMake:
         if len(cfgs)>0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
-    def add_command(self, s='', cmd=None):
-        if cmd is None:
-            cmd = c_scanner.parse(s)
+    def add_command_string(self, s):
+        for cmd in parse_file(s):
+            self.add_command(cmd)        
+        
+    def add_command(self, cmd):
         if len(self.contents)>0 and type(self.contents[-1])!=str:
             self.contents.append('\n')
         self.contents.append(cmd)
@@ -254,7 +267,7 @@ class CMake:
                     cmd.sections[0].add('${%s_EXPORTED_TARGETS}'%pkg_name)
 
         for target in targets:
-            self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
+            self.add_command_string('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
     def get_commands_by_type(self, name):
         matches = []
@@ -292,7 +305,7 @@ class CMake:
             print '\tInstalling ', ', '.join(items)
             cmd = Command('install')
             cmd.add_section(section_name, items)
-            self.add_command('', cmd)
+            self.add_command(cmd)
             install_sections(cmd, destination_map)
         else:
             section = cmd.get_section(section_name)
@@ -314,7 +327,7 @@ class CMake:
             return
         cmd = 'catkin_install_python'
         if cmd not in self.content_map:
-            self.add_command('%s(PROGRAMS %s\n                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'%(cmd, ' '.join(execs)))
+            self.add_command_string('%s(PROGRAMS %s\n                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'%(cmd, ' '.join(execs)))
         else:
             self.section_check(execs, cmd, 'PROGRAMS')
 

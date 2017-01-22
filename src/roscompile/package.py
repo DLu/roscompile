@@ -179,7 +179,7 @@ class Package:
         setup = self.get_setup_py()
         if setup and setup.valid and \
             'catkin_python_setup' not in self.cmake.content_map:
-            self.cmake.add_command('catkin_python_setup()')
+            self.cmake.add_command_string('catkin_python_setup()')
 
         if CFG.should('check_installs'):
             self.cmake.update_cplusplus_installs()
