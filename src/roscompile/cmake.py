@@ -9,7 +9,7 @@ ALL_CAPS = re.compile('^[A-Z_]+$')
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/cmake.ignore').read().split('\n') if len(s)>0]
 IGNORE_PATTERNS = [s + '\n' for s in get('package://roscompile/data/cmake_patterns.ignore').read().split('\n') if len(s)>0]
 
-ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'catkin_python_setup', 'add_definitions',
+ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modules', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package',
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
@@ -100,7 +100,7 @@ class Command:
 
     def get_section(self, key):
         for s in self.sections:
-            if s.name==key:
+            if type(s)!=str and s.name==key:
                 return s
         return None
 
@@ -158,7 +158,10 @@ class CMake:
     def __init__(self, fn, name=None):
         self.fn = fn
         self.name = name
-        self.contents = parse_file(open(fn).read())
+        if os.path.exists(fn):
+            self.contents = parse_file(open(fn).read())
+        else:
+            self.contents = []
         self.content_map = defaultdict(list)
         for c in self.contents:
             if type(c)==str:
@@ -171,7 +174,7 @@ class CMake:
 
         if cmd_name not in self.content_map:
             params = section_name + ' '  + ' '.join(items)
-            self.add_command('%s(%s)'%(cmd_name,params))
+            self.add_command_string('%s(%s)'%(cmd_name,params))
             print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
             return
 
@@ -210,9 +213,11 @@ class CMake:
         if len(cfgs)>0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
-    def add_command(self, s='', cmd=None):
-        if cmd is None:
-            cmd = parse_file(s)
+    def add_command_string(self, s):
+        for cmd in parse_file(s):
+            self.add_command(cmd)        
+        
+    def add_command(self, cmd):
         if len(self.contents)>0 and type(self.contents[-1])!=str:
             self.contents.append('\n')
         self.contents.append(cmd)
@@ -262,7 +267,7 @@ class CMake:
                     cmd.sections[0].add('${%s_EXPORTED_TARGETS}'%pkg_name)
 
         for target in targets:
-            self.add_command('add_dependencies(%s %s)'%(target, ' '.join(marks)))
+            self.add_command_string('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
     def get_commands_by_type(self, name):
         matches = []
@@ -300,7 +305,7 @@ class CMake:
             print '\tInstalling ', ', '.join(items)
             cmd = Command('install')
             cmd.add_section(section_name, items)
-            self.add_command('', cmd)
+            self.add_command(cmd)
             install_sections(cmd, destination_map)
         else:
             section = cmd.get_section(section_name)
@@ -322,7 +327,7 @@ class CMake:
             return
         cmd = 'catkin_install_python'
         if cmd not in self.content_map:
-            self.add_command('%s(PROGRAMS %s\n                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'%(cmd, ' '.join(execs)))
+            self.add_command_string('%s(PROGRAMS %s\n                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'%(cmd, ' '.join(execs)))
         else:
             self.section_check(execs, cmd, 'PROGRAMS')
 
