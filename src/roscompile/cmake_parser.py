@@ -1,5 +1,5 @@
 import re, sys
-from cmake import Command, Section
+from cmake import Command, Section, SectionStyle
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
 def word_cb(scanner, token):
@@ -15,48 +15,50 @@ scanner = re.Scanner([
     (r"\)", lambda scanner, token: ("right paren", token)),
     (r'[^ \t\r\n()#"]+', word_cb),
     (r'\n', lambda scanner, token: ("newline", token)),
-    (r"\s+", lambda scanner, token: ("whitespace", token)),
+    (r"[ \t]+", lambda scanner, token: ("whitespace", token)),
 ])
 
 ALL_WHITESPACE = ['whitespace', 'newline']
 NOT_REAL = ALL_WHITESPACE + ['comment']
 
 class AwesomeParser:
-    def __init__(self, s):
+    def __init__(self, s, debug=False):
         self.tokens, remainder = scanner.scan(s)
         if remainder != '':
             msg = 'Unrecognized tokens: %s' % (remainder)
             raise ValueError(msg)
-            
+
+        if debug:
+            for typ, token in self.tokens:
+                print '[%s]%s'%(typ, repr(token))
+
         self.contents = []
-        prev_type = 'newline'
         while len(self.tokens)>0:
             typ = self.get_type()
             if typ == 'comment':
                 self.contents.append(self.match(typ))
-            elif typ == 'newline':
-                self.match(typ)
-                if prev_type == 'newline':
-                    self.contents.append('\n')
-            elif typ in 'word':
+            elif typ == 'newline' or typ=='whitespace':
+                s = self.match(typ)
+                self.contents.append(s)
+            elif typ in ['word', 'caps']:
                 cmd = self.parse_command()
                 self.contents.append(cmd)
-            elif typ == 'whitespace':
-                self.match(typ)
-                continue
             else:
-                print 'token', typ
-                exit(0)
-            prev_type = typ
+                raise Exception('token ' + typ)
+        if debug:
+            for chunk in self.contents:
+                print '[%s]'%chunk
 
     def parse_command(self):
-        command_name = self.match('word')
+        command_name = self.match()
         original = command_name
-        while self.get_type()=='whitespace':
-            original += self.match('whitespace')
-        self.match('left paren')
-        original = command_name + '('
         cmd = Command(command_name)
+        while self.get_type()=='whitespace':
+            s = self.match('whitespace')
+            cmd.pre_paren += s
+            original += s
+        original += self.match('left paren')        
+
         while len(self.tokens)>0:
             typ = self.next_real_type()
             if typ in ['word', 'caps', 'string']:
@@ -71,55 +73,60 @@ class AwesomeParser:
                     return cmd
                 elif typ == 'left paren':
                     pass
-                elif typ in ALL_WHITESPACE:
-                    continue
-                elif typ == 'comment':
+                else:
                     cmd.sections.append(tok_contents)
         msg = 'File ended while processing command "%s"' % (command_name)
         raise CMakeParseError(msg)
 
     def parse_section(self):
         original = ''
-        pre = ''
+        style = SectionStyle()
         tokens = []
         cat = ''
-        
         while self.get_type() in ALL_WHITESPACE:
-            pre += self.match()
+            s = self.match()
+            original += s
+            style.prename += s
             
         if self.get_type() == 'caps':
             cat = self.match('caps')
-        original += pre + cat
-            
-        tab = None
+            original += cat
+            style.name_val_sep = ''
+            while self.get_type() in ALL_WHITESPACE:
+                s = self.match()
+                original += s
+                style.name_val_sep += s
         
+        delims = set()
+        current = ''
         while self.next_real_type() not in ['right paren', 'caps']:
             typ = self.get_type()
             if typ in ALL_WHITESPACE:
                 token = self.match()
                 original += token
-                if len(tokens)<2:
-                    if typ=='newline':
-                        tab = 0
-                    elif tab==0:
-                        token = token.replace('\t', '    ')
-                        tab = len(token)
+                current += token
             else:
+                if len(current)>0:
+                    delims.add(current)
+                current = ''
                 token = self.match()
                 original += token
                 tokens.append(token)
+        if len(current)>0:
+            delims.add(current)
+        if len(delims)>0:
+            if len(delims)==1:
+                style.val_sep = list(delims)[0]
+            else:
+                print delims
+                style.val_sep = list(delims)[0]
 
-        while self.get_type() in NOT_REAL:
-            typ, token = self.tokens.pop(0)
-            original += token
-            if typ == 'comment':
-                tokens.append( token )
-        return Section(cat, tokens, pre, tab), original
+        #print cat, tokens, style
+        return Section(cat, tokens, style), original
 
     def match(self, typ=None):
         if typ is None or self.get_type() == typ:
-            tok = self.tokens[0][1]
-            self.tokens.pop(0)
+            typ, tok = self.tokens.pop(0)
             return tok
         else:
             sys.stderr.write('Expected type "%s" but got "%s"\n'%(typ, self.get_type()))

@@ -50,15 +50,22 @@ def install_sections(cmd, D):
         for key in keys:
             cmd.check_complex_section(key, destination)
 
+class SectionStyle:
+    def __init__(self):
+        self.prename = ''
+        self.name_val_sep = ' '
+        self.val_sep = ' '
+    def __repr__(self):
+        return 'SectionStyle(%s, %s, %s)'%(repr(self.prename), repr(self.name_val_sep), repr(self.val_sep))
+
 class Section:
-    def __init__(self, name='', values=None, pre='', tab=None):
+    def __init__(self, name='', values=None, style=SectionStyle()):
         self.name = name
         if values is None:
             self.values = []
         else:
             self.values = values
-        self.pre = pre
-        self.tab = tab
+        self.style = style
 
     def add(self, v):
         self.values.append(v)
@@ -73,17 +80,11 @@ class Section:
         if CFG.should('alphabetize') and self.name in SHOULD_ALPHABETIZE:
             self.values = sorted(self.values)
 
-        s = self.pre
+        s = self.style.prename
         if len(self.name)>0:
             s += self.name
-            if self.tab is None and len(self.values)>0:
-                s += ' '
-            elif len(self.values)>0:
-                s += '\n' + ' ' *self.tab
-        if self.tab is None:
-            s += ' '.join(self.values)
-        else:
-            s += ('\n' + ' '*self.tab).join(self.values)
+            s+= self.style.name_val_sep
+        s += self.style.val_sep.join(self.values)
         return s
 
 class Command:
@@ -91,6 +92,7 @@ class Command:
         self.cmd = cmd
         self.original = None
         self.changed = False
+        self.pre_paren = ''
 
         self.inline_count = -1
         self.tab = 0
@@ -146,10 +148,8 @@ class Command:
         if self.original and not self.changed:
             return self.original
 
-        s = self.cmd + '('
-        s += ' '.join(map(str,self.sections))
-        if '\n' in s:
-            s += '\n'
+        s = self.cmd + self.pre_paren + '('
+        s += ''.join(map(str,self.sections))
         s += ')'
         return s
 
@@ -354,19 +354,7 @@ class CMake:
             self.contents += b
 
     def __repr__(self):
-        s = ''
-        last = False
-        for chunk in self.contents:
-            if type(chunk)==str:
-                s += chunk
-                last = False
-            else:
-                if last:
-                    s += '\n'
-                last = True
-                s += str(chunk)
-
-        return s
+        return ''.join(map(str, self.contents))
 
     def output(self, fn=None):
         if CFG.should('enforce_cmake_ordering'):
