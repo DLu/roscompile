@@ -22,10 +22,10 @@ class Config(dict):
         else:
             self['flags'] = {}
 
-        parser = argparse.ArgumentParser(description='Tool for fixing up your ros code. Most options start False by default, unless they are flipped in %s'%FILENAME)
-        for name, value in sorted(self['flags'].items()):
-            action = 'store_true' if not value else 'store_false'
-            parser.add_argument('--' + name, action=action, help='(disable)' if value else '')
+        self.args = {}
+
+    def check_command_flags(self):
+        parser = get_parser_with_flags()
         self.args = parser.parse_args()
 
     def should(self, verb):
@@ -37,3 +37,10 @@ class Config(dict):
         yaml.dump(dict(self), open(FILENAME, 'w'), default_flow_style=False)
 
 CFG = Config()
+
+def get_parser_with_flags():
+    parser = argparse.ArgumentParser(description='Tool for fixing up your ros code. Most options start False by default, unless they are flipped in %s'%FILENAME)
+    for name, value in sorted(CFG.items()):
+        action = 'store_true' if not value else 'store_false'
+        parser.add_argument('--' + name, action=action, help='(disable)' if value else '')
+    return parser

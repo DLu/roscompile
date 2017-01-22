@@ -3,6 +3,8 @@
 from roscompile.package import Package, get_packages, get_people_info
 from roscompile.config import CFG
 
+CFG.check_command_flags()
+
 pkgs = get_packages()
 
 if CFG.should('check_names'):
