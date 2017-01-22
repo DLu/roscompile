@@ -358,7 +358,7 @@ class CMake:
         last = False
         for chunk in self.contents:
             if type(chunk)==str:
-                s += str
+                s += chunk
                 last = False
             else:
                 if last:
