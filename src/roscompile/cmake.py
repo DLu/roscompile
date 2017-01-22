@@ -95,7 +95,6 @@ class Command:
         self.pre_paren = ''
 
         self.inline_count = -1
-        self.tab = 0
 
         self.sections = []
 
