@@ -98,14 +98,17 @@ class Command:
 
         self.sections = []
 
+    def get_real_sections(self):
+        return [s for s in self.sections if type(s)!=str]
+
     def get_section(self, key):
-        for s in self.sections:
-            if type(s)!=str and s.name==key:
+        for s in self.get_real_sections():
+            if s.name==key:
                 return s
         return None
 
     def get_sections(self, key):
-        return [s for s in self.sections if s.name==key]
+        return [s for s in self.get_real_sections() if s.name==key]
 
     def add_section(self, key, values=[]):
         self.sections.append(Section(key, values))
@@ -123,7 +126,7 @@ class Command:
         else:
             i = 0
             section = None
-            for section_i in self.sections:
+            for section_i in self.get_real_sections():
                 if section_i.name == words[i]:
                     if i < len(words)-1:
                         i += 1
@@ -141,7 +144,7 @@ class Command:
             self.add_section(key, [value])
 
     def first_token(self):
-        return self.sections[0].values[0]
+        return self.get_real_sections()[0].values[0]
 
     def __repr__(self):
         if self.original and not self.changed:
@@ -185,10 +188,12 @@ class CMake:
                 if section is None:
                     section = s
                 items = [item for item in items if item not in s.values]
+                break
         if len(items)==0:
             return
         if section:
             section.values += items
+            cmd.changed = True
         else:
             cmd.add_section(section_name, items)
         print '\tAdding %s to the %s/%s section of your CMakeLists.txt'%(str(items), cmd_name, section_name)
@@ -295,6 +300,8 @@ class CMake:
         for cmd in cmds:
             install_sections(cmd, destination_map)
             section = cmd.get_section(section_name)
+            if not section:
+                continue
             section.values = [value for value in section.values if value in items]
             items = [item for item in items if item not in section.values]
 
@@ -307,7 +314,7 @@ class CMake:
             cmd.add_section(section_name, items)
             self.add_command(cmd)
             install_sections(cmd, destination_map)
-        else:
+        elif section:
             section = cmd.get_section(section_name)
             section.values += items
 
