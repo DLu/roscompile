@@ -80,6 +80,12 @@ class PackageXML:
             self._format = int(self.root.attributes['format'].value)
         return self._format
 
+    def get_packages_by_tag(self, tag):
+        pkgs = []
+        for el in self.root.getElementsByTagName(tag):
+            pkgs.append(el.childNodes[0].nodeValue)
+        return pkgs
+
     def get_packages(self, build=True):
         keys = []
         if build:
@@ -92,8 +98,7 @@ class PackageXML:
                 keys.append('exec_depend')
         pkgs = []
         for key in keys:
-            for el in self.root.getElementsByTagName(key):
-                pkgs.append(el.childNodes[0].nodeValue)
+            pkgs += self.get_packages_by_tag(key)
         return pkgs
 
     def get_people(self, tag):
@@ -156,6 +161,14 @@ class PackageXML:
             if remove:
                 export.parentNode.removeChild(export)
                 print '\tRemoving empty export tag'
+    
+    def remove_dependencies(self, name, pkgs, quiet=False):
+        for el in self.root.getElementsByTagName(name):
+            pkg = el.childNodes[0].nodeValue
+            if pkg in pkgs:
+                if not quiet:
+                    print '\tRemoving %s %s'%(name, pkg)
+                el.parentNode.removeChild(el)
 
     def get_child_indexes(self):
         tags = collections.defaultdict(list)
@@ -221,7 +234,6 @@ class PackageXML:
             if previous:
                 self.insert_new_elements(new_tag, pkgs, indexes[previous][0][-1])
             else:
-                print 'welcomne'
                 self.insert_new_elements(new_tag, pkgs, len(self.root.childNodes))
 
     def enforce_ordering(self):
@@ -248,6 +260,18 @@ class PackageXML:
     def output(self, new_fn=None):
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
+        if self.format==2 and CFG.should('consolidate_depend_in_package_xml'):
+            intersection = None
+            TRIPLE = ['build_depend', 'build_export_depend', 'exec_depend']
+            for tag in TRIPLE:
+                pkgs = set(self.get_packages_by_tag(tag))
+                if intersection is None:
+                    intersection = pkgs
+                else:
+                    intersection = intersection.intersection(pkgs)
+            for tag in TRIPLE:
+                self.remove_dependencies(tag, intersection)
+            self.insert_new_elements('depend', intersection, len(self.root.childNodes))
 
         if new_fn is None:
             new_fn = self.fn
