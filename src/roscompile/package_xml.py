@@ -6,10 +6,13 @@ import operator, collections
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
 
+DEPEND_ORDERING = ['buildtool_depend', 'depend', 'build_depend', 'build_export_depend',
+'run_depend', 'exec_depend', 'test_depend', 'doc_depend']
+
 ORDERING = ['name', 'version', 'description',
-            ['maintainer', 'license', 'author', 'url'],
-            'buildtool_depend', 'build_depend', 'run_depend', 'test_depend',
-            'export']
+            ['maintainer', 'license', 'author', 'url']] + \
+            DEPEND_ORDERING + \
+            ['export']
 
 def get_ordering_index(name):
     for i, o in enumerate(ORDERING):
@@ -51,9 +54,6 @@ class PackageXML:
         self.fn = fn
         self._format = None
 
-        if self.format > 1:
-            raise Exception('Only catkin format 1 is supported. %s is in format %d'%(self.fn, self.format))
-
         tab_ct = collections.defaultdict(int)
         for c in self.root.childNodes:
             if c.nodeType == c.TEXT_NODE:
@@ -81,14 +81,19 @@ class PackageXML:
         return self._format
 
     def get_packages(self, build=True):
+        keys = []
         if build:
-            key = 'build_depend'
-        else:
-            key = 'run_depend'
-
+            keys.append('build_depend')
+        if self.format == 1 and not build:
+            keys.append('run_depend')
+        if self.format == 2:
+            keys.append('depend')
+            if not build:
+                keys.append('exec_depend')
         pkgs = []
-        for el in self.root.getElementsByTagName(key):
-            pkgs.append(el.childNodes[0].nodeValue)
+        for key in keys:
+            for el in self.root.getElementsByTagName(key):
+                pkgs.append(el.childNodes[0].nodeValue)
         return pkgs
 
     def get_people(self, tag):
@@ -152,6 +157,30 @@ class PackageXML:
                 export.parentNode.removeChild(export)
                 print '\tRemoving empty export tag'
 
+    def get_child_indexes(self):
+        tags = collections.defaultdict(list)
+        i = 0
+        current = None
+        current_start = 0
+        current_last = 0
+        while i < len(self.root.childNodes):
+            child = self.root.childNodes[i]
+            if child.nodeType==child.TEXT_NODE:
+                i += 1
+                continue
+
+            name = child.nodeName
+            if name != current:
+                if current:
+                    tags[current].append((current_start, current_last))
+                current_start = i
+                current = name
+            current_last = i
+            i += 1
+        if current:
+            tags[current].append((current_start, current_last))
+        return dict(tags)
+
     def insert_new_elements(self, name, values, i):
         x = []
         for pkg in values:
@@ -169,36 +198,31 @@ class PackageXML:
         for pkg in self.get_packages(build):
             if pkg in pkgs:
                 pkgs.remove(pkg)
+        if len(pkgs)==0:
+            return
 
-        state = 0
-        i = 0
-        while i < len(self.root.childNodes):
-            child = self.root.childNodes[i]
-            if child.nodeType==child.TEXT_NODE:
-                i += 1
-                continue
-
-            name = child.nodeName
-            if name == 'build_depend':
-                state = 1
-            elif name == 'run_depend':
-                if state <= 1 and build:
-                    self.insert_new_elements('build_depend', pkgs, i)
-                    i += len(pkgs)*2
-                state = 2
-            elif state == 2:
-                if not build:
-                    self.insert_new_elements('run_depend', pkgs, i)
-                    i += len(pkgs)*2
-                state = 3
-            i += 1
-        if state==0:
-            if build:
-                self.insert_new_elements('build_depend', pkgs, i)
+        indexes = self.get_child_indexes()
+        if build:
+            new_tag = 'build_depened'
+        elif self.format == 1:
+            new_tag = 'run_depend'
+        else:
+            new_tag = 'exec_depend'
+        
+        if new_tag in indexes:
+            self.insert_new_elements(new_tag, pkgs, indexes[new_tag][0][-1])
+        else:
+            previous = None
+            for tag in DEPEND_ORDERING:
+                if new_tag == tag:
+                    break
+                elif tag in indexes:
+                    previous = tag
+            if previous:
+                self.insert_new_elements(new_tag, pkgs, indexes[previous][0][-1])
             else:
-                self.insert_new_elements('run_depend', pkgs, i)
-        elif state <= 2 and not build:
-            self.insert_new_elements('run_depend', pkgs, i)
+                print 'welcomne'
+                self.insert_new_elements(new_tag, pkgs, len(self.root.childNodes))
 
     def enforce_ordering(self):
         chunks = []
@@ -231,7 +255,7 @@ class PackageXML:
         if not self.header:
             s = s.replace('<?xml version="1.0" ?>', '').strip()
         else:
-            s = s.replace('?><package>', '?>\n<package>')
+            s = s.replace('?><package', '?>\n<package')
             s = s.replace(' ?>', '?>')
 
         if CFG.should('remove_dumb_package_comments'):
