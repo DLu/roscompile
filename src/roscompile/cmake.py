@@ -151,7 +151,10 @@ class Command:
             return self.original
 
         s = self.cmd + self.pre_paren + '('
-        s += ''.join(map(str,self.sections))
+        for section in map(str, self.sections):
+            if s[-1] not in '( \n':
+                s+=' '
+            s+=section
         s += ')'
         return s
 
