@@ -42,13 +42,15 @@ def get_install_type(destination):
         if destination in m:
             return name
 
-def install_sections(cmd, D):
+def install_sections(cmd, D, subfolder=''):
     for destination, value in D.iteritems():
         if type(value)==str:
             keys = [value]
         else:
             keys = value
         for key in keys:
+            if len(subfolder)>0:
+                destination = os.path.join(destination, subfolder)
             cmd.check_complex_section(key, destination)
 
 class SectionStyle:
@@ -278,23 +280,25 @@ class CMake:
         for target in targets:
             self.add_command_string('add_dependencies(%s %s)'%(target, ' '.join(marks)))
 
-    def get_commands_by_type(self, name):
+    def get_commands_by_type(self, name, subfolder=''):
         matches = []
         for cmd in self.content_map['install']:
             found = False
             for section in cmd.get_sections('DESTINATION'):
                 destination = section.values[0]
+                if len(subfolder)>0:
+                    destination = os.path.join(destination, subfolder)
                 if get_install_type(destination)==name:
                     matches.append(cmd)
                     found = True
                     break
         return matches
 
-    def install_section_check(self, items, install_type, directory=False):
+    def install_section_check(self, items, install_type, directory=False, subfolder=''):
         section_name, destination_map = INSTALL_CONFIGS[install_type]
         if directory and section_name == 'FILES':
             section_name = 'DIRECTORY'
-        cmds = self.get_commands_by_type(install_type)
+        cmds = self.get_commands_by_type(install_type, subfolder)
         if len(items)==0:
             for cmd in cmds:
                 self.remove_command(cmd)
@@ -317,7 +321,7 @@ class CMake:
             cmd = Command('install')
             cmd.add_section(section_name, items)
             self.add_command(cmd)
-            install_sections(cmd, destination_map)
+            install_sections(cmd, destination_map, subfolder)
         elif section:
             section = cmd.get_section(section_name)
             section.values += items
@@ -330,8 +334,8 @@ class CMake:
         self.install_section_check( self.get_libraries(), 'library' )
         self.install_section_check( ['include/${PROJECT_NAME}/'], 'headers', True)
 
-    def update_misc_installs(self, items, directory=False):
-        self.install_section_check( items, 'misc', directory)
+    def update_misc_installs(self, items, subfolder=''):
+        self.install_section_check( items, 'misc', False, subfolder)
 
     def update_python_installs(self, execs):
         if len(execs)==0:
