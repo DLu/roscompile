@@ -1,7 +1,7 @@
 from  xml.dom.minidom import parse
 from resource_retriever import get
 from roscompile.config import CFG
-import operator, collections
+import operator, collections, re
 
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
@@ -14,14 +14,16 @@ ORDERING = ['name', 'version', 'description',
             DEPEND_ORDERING + \
             ['export']
 
-def get_ordering_index(name):
+INDENT_PATTERN = re.compile('\n *')
+
+def get_ordering_index(name, whiny=True):
     for i, o in enumerate(ORDERING):
         if type(o)==list:
             if name in o:
                 return i
         elif name==o:
             return i
-    if name:
+    if name and whiny:
         print '\tUnsure of ordering for', name
     return len(ORDERING)
 
@@ -147,6 +149,15 @@ class PackageXML:
         pe.setAttribute('plugin', '${prefix}/' + fn )
         ex.appendChild(pe)
 
+    def remove_element(self, element):
+        parent = element.parentNode
+        index = parent.childNodes.index(element)
+        if index > 0:
+            previous = parent.childNodes[index-1]
+            if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
+                parent.removeChild(previous)
+        parent.removeChild(element)
+
     def remove_empty_export(self):
         exports = self.root.getElementsByTagName('export')
         if len(exports)==0:
@@ -159,7 +170,7 @@ class PackageXML:
                     remove = False
 
             if remove:
-                export.parentNode.removeChild(export)
+                self.remove_element(export)
                 print '\tRemoving empty export tag'
     
     def remove_dependencies(self, name, pkgs, quiet=False):
@@ -168,7 +179,7 @@ class PackageXML:
             if pkg in pkgs:
                 if not quiet:
                     print '\tRemoving %s %s'%(name, pkg)
-                el.parentNode.removeChild(el)
+                self.remove_element(el)
 
     def get_child_indexes(self):
         tags = collections.defaultdict(list)
@@ -194,8 +205,9 @@ class PackageXML:
             tags[current].append((current_start, current_last))
         return dict(tags)
 
-    def insert_new_elements(self, name, values, i):
+    def insert_new_elements(self, name, values):
         x = []
+        indexes = self.get_child_indexes()
         for pkg in values:
             if pkg in IGNORE_PACKAGES:
                 continue
@@ -205,7 +217,24 @@ class PackageXML:
             node.appendChild(self.tree.createTextNode(pkg))
             x.append(node)
 
-        self.root.childNodes = self.root.childNodes[:i-1] + x  + self.root.childNodes[i-1:]
+        index = None
+        if name in indexes:
+            index = indexes[name][-1][-1]
+        else:
+            previous = None
+            max_index = get_ordering_index(name, whiny=False)
+            best_tag = None
+            best_index = None
+            for tag in indexes:
+                ni = get_ordering_index(tag, whiny=False)
+                if ni < max_index and (best_tag is None or ni > best_index):
+                    best_tag = tag
+                    best_index = ni
+            if best_tag is None:
+                index = len(self.root.childNodes)
+            else:
+                index = indexes[best_tag][-1][-1]
+        self.root.childNodes = self.root.childNodes[:index+1] + x  + self.root.childNodes[index+1:]
 
     def add_packages(self, pkgs, build=True):
         for pkg in self.get_packages(build):
@@ -221,20 +250,23 @@ class PackageXML:
             new_tag = 'run_depend'
         else:
             new_tag = 'exec_depend'
-        
-        if new_tag in indexes:
-            self.insert_new_elements(new_tag, pkgs, indexes[new_tag][0][-1])
-        else:
-            previous = None
-            for tag in DEPEND_ORDERING:
-                if new_tag == tag:
-                    break
-                elif tag in indexes:
-                    previous = tag
-            if previous:
-                self.insert_new_elements(new_tag, pkgs, indexes[previous][0][-1])
+        self.insert_new_elements(new_tag, pkgs)
+
+    def replace_package_set(self, source_tags, new_tag):
+        intersection = None
+        for tag in source_tags:
+            pkgs = set(self.get_packages_by_tag(tag))
+            if intersection is None:
+                intersection = pkgs
             else:
-                self.insert_new_elements(new_tag, pkgs, len(self.root.childNodes))
+                intersection = intersection.intersection(pkgs)
+        for tag in source_tags:
+            self.remove_dependencies(tag, intersection)
+        self.insert_new_elements(new_tag, intersection)
+
+    def convert_to_format_2(self):
+        self.replace_package_set(['build_depend', 'run_depend'], 'depend')
+        self.replace_package_set(['run_depend'], 'exec_depend')
 
     def enforce_ordering(self):
         chunks = []
@@ -261,17 +293,7 @@ class PackageXML:
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
         if self.format==2 and CFG.should('consolidate_depend_in_package_xml'):
-            intersection = None
-            TRIPLE = ['build_depend', 'build_export_depend', 'exec_depend']
-            for tag in TRIPLE:
-                pkgs = set(self.get_packages_by_tag(tag))
-                if intersection is None:
-                    intersection = pkgs
-                else:
-                    intersection = intersection.intersection(pkgs)
-            for tag in TRIPLE:
-                self.remove_dependencies(tag, intersection)
-            self.insert_new_elements('depend', intersection, len(self.root.childNodes))
+            self.replace_package_set(['build_depend', 'build_export_depend', 'exec_depend'], 'depend')
 
         if new_fn is None:
             new_fn = self.fn
