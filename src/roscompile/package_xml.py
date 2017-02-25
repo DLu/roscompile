@@ -1,24 +1,29 @@
 from  xml.dom.minidom import parse
 from resource_retriever import get
 from roscompile.config import CFG
-import operator, collections
+import operator, collections, re
 
 IGNORE_PACKAGES = ['roslib']
 IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
 
-ORDERING = ['name', 'version', 'description',
-            ['maintainer', 'license', 'author', 'url'],
-            'buildtool_depend', 'build_depend', 'run_depend', 'test_depend',
-            'export']
+DEPEND_ORDERING = ['buildtool_depend', 'depend', 'build_depend', 'build_export_depend',
+'run_depend', 'exec_depend', 'test_depend', 'doc_depend']
 
-def get_ordering_index(name):
+ORDERING = ['name', 'version', 'description',
+            ['maintainer', 'license', 'author', 'url']] + \
+            DEPEND_ORDERING + \
+            ['export']
+
+INDENT_PATTERN = re.compile('\n *')
+
+def get_ordering_index(name, whiny=True):
     for i, o in enumerate(ORDERING):
         if type(o)==list:
             if name in o:
                 return i
         elif name==o:
             return i
-    if name:
+    if name and whiny:
         print '\tUnsure of ordering for', name
     return len(ORDERING)
 
@@ -51,9 +56,6 @@ class PackageXML:
         self.fn = fn
         self._format = None
 
-        if self.format > 1:
-            raise Exception('Only catkin format 1 is supported. %s is in format %d'%(self.fn, self.format))
-
         tab_ct = collections.defaultdict(int)
         for c in self.root.childNodes:
             if c.nodeType == c.TEXT_NODE:
@@ -80,15 +82,25 @@ class PackageXML:
             self._format = int(self.root.attributes['format'].value)
         return self._format
 
-    def get_packages(self, build=True):
-        if build:
-            key = 'build_depend'
-        else:
-            key = 'run_depend'
-
+    def get_packages_by_tag(self, tag):
         pkgs = []
-        for el in self.root.getElementsByTagName(key):
+        for el in self.root.getElementsByTagName(tag):
             pkgs.append(el.childNodes[0].nodeValue)
+        return pkgs
+
+    def get_packages(self, build=True):
+        keys = []
+        if build:
+            keys.append('build_depend')
+        if self.format == 1 and not build:
+            keys.append('run_depend')
+        if self.format == 2:
+            keys.append('depend')
+            if not build:
+                keys.append('exec_depend')
+        pkgs = []
+        for key in keys:
+            pkgs += self.get_packages_by_tag(key)
         return pkgs
 
     def get_people(self, tag):
@@ -137,6 +149,15 @@ class PackageXML:
         pe.setAttribute('plugin', '${prefix}/' + fn )
         ex.appendChild(pe)
 
+    def remove_element(self, element):
+        parent = element.parentNode
+        index = parent.childNodes.index(element)
+        if index > 0:
+            previous = parent.childNodes[index-1]
+            if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
+                parent.removeChild(previous)
+        parent.removeChild(element)
+
     def remove_empty_export(self):
         exports = self.root.getElementsByTagName('export')
         if len(exports)==0:
@@ -149,11 +170,44 @@ class PackageXML:
                     remove = False
 
             if remove:
-                export.parentNode.removeChild(export)
+                self.remove_element(export)
                 print '\tRemoving empty export tag'
+    
+    def remove_dependencies(self, name, pkgs, quiet=False):
+        for el in self.root.getElementsByTagName(name):
+            pkg = el.childNodes[0].nodeValue
+            if pkg in pkgs:
+                if not quiet:
+                    print '\tRemoving %s %s'%(name, pkg)
+                self.remove_element(el)
 
-    def insert_new_elements(self, name, values, i):
+    def get_child_indexes(self):
+        tags = collections.defaultdict(list)
+        i = 0
+        current = None
+        current_start = 0
+        current_last = 0
+        while i < len(self.root.childNodes):
+            child = self.root.childNodes[i]
+            if child.nodeType==child.TEXT_NODE:
+                i += 1
+                continue
+
+            name = child.nodeName
+            if name != current:
+                if current:
+                    tags[current].append((current_start, current_last))
+                current_start = i
+                current = name
+            current_last = i
+            i += 1
+        if current:
+            tags[current].append((current_start, current_last))
+        return dict(tags)
+
+    def insert_new_elements(self, name, values):
         x = []
+        indexes = self.get_child_indexes()
         for pkg in values:
             if pkg in IGNORE_PACKAGES:
                 continue
@@ -163,42 +217,56 @@ class PackageXML:
             node.appendChild(self.tree.createTextNode(pkg))
             x.append(node)
 
-        self.root.childNodes = self.root.childNodes[:i-1] + x  + self.root.childNodes[i-1:]
+        index = None
+        if name in indexes:
+            index = indexes[name][-1][-1]
+        else:
+            previous = None
+            max_index = get_ordering_index(name, whiny=False)
+            best_tag = None
+            best_index = None
+            for tag in indexes:
+                ni = get_ordering_index(tag, whiny=False)
+                if ni < max_index and (best_tag is None or ni > best_index):
+                    best_tag = tag
+                    best_index = ni
+            if best_tag is None:
+                index = len(self.root.childNodes)
+            else:
+                index = indexes[best_tag][-1][-1]
+        self.root.childNodes = self.root.childNodes[:index+1] + x  + self.root.childNodes[index+1:]
 
     def add_packages(self, pkgs, build=True):
         for pkg in self.get_packages(build):
             if pkg in pkgs:
                 pkgs.remove(pkg)
+        if len(pkgs)==0:
+            return
 
-        state = 0
-        i = 0
-        while i < len(self.root.childNodes):
-            child = self.root.childNodes[i]
-            if child.nodeType==child.TEXT_NODE:
-                i += 1
-                continue
+        indexes = self.get_child_indexes()
+        if build:
+            new_tag = 'build_depened'
+        elif self.format == 1:
+            new_tag = 'run_depend'
+        else:
+            new_tag = 'exec_depend'
+        self.insert_new_elements(new_tag, pkgs)
 
-            name = child.nodeName
-            if name == 'build_depend':
-                state = 1
-            elif name == 'run_depend':
-                if state <= 1 and build:
-                    self.insert_new_elements('build_depend', pkgs, i)
-                    i += len(pkgs)*2
-                state = 2
-            elif state == 2:
-                if not build:
-                    self.insert_new_elements('run_depend', pkgs, i)
-                    i += len(pkgs)*2
-                state = 3
-            i += 1
-        if state==0:
-            if build:
-                self.insert_new_elements('build_depend', pkgs, i)
+    def replace_package_set(self, source_tags, new_tag):
+        intersection = None
+        for tag in source_tags:
+            pkgs = set(self.get_packages_by_tag(tag))
+            if intersection is None:
+                intersection = pkgs
             else:
-                self.insert_new_elements('run_depend', pkgs, i)
-        elif state <= 2 and not build:
-            self.insert_new_elements('run_depend', pkgs, i)
+                intersection = intersection.intersection(pkgs)
+        for tag in source_tags:
+            self.remove_dependencies(tag, intersection)
+        self.insert_new_elements(new_tag, intersection)
+
+    def convert_to_format_2(self):
+        self.replace_package_set(['build_depend', 'run_depend'], 'depend')
+        self.replace_package_set(['run_depend'], 'exec_depend')
 
     def enforce_ordering(self):
         chunks = []
@@ -224,6 +292,8 @@ class PackageXML:
     def output(self, new_fn=None):
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
+        if self.format==2 and CFG.should('consolidate_depend_in_package_xml'):
+            self.replace_package_set(['build_depend', 'build_export_depend', 'exec_depend'], 'depend')
 
         if new_fn is None:
             new_fn = self.fn
@@ -231,7 +301,7 @@ class PackageXML:
         if not self.header:
             s = s.replace('<?xml version="1.0" ?>', '').strip()
         else:
-            s = s.replace('?><package>', '?>\n<package>')
+            s = s.replace('?><package', '?>\n<package')
             s = s.replace(' ?>', '?>')
 
         if CFG.should('remove_dumb_package_comments'):

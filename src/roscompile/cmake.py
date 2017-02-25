@@ -13,7 +13,8 @@ ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modu
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
             'generate_messages', 'catkin_package',
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
-            'catkin_add_gtest', 'group', 'install']
+            'catkin_add_gtest', 'group',
+            ['install', 'catkin_install_python']]
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 
@@ -151,7 +152,10 @@ class Command:
             return self.original
 
         s = self.cmd + self.pre_paren + '('
-        s += ''.join(map(str,self.sections))
+        for section in map(str, self.sections):
+            if s[-1] not in '( \n':
+                s+=' '
+            s+=section
         s += ')'
         return s
 
