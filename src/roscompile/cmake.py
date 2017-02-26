@@ -1,13 +1,11 @@
 from collections import defaultdict, OrderedDict
 import re
 import os.path
-from resource_retriever import get
 from roscompile.config import CFG
+from roscompile.util import clean_contents, remove_blank_lines
 
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
-IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/cmake.ignore').read().split('\n') if len(s)>0]
-IGNORE_PATTERNS = [s + '\n' for s in get('package://roscompile/data/cmake_patterns.ignore').read().split('\n') if len(s)>0]
 
 ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modules', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
@@ -380,16 +378,10 @@ class CMake:
             self.enforce_ordering()
 
         s = str(self)
-
         if CFG.should('remove_dumb_cmake_comments'):
-            D = {'package': self.name}
-            for line in IGNORE_LINES:
-                s = s.replace(line, '')
-            for pattern in IGNORE_PATTERNS:
-                s = s.replace(pattern % D, '')
+            s = clean_contents(s, 'cmake', {'package': self.name})
         if CFG.should('remove_empty_cmake_lines'):
-            while '\n\n\n' in s:
-                s = s.replace('\n\n\n', '\n\n')
+            s = remove_blank_lines(s)
 
         if fn is None:
             fn = self.fn

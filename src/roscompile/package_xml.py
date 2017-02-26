@@ -1,10 +1,9 @@
 from  xml.dom.minidom import parse
-from resource_retriever import get
 from roscompile.config import CFG
 import operator, collections, re
+from roscompile.util import clean_contents, remove_blank_lines
 
 IGNORE_PACKAGES = ['roslib']
-IGNORE_LINES = [s + '\n' for s in get('package://roscompile/data/package.ignore').read().split('\n') if len(s)>0]
 
 DEPEND_ORDERING = ['buildtool_depend', 'depend', 'build_depend', 'build_export_depend',
 'run_depend', 'exec_depend', 'test_depend', 'doc_depend']
@@ -49,7 +48,8 @@ def count_trailing_spaces(s):
     return c
 
 class PackageXML:
-    def __init__(self, fn):
+    def __init__(self, name, fn):
+        self.name = name
         self.tree = parse(fn)
         self.root = self.tree.childNodes[0]
         self.header = '<?xml' in open(fn).read()
@@ -305,12 +305,10 @@ class PackageXML:
             s = s.replace(' ?>', '?>')
 
         if CFG.should('remove_dumb_package_comments'):
-            for line in IGNORE_LINES:
-                s = s.replace(line, '')
+            s = clean_contents(s, 'package', {'package': self.name})
 
         if CFG.should('remove_empty_package_lines'):
-            while '\n\n\n' in s:
-                s = s.replace('\n\n\n', '\n\n')
+            s = remove_blank_lines(s)
 
         old_s = open(new_fn, 'r').read().decode('UTF-8')
         if old_s.strip() == s:
