@@ -165,6 +165,7 @@ class CMake:
     def __init__(self, fn, name=None):
         self.fn = fn
         self.name = name
+        self.root = os.path.split(fn)[0]
         if os.path.exists(fn):
             self.contents = parse_file(open(fn).read())
         else:
@@ -330,7 +331,8 @@ class CMake:
     def update_cplusplus_installs(self):
         self.install_section_check( self.get_executables(), 'exec' )
         self.install_section_check( self.get_libraries(), 'library' )
-        self.install_section_check( ['include/${PROJECT_NAME}/'], 'headers', True)
+        if self.name and os.path.exists( os.path.join(self.root, 'include', self.name)):
+            self.install_section_check( ['include/${PROJECT_NAME}/'], 'headers', True)
 
     def update_misc_installs(self, items, subfolder=''):
         self.install_section_check( items, 'misc', False, subfolder)
