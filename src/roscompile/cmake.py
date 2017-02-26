@@ -384,6 +384,8 @@ class CMake:
             s = clean_contents(s, 'cmake', {'package': self.name})
         if CFG.should('remove_empty_cmake_lines'):
             s = remove_blank_lines(s)
+        if '(\n)' in s:
+            s = s.replace('(\n)', '()')
 
         if fn is None:
             fn = self.fn

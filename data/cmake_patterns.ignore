@@ -1,3 +1,4 @@
+#  LIBRARIES %(package)s
 # add_library(%(package)s
 #   src/${PROJECT_NAME}/%(package)s.cpp
 # add_executable(%(package)s_node src/%(package)s_node.cpp)
