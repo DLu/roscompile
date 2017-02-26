@@ -2,14 +2,14 @@ from collections import defaultdict, OrderedDict
 import re
 import os.path
 from roscompile.config import CFG
-from roscompile.util import clean_contents, remove_blank_lines
+from roscompile.util import clean_contents, remove_blank_lines, remove_all_hashes
 
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
 ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modules', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files', 'generate_dynamic_reconfigure_options',
-            'generate_messages', 'catkin_package',
+            'generate_messages', 'catkin_package', 'catkin_metapackage',
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
@@ -409,6 +409,7 @@ class CMake:
 
         s = str(self)
         if CFG.should('remove_dumb_cmake_comments'):
+            s = remove_all_hashes(s)
             s = clean_contents(s, 'cmake', {'package': self.name})
         if CFG.should('remove_empty_cmake_lines'):
             s = remove_blank_lines(s)

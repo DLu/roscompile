@@ -1,4 +1,6 @@
 from resource_retriever import get
+import re
+HASH_PATTERN = re.compile('\n#+\n')
 
 def get_ignore_data_helper(basename):
     #try:
@@ -27,4 +29,11 @@ def clean_contents(s, name, variables=None):
 def remove_blank_lines(s):
     while '\n\n\n' in s:
         s = s.replace('\n\n\n', '\n\n')
+    return s
+
+def remove_all_hashes(s):
+    m = HASH_PATTERN.search(s)
+    while m:
+        s = s.replace(m.group(0), '\n')
+        m = HASH_PATTERN.search(s)
     return s
