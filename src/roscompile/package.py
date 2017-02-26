@@ -187,17 +187,17 @@ class Package:
                 self.cmake.update_python_installs(setup.execs)
             
             if CFG.should('check_misc_installs'):
-		        extra_files_by_folder = collections.defaultdict(list)
-		        the_root = os.path.join(self.root, '')
-		        for category, files in self.files.iteritems():
-		            if category in ['source', 'msg', 'srv', 'action', None]:
-		                continue
-		            for fn in files:
-		                path, base = os.path.split(fn.replace(the_root, '', 1))
-		                extra_files_by_folder[path].append(base)
-		        
-		        for folder, files in extra_files_by_folder.iteritems():
-		            self.cmake.update_misc_installs(files, folder)
+                extra_files_by_folder = collections.defaultdict(list)
+                the_root = os.path.join(self.root, '')
+                for category, files in self.files.iteritems():
+                    if category in ['source', 'msg', 'srv', 'action', None]:
+                        continue
+                    for fn in files:
+                        path, base = os.path.split(fn.replace(the_root, '', 1))
+                        extra_files_by_folder[path].append(base)
+                
+                for folder, files in extra_files_by_folder.iteritems():
+                    self.cmake.update_misc_installs(files, folder)
 
         self.cmake.output()
 
