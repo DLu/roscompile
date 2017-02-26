@@ -158,6 +158,14 @@ class Package:
 
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
+            
+        if self.manifest.is_metapackage() and CFG.should('update_metapackage_deps'):
+            parent_path = os.path.abspath(os.path.join(self.root, '..'))
+            parent_folder = os.path.split(parent_path)[1]
+            if self.name == parent_folder:
+                for package in get_packages(parent_path, create_objects=False):
+                    pkg_name = os.path.split(package)[1]
+                    self.manifest.add_packages([pkg_name], False)
 
         self.manifest.output()
 
@@ -259,13 +267,16 @@ class Package:
                 if mainpage_pattern.match(s):
                     os.remove(fn)
 
-def get_packages(root_fn='.'):
+def get_packages(root_fn='.', create_objects=True):
     packages = []
     for root,dirs,files in os.walk(root_fn):
         if '.git' in root:
             continue
         if 'package.xml' in files:
-            packages.append(Package(root))
+            if create_objects:
+                packages.append(Package(root))
+            else:
+                packages.append(root)
     return packages
 
 def get_people_info(pkgs):
