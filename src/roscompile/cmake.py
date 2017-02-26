@@ -53,10 +53,13 @@ def install_sections(cmd, D, subfolder=''):
                 destination = os.path.join(destination, subfolder)
             cmd.check_complex_section(key, destination)
 
-def get_install_types(cmd):
+def get_install_types(cmd, subfolder=''):
     types = set()
     for section in cmd.get_sections('DESTINATION'):
-        type_ = get_install_type(section.values[0])
+        the_folder = section.values[0]
+        if len(subfolder)>0:
+            the_folder = the_folder.replace('/' + subfolder, '')
+        type_ = get_install_type(the_folder)
         if type_:
             types.add(type_)
     return types
@@ -314,7 +317,7 @@ class CMake:
     def get_commands_by_type(self, name, subfolder=''):
         matches = []
         for cmd in self.content_map['install']:
-            if name in get_install_types(cmd):
+            if name in get_install_types(cmd, subfolder):
                 matches.append(cmd)
         return matches
 
