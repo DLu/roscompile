@@ -39,6 +39,7 @@ class Package:
         self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.name, self.root + '/package.xml')
         self.cmake = CMake(self.root + '/CMakeLists.txt', self.name)
+        self.plugins = {}
         self.files = self.sort_files()
         self.sources = [Source(source, self.root) for source in self.files['source']]
 
@@ -70,7 +71,8 @@ class Package:
                     found = False
                     for tipo, pfilename in plugins:
                         if fn==pfilename:
-                            data[PLUGIN_CONFIG].append( (full, tipo) )
+                            data[PLUGIN_CONFIG].append( full )
+                            self.plugins[tipo] = PluginXML(full)
                             found = True
                             break
                     if found:
@@ -228,18 +230,14 @@ class Package:
         for source in self.sources:
             plugins += source.get_plugins()
 
-        configs = {}
-        for filename, tipo in self.files[PLUGIN_CONFIG]:
-            configs[tipo] = PluginXML(filename)
-
         pattern = '%s::%s'
         for pkg1, name1, pkg2, name2 in plugins:
-            if pkg2 not in configs:
-                configs[pkg2] = PluginXML( self.root + '/plugins.xml')
+            if pkg2 not in self.plugins:
+                self.plugins[pkg2] = PluginXML( self.root + '/plugins.xml')
                 self.manifest.add_plugin_export('plugins.xml', pkg2)
-            configs[pkg2].insert_if_needed(pattern%(pkg1, name1), pattern%(pkg2, name2))
+            self.plugins[pkg2].insert_if_needed(pattern%(pkg1, name1), pattern%(pkg2, name2))
 
-        for config in configs.values():
+        for config in self.plugins.values():
             config.write()
         self.manifest.output()
 
