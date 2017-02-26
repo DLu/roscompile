@@ -245,7 +245,7 @@ class PackageXML:
 
         indexes = self.get_child_indexes()
         if build:
-            new_tag = 'build_depened'
+            new_tag = 'build_depend'
         elif self.format == 1:
             new_tag = 'run_depend'
         else:
