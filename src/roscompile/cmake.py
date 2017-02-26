@@ -40,16 +40,48 @@ def get_install_type(destination):
         if destination in m:
             return name
 
+def make_list(value):
+    if type(value)==str:
+        return [value]
+    else:
+        return value
+
 def install_sections(cmd, D, subfolder=''):
     for destination, value in D.iteritems():
-        if type(value)==str:
-            keys = [value]
-        else:
-            keys = value
-        for key in keys:
+        for key in make_list(value):
             if len(subfolder)>0:
                 destination = os.path.join(destination, subfolder)
             cmd.check_complex_section(key, destination)
+
+def get_install_types(cmd):
+    types = set()
+    for section in cmd.get_sections('DESTINATION'):
+        type_ = get_install_type(section.values[0])
+        if type_:
+            types.add(type_)
+    return types
+
+def remove_install_section(cmd, destination_map):
+    empty_sections_to_remove = {}
+    for destination,value in destination_map.iteritems():
+        for key in make_list(value):
+            parts = key.split()
+            if len(parts)==2:
+                empty_sections_to_remove[parts[0]] = destination
+    sections = cmd.get_real_sections()
+    to_remove = []
+    for i, section in enumerate(sections):
+        if section.name not in empty_sections_to_remove or len(section.values)!=0:
+            continue
+        next = sections[i+1]
+        dest = empty_sections_to_remove[section.name]
+        if next.name=='DESTINATION' and len(next.values)==1 and next.values[0]==dest:
+            to_remove.append(section)
+            to_remove.append(next)
+    if len(to_remove)>0:
+        for section in to_remove:
+            cmd.sections.remove(section)
+        cmd.changed = True
 
 class SectionStyle:
     def __init__(self):
@@ -282,15 +314,8 @@ class CMake:
     def get_commands_by_type(self, name, subfolder=''):
         matches = []
         for cmd in self.content_map['install']:
-            found = False
-            for section in cmd.get_sections('DESTINATION'):
-                destination = section.values[0]
-                if len(subfolder)>0:
-                    destination = os.path.join(destination, subfolder)
-                if get_install_type(destination)==name:
-                    matches.append(cmd)
-                    found = True
-                    break
+            if name in get_install_types(cmd):
+                matches.append(cmd)
         return matches
 
     def install_section_check(self, items, install_type, directory=False, subfolder=''):
@@ -300,7 +325,10 @@ class CMake:
         cmds = self.get_commands_by_type(install_type, subfolder)
         if len(items)==0:
             for cmd in cmds:
-                self.remove_command(cmd)
+                if len(get_install_types(cmd))==1:
+                    self.remove_command(cmd)
+                else:
+                    remove_install_section(cmd, destination_map)
             return
 
         cmd = None
