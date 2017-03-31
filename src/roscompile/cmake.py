@@ -211,14 +211,18 @@ class CMake:
                 continue
             self.content_map[ c.cmd ].append(c)
 
-    def section_check(self, items, cmd_name, section_name=''):
-        if len(items)==0:
+    def section_check(self, items, cmd_name, section_name='', zero_okay=False):
+        if len(items)==0 and not zero_okay:
             return
 
         if cmd_name not in self.content_map:
-            params = section_name + ' '  + ' '.join(items)
-            self.add_command_string('%s(%s)'%(cmd_name,params))
-            print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
+            if len(items)>0:
+                params = section_name + ' '  + ' '.join(items)
+                self.add_command_string('%s(%s)'%(cmd_name,params))
+                print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
+            else:
+                self.add_command(Command(cmd_name))
+                print '\tAdding new %s command to CMakeLists.txt' % cmd_name
             return
 
         section = None
@@ -251,7 +255,7 @@ class CMake:
             self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
             self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
 
-            self.section_check(deps, 'generate_messages', 'DEPENDENCIES')
+            self.section_check(deps, 'generate_messages', 'DEPENDENCIES', zero_okay=True)
 
         cfgs = ['cfg/' + os.path.basename(cfg) for cfg in cfgs]
         self.section_check( cfgs, 'generate_dynamic_reconfigure_options', '')
