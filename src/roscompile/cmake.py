@@ -211,7 +211,7 @@ class CMake:
                 continue
             self.content_map[ c.cmd ].append(c)
 
-    def section_check(self, items, cmd_name, section_name):
+    def section_check(self, items, cmd_name, section_name=''):
         if len(items)==0:
             return
 
@@ -313,6 +313,10 @@ class CMake:
 
         for target in targets:
             self.add_command_string('add_dependencies(%s %s)'%(target, ' '.join(marks)))
+
+    def check_include_path(self):
+        self.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
+        self.section_check(['include'], 'include_directories')
 
     def get_commands_by_type(self, name, subfolder=''):
         matches = []

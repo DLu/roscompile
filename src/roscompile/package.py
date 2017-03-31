@@ -186,6 +186,9 @@ class Package:
 
         self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
 
+        if self.has_header_files():
+            self.cmake.check_include_path()
+
         setup = self.get_setup_py()
         if setup and setup.valid and \
             'catkin_python_setup' not in self.cmake.content_map:
@@ -210,6 +213,13 @@ class Package:
                     self.cmake.update_misc_installs(files, folder)
 
         self.cmake.output()
+
+    def has_header_files(self):
+        goal_folder = os.path.join(self.root, 'include', self.name)
+        for fn in self.files['source']:
+            if goal_folder in fn:
+                return True
+        return False
 
     def get_python_source(self):
         sources = []
