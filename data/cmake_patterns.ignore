@@ -2,6 +2,7 @@
 # add_library(%(package)s
 #   src/${PROJECT_NAME}/%(package)s.cpp
 # add_executable(%(package)s_node src/%(package)s_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/%(package)s_node.cpp)
 # add_dependencies(%(package)s_node %(package)s_generate_messages_cpp)
 # target_link_libraries(%(package)s_node
 # install(TARGETS %(package)s %(package)s_node
