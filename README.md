@@ -3,7 +3,7 @@ roscompile is a tool that examines ROS (Catkin) packages, analyzes the files wit
 
 # Features
 ## Dependencies
- * Checks for dependencies by looking in the source code and launch files. 
+ * Checks for dependencies by looking in the source code and launch files.
  * Inserts build and run dependencies into your package.xml
  * Inserts dependencies into your CMakeLists.txt
  * Sorts lists of dependencies (in both package.xml/CMakeLists.txt)
@@ -19,12 +19,12 @@ roscompile is a tool that examines ROS (Catkin) packages, analyzes the files wit
  * If you have python code, will automatically generate setup.py for you.
 
 ## Plugins
- * If you use pluginlib, will search your code for PLUGINLIB_EXPORT_CLASS macros, and update your plugin xml accordingly. 
+ * If you use pluginlib, will search your code for PLUGINLIB_EXPORT_CLASS macros, and update your plugin xml accordingly.
 
-## People 
+## People
  * Reads the &lt;author> and &lt;maintainer> tags
- * Allows you to specify a canonical name and email address to replace all variants on your name 
+ * Allows you to specify a canonical name and email address to replace all variants on your name
  * 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!'
 
 ## Configuration
- * Each of these features can be disabled by changing the `~/.ros/roscompile.yaml` file, which is written after your first usage. 
+ * Each of these features can be disabled by changing the `~/.ros/roscompile.yaml` file, which is written after your first usage.

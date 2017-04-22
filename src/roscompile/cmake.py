@@ -264,8 +264,8 @@ class CMake:
 
     def add_command_string(self, s):
         for cmd in parse_file(s):
-            self.add_command(cmd)        
-        
+            self.add_command(cmd)
+
     def add_command(self, cmd):
         if len(self.contents)>0 and type(self.contents[-1])!=str:
             self.contents.append('\n')

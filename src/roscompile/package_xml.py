@@ -172,7 +172,7 @@ class PackageXML:
             if remove:
                 self.remove_element(export)
                 print '\tRemoving empty export tag'
-    
+
     def is_metapackage(self):
         for node in self.root.getElementsByTagName('export'):
             for child in node.childNodes:
@@ -180,7 +180,7 @@ class PackageXML:
                     if child.nodeName == 'metapackage':
                         return True
         return False
-    
+
     def remove_dependencies(self, name, pkgs, quiet=False):
         for el in self.root.getElementsByTagName(name):
             pkg = el.childNodes[0].nodeValue

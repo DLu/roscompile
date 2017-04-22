@@ -158,7 +158,7 @@ class Package:
 
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
-            
+
         if self.manifest.is_metapackage() and CFG.should('update_metapackage_deps'):
             parent_path = os.path.abspath(os.path.join(self.root, '..'))
             parent_folder = os.path.split(parent_path)[1]
@@ -198,7 +198,7 @@ class Package:
             self.cmake.update_cplusplus_installs()
             if setup:
                 self.cmake.update_python_installs(setup.execs)
-            
+
             if CFG.should('check_misc_installs'):
                 extra_files_by_folder = collections.defaultdict(list)
                 the_root = os.path.join(self.root, '')
@@ -208,7 +208,7 @@ class Package:
                     for fn in files:
                         path, base = os.path.split(fn.replace(the_root, '', 1))
                         extra_files_by_folder[path].append(base)
-                
+
                 for folder, files in extra_files_by_folder.iteritems():
                     self.cmake.update_misc_installs(files, folder)
 

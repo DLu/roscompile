@@ -57,7 +57,7 @@ class AwesomeParser:
             s = self.match('whitespace')
             cmd.pre_paren += s
             original += s
-        original += self.match('left paren')        
+        original += self.match('left paren')
 
         while len(self.tokens)>0:
             typ = self.next_real_type()
@@ -96,7 +96,7 @@ class AwesomeParser:
                 s = self.match()
                 original += s
                 style.name_val_sep += s
-        
+
         delims = set()
         current = ''
         while self.next_real_type() not in ['right paren', 'caps']:
@@ -118,7 +118,7 @@ class AwesomeParser:
             if len(delims)==1:
                 style.val_sep = list(delims)[0]
             else:
-                #TODO: Smarter multi delim parsing 
+                #TODO: Smarter multi delim parsing
                 # print delims
                 style.val_sep = list(delims)[0]
 
@@ -141,7 +141,7 @@ class AwesomeParser:
             return self.tokens[0][0]
         else:
             return None
-    
+
     def next_real_type(self):
         for x,y in self.tokens:
             if x not in NOT_REAL:
