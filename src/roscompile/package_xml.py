@@ -273,6 +273,8 @@ class PackageXML:
         self.insert_new_elements(new_tag, intersection)
 
     def convert_to_format_2(self):
+        self.format = 2
+        self.root.setAttribute('format', '2')
         self.replace_package_set(['build_depend', 'run_depend'], 'depend')
         self.replace_package_set(['run_depend'], 'exec_depend')
 
