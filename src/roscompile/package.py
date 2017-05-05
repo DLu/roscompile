@@ -297,6 +297,13 @@ def get_people_info(pkgs):
         for k,v in package.get_people().iteritems():
             people.update(v)
 
+    # Remove people already in the replacement list
+    for name in replace:
+        if name in people:
+            del people[name]
+    if len(people)==0:
+        return people, replace
+
     if 'canonical_names' not in CFG:
         name = query('What is your name (exactly as you\'d like to see it in the documentation)? ')
         email = query('What is your email (for documentation purposes)? ')
