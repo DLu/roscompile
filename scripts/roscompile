@@ -1,24 +1,21 @@
 #!/usr/bin/python
 
-from roscompile.package import Package, get_packages, get_people_info
+from roscompile.package import Package, get_packages
+from roscompile.people_management import fix_people
 from roscompile.config import CFG
 
 CFG.check_command_flags()
 
 pkgs = get_packages()
 
-if CFG.should('check_names'):
-    people, replace = get_people_info(pkgs)
+if CFG.should('update_manifest') and CFG.should('check_names'):
+    fix_people(pkgs)
 
 for package in pkgs:
     print package.name
-    if CFG.should('check_names'):
-        package.update_people(people, replace)
 
     if CFG.should('update_manifest'):
         package.update_manifest()
-    elif CFG.should('check_names'):
-        package.manifest.output()
 
     if CFG.should('update_cmake'):
         package.update_cmake()

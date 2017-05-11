@@ -37,3 +37,9 @@ def remove_all_hashes(s):
         s = s.replace(m.group(0), '\n')
         m = HASH_PATTERN.search(s)
     return s
+
+def simplify(s):
+    try:
+        return str(s)
+    except:
+        return s

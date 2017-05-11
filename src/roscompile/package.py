@@ -24,9 +24,6 @@ EXTRA = 'Extra!'
 
 MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
 
-def query(s):
-    return raw_input(s).decode(sys.stdin.encoding)
-
 def match(ext):
     for name, exts in EXTS.iteritems():
         if ext in exts:
@@ -265,9 +262,9 @@ class Package:
         people['authors'] = self.manifest.get_people('author')
         return people
 
-    def update_people(self, people, replace={}):
-        self.manifest.update_people('maintainer', people, replace)
-        self.manifest.update_people('author', people, replace)
+    def update_people(self, replace={}):
+        self.manifest.update_people('maintainer', replace)
+        self.manifest.update_people('author', replace)
 
     def remove_useless(self):
         mainpage_pattern = re.compile(MAINPAGE_S % self.name)
@@ -288,62 +285,3 @@ def get_packages(root_fn='.', create_objects=True):
             else:
                 packages.append(root)
     return packages
-
-def get_people_info(pkgs):
-    people = {}
-    replace = dict(CFG.get('replace_names', {}))
-
-    for package in pkgs:
-        for k,v in package.get_people().iteritems():
-            people.update(v)
-
-    # Remove people already in the replacement list
-    for name in replace:
-        if name in people:
-            del people[name]
-    if len(people)==0:
-        return people, replace
-
-    if 'canonical_names' not in CFG:
-        name = query('What is your name (exactly as you\'d like to see it in the documentation)? ')
-        email = query('What is your email (for documentation purposes)? ')
-
-        CFG['canonical_names'] = [{'name': name, 'email': email}]
-
-    for d in CFG['canonical_names']:
-        people[ d['name'] ] = d['email']
-
-    while len(people)>1:
-        print
-        values = sorted(people.keys(), key=lambda d: d.lower())
-        for i, n in enumerate(values):
-            print '%d) %s %s'%(i, n, '(%s)'%people[n] if n in people else '')
-        print
-        c = query('Which name would you like to replace? (Enter #, or q to quit)')
-        if c=='q':
-            break
-        try:
-            c = int(c)
-        except:
-            continue
-        if c < 0 or c > len(values):
-            continue
-        c2 = query('What do you want to replace it with? ')
-        if c2=='q':
-            break
-        try:
-            c2 = int(c2)
-        except:
-            continue
-        if c2 < 0 or c2>len(values) or c==c2:
-            continue
-        name = values[c]
-        email = values[c2]
-        replace[ name ] = email
-        c3 = query('Always do this? (y/n) ')
-        if c3 == 'y':
-            if 'replace_names' not in CFG:
-                CFG['replace_names'] = {}
-            CFG['replace_names'][name] = email
-        del people[ name ]
-    return people, replace

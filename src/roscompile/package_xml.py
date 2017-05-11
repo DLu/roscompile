@@ -1,6 +1,7 @@
 from  xml.dom.minidom import parse
 from roscompile.config import CFG
 import operator, collections, re
+from roscompile.people_management import get_rule_match
 from roscompile.util import clean_contents, remove_blank_lines
 
 IGNORE_PACKAGES = ['roslib']
@@ -104,27 +105,23 @@ class PackageXML:
         return pkgs
 
     def get_people(self, tag):
-        people = {}
+        people = []
         for el in self.root.getElementsByTagName(tag):
             name = el.childNodes[0].nodeValue
             email = el.getAttribute('email')
-            people[name] = email
+            people.append((name, email))
         return people
 
-    def update_people(self, tag, people, replace={}):
+    def update_people(self, tag, replace={}):
         for el in self.root.getElementsByTagName(tag):
             name = el.childNodes[0].nodeValue
-            if name in replace:
-                nn = replace[name]
-                el.childNodes[0].nodeValue = nn
-                el.setAttribute( 'email', people[nn] )
-                print '\tReplacing %s with %s as %s'%(name, nn, tag)
-            elif name in people:
-                if len(people[name])>0:
-                    if el.hasAttribute('email') and el.getAttribute('email')==people[name]:
-                        continue
-                    el.setAttribute( 'email', people[name] )
-                    print '\tSetting %s\'s email to %s'%(name, people[name])
+            email = el.getAttribute('email') if el.hasAttribute('email') else ''
+            match = get_rule_match(replace, name, email)
+            if match is not None:
+                new_name, new_email = match
+                el.childNodes[0].nodeValue = new_name
+                el.setAttribute( 'email', new_email )
+                print '\tReplacing %s %s/%s with %s/%s'%(tag, name, email, new_name, new_email)
 
     def get_plugin_xmls(self):
         xmls = []
