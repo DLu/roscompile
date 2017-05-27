@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from roscompile.package import Package, get_packages
+from roscompile.package import get_packages
 from roscompile.people_management import fix_people
 from roscompile.config import CFG
 

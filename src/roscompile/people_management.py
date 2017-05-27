@@ -14,7 +14,7 @@ def get_rule_match(replace_rules, name, email):
 def fix_people(pkgs, interactive=True):
     people = collections.defaultdict(set)
     for package in pkgs:
-        for tag,the_list in package.get_people().iteritems():
+        for tag, the_list in package.get_people().iteritems():
             for name, email in the_list:
                 people[email].add(name)
 
@@ -40,7 +40,7 @@ def fix_people(pkgs, interactive=True):
         replace_rules[from_key] = to_key
 
     for email, names in people.iteritems():
-        if len(names)==1:
+        if len(names) == 1:
             one_name = list(names)[0]
             matching_rule = get_rule_match(replace_rules, one_name, email)
             if matching_rule is not None:
@@ -49,15 +49,17 @@ def fix_people(pkgs, interactive=True):
                 if canonical_emails[email] == one_name:
                     continue
                 else:
-                    print 'The name "%s" found in the packages for %s does not match saved name "%s"'%(one_name, email, canonical_emails[email])
+                    print 'The name "%s" found in the packages for %s does not match saved name "%s"' % \
+                          (one_name, email, canonical_emails[email])
                     continue
             elif one_name in canonical_names:
-                print 'The email "%s" found in the packages for %s does not match saved email "%s"'%(email, one_name, canonical_names[one_name])
+                print 'The email "%s" found in the packages for %s does not match saved email "%s"' % \
+                      (email, one_name, canonical_names[one_name])
                 continue
             elif interactive:
                 response = 'x'
                 while response not in 'abcq':
-                    print 'New person %s/%s found! What would you like to do? '%(one_name, email)
+                    print 'New person %s/%s found! What would you like to do? ' % (one_name, email)
                     print ' a) Leave it be.'
                     print ' b) Replace with another.'
                     print ' c) Mark as canonical name.'
@@ -82,7 +84,7 @@ def fix_people(pkgs, interactive=True):
                     while True:
                         print "== Options =="
                         for i, (name, email0) in enumerate(options):
-                            print '%d) %s/%s'%(i, name, email0)
+                            print '%d) %s/%s' % (i, name, email0)
                         print 'n) None of the above'
                         print 'i) Nevermind.'
                         print 'q) Quit.'
@@ -103,13 +105,13 @@ def fix_people(pkgs, interactive=True):
                         except:
                             None
                     if new_name and new_email:
-                        new_key = '%s/%s'%(new_name, new_email)
+                        new_key = '%s/%s' % (new_name, new_email)
                         response = 'x'
                         while response not in 'abcdq':
                             print "== Should we always do this? =="
-                            print ' a) Always replace exact match %s/%s with %s'%(one_name, email, new_key)
-                            print ' b) Replace anyone with the name %s with %s'%(one_name, new_key)
-                            print ' c) Replace anyone with the email %s with %s'%(email, new_key)
+                            print ' a) Always replace exact match %s/%s with %s' % (one_name, email, new_key)
+                            print ' b) Replace anyone with the name %s with %s' % (one_name, new_key)
+                            print ' c) Replace anyone with the email %s with %s' % (email, new_key)
                             print ' d) Just do it for now.'
                             print ' q) Quit.'
                             response = raw_input('? ').lower()
@@ -131,8 +133,10 @@ def fix_people(pkgs, interactive=True):
                     canonical_names[one_name] = email
                     canonical_emails[email] = one_name
                     canonical.append((one_name, email))
-                    CFG['canonical_names'] = [{'name': one_name, 'email': email}]
+                    if 'canonical_names' not in CFG:
+                        CFG['canonical_names'] = []
+                    CFG['canonical_names'].append({'name': one_name, 'email': email})
                     continue
         else:
-            print 'Found %s with multiple names: %s'%(email, ', '.join(names))
+            print 'Found %s with multiple names: %s' % (email, ', '.join(names))
     package.update_people(replace_rules)

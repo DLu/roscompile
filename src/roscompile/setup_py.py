@@ -29,9 +29,9 @@ class SetupPy:
         self.valid = False
         self.execs = []
         for source in self.files:
-            if 'src/%s'%self.name in source.fn:
+            if 'src/%s' % self.name in source.fn:
                 self.valid = True
-            if source.is_executable() and '.cfg'!=source.fn[-4:]:
+            if source.is_executable() and '.cfg' != source.fn[-4:]:
                 self.execs.append(source.rel_fn)
 
     def write_if_needed(self):
@@ -55,11 +55,9 @@ class SetupPy:
         with open(fn, 'w') as f:
             f.write(output)
 
-
     def __repr__(self):
-        if len(self.execs)>0:
-            execs = EXEC_TEMPLATE % ', '.join(["'%s'"%s for s in self.execs])
+        if len(self.execs) > 0:
+            execs = EXEC_TEMPLATE % ', '.join(["'%s'" % s for s in self.execs])
         else:
             execs = ''
         return TEMPLATE % {'name': self.name, 'var': self.var, 'exec': execs}
-

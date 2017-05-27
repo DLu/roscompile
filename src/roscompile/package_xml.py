@@ -1,27 +1,27 @@
-from  xml.dom.minidom import parse
+from xml.dom.minidom import parse
 from roscompile.config import CFG
-import operator, collections, re
+import operator
+import collections
+import re
 from roscompile.people_management import get_rule_match
 from roscompile.util import clean_contents, remove_blank_lines
 
 IGNORE_PACKAGES = ['roslib']
 
 DEPEND_ORDERING = ['buildtool_depend', 'depend', 'build_depend', 'build_export_depend',
-'run_depend', 'exec_depend', 'test_depend', 'doc_depend']
+                   'run_depend', 'exec_depend', 'test_depend', 'doc_depend']
 
 ORDERING = ['name', 'version', 'description',
-            ['maintainer', 'license', 'author', 'url']] + \
-            DEPEND_ORDERING + \
-            ['export']
+            ['maintainer', 'license', 'author', 'url']] + DEPEND_ORDERING + ['export']
 
 INDENT_PATTERN = re.compile('\n *')
 
 def get_ordering_index(name, whiny=True):
     for i, o in enumerate(ORDERING):
-        if type(o)==list:
+        if type(o) == list:
             if name in o:
                 return i
-        elif name==o:
+        elif name == o:
             return i
     if name and whiny:
         print '\tUnsure of ordering for', name
@@ -44,7 +44,7 @@ def get_sort_key(node, alphabetize_depends=True):
 
 def count_trailing_spaces(s):
     c = 0
-    while c < len(s) and s[-c-1]==' ':
+    while c < len(s) and s[-c - 1] == ' ':
         c += 1
     return c
 
@@ -66,12 +66,12 @@ class PackageXML:
 
         if CFG.should('enforce_package_tabbing'):
             for c in self.root.childNodes:
-                if c.nodeType == c.TEXT_NODE and c!=self.root.childNodes[-1]:
+                if c.nodeType == c.TEXT_NODE and c != self.root.childNodes[-1]:
                     spaces = count_trailing_spaces(c.data)
                     if spaces > self.std_tab:
-                        c.data = c.data[: self.std_tab-spaces]
+                        c.data = c.data[: self.std_tab - spaces]
                     elif spaces < self.std_tab:
-                        c.data = c.data + ' '*(self.std_tab-spaces)
+                        c.data = c.data + ' ' * (self.std_tab - spaces)
 
     @property
     def format(self):
@@ -120,44 +120,44 @@ class PackageXML:
             if match is not None:
                 new_name, new_email = match
                 el.childNodes[0].nodeValue = new_name
-                el.setAttribute( 'email', new_email )
-                print '\tReplacing %s %s/%s with %s/%s'%(tag, name, email, new_name, new_email)
+                el.setAttribute('email', new_email)
+                print '\tReplacing %s %s/%s with %s/%s' % (tag, name, email, new_name, new_email)
 
     def get_plugin_xmls(self):
         xmls = []
         export = self.root.getElementsByTagName('export')
-        if len(export)<1:
+        if len(export) < 1:
             return xmls
         for ex in export:
             for n in ex.childNodes:
                 if n.nodeType == self.root.ELEMENT_NODE:
                     plugin = n.getAttribute('plugin').replace('${prefix}/', '')
-                    xmls.append(( n.nodeName, plugin))
+                    xmls.append((n.nodeName, plugin))
         return xmls
 
     def add_plugin_export(self, fn, tipo):
         exports = self.root.getElementsByTagName('export')
-        if len(exports)==0:
+        if len(exports) == 0:
             ex = self.tree.createElement('export')
             self.root.appendChild(ex)
         else:
             ex = exports[0]
         pe = self.tree.createElement(tipo)
-        pe.setAttribute('plugin', '${prefix}/' + fn )
+        pe.setAttribute('plugin', '${prefix}/' + fn)
         ex.appendChild(pe)
 
     def remove_element(self, element):
         parent = element.parentNode
         index = parent.childNodes.index(element)
         if index > 0:
-            previous = parent.childNodes[index-1]
+            previous = parent.childNodes[index - 1]
             if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
                 parent.removeChild(previous)
         parent.removeChild(element)
 
     def remove_empty_export(self):
         exports = self.root.getElementsByTagName('export')
-        if len(exports)==0:
+        if len(exports) == 0:
             return
         for export in exports:
             remove = True
@@ -183,7 +183,7 @@ class PackageXML:
             pkg = el.childNodes[0].nodeValue
             if pkg in pkgs:
                 if not quiet:
-                    print '\tRemoving %s %s'%(name, pkg)
+                    print '\tRemoving %s %s' % (name, pkg)
                 self.remove_element(el)
 
     def get_child_indexes(self):
@@ -194,7 +194,7 @@ class PackageXML:
         current_last = 0
         while i < len(self.root.childNodes):
             child = self.root.childNodes[i]
-            if child.nodeType==child.TEXT_NODE:
+            if child.nodeType == child.TEXT_NODE:
                 i += 1
                 continue
 
@@ -216,8 +216,8 @@ class PackageXML:
         for pkg in values:
             if pkg in IGNORE_PACKAGES:
                 continue
-            print '\tInserting %s: %s'%(name, pkg)
-            x.append(self.tree.createTextNode('\n' + ' '*self.std_tab))
+            print '\tInserting %s: %s' % (name, pkg)
+            x.append(self.tree.createTextNode('\n' + ' ' * self.std_tab))
             node = self.tree.createElement(name)
             node.appendChild(self.tree.createTextNode(pkg))
             x.append(node)
@@ -226,7 +226,6 @@ class PackageXML:
         if name in indexes:
             index = indexes[name][-1][-1]
         else:
-            previous = None
             max_index = get_ordering_index(name, whiny=False)
             best_tag = None
             best_index = None
@@ -239,16 +238,15 @@ class PackageXML:
                 index = len(self.root.childNodes)
             else:
                 index = indexes[best_tag][-1][-1]
-        self.root.childNodes = self.root.childNodes[:index+1] + x  + self.root.childNodes[index+1:]
+        self.root.childNodes = self.root.childNodes[:index + 1] + x + self.root.childNodes[index + 1:]
 
     def add_packages(self, pkgs, build=True):
         for pkg in self.get_packages(build):
             if pkg in pkgs:
                 pkgs.remove(pkg)
-        if len(pkgs)==0:
+        if len(pkgs) == 0:
             return
 
-        indexes = self.get_child_indexes()
         if build:
             new_tag = 'build_depend'
         elif self.format == 1:
@@ -278,28 +276,26 @@ class PackageXML:
     def enforce_ordering(self):
         chunks = []
         current = []
-        group = None
         for x in self.root.childNodes:
             current.append(x)
-            if x.nodeType==x.ELEMENT_NODE:
-                chunks.append( (x, current) )
+            if x.nodeType == x.ELEMENT_NODE:
+                chunks.append((x, current))
                 current = []
-        if len(current)>0:
-            chunks.append( (None, current) )
+        if len(current) > 0:
+            chunks.append((None, current))
 
         self.root.childNodes = []
 
         alpha = CFG.should('alphabetize')
         key = lambda d: get_sort_key(d[0], alpha)
 
-        for a,b in sorted(chunks, key=key):
+        for a, b in sorted(chunks, key=key):
             self.root.childNodes += b
-
 
     def output(self, new_fn=None):
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
-        if self.format==2 and CFG.should('consolidate_depend_in_package_xml'):
+        if self.format == 2 and CFG.should('consolidate_depend_in_package_xml'):
             self.replace_package_set(['build_depend', 'build_export_depend', 'exec_depend'], 'depend')
 
         if new_fn is None:

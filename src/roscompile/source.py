@@ -20,7 +20,7 @@ class Source:
         else:
             self.rel_fn = fn
         self.lines = map(str.strip, open(fn, 'r').readlines())
-        self.python = '.py' in self.fn or (len(self.lines)>0 and 'python' in self.lines[0])
+        self.python = '.py' in self.fn or (len(self.lines) > 0 and 'python' in self.lines[0])
 
     def get_dependencies(self):
         d = set()
@@ -28,7 +28,7 @@ class Source:
             for EXP in EXPRESSIONS:
                 m = EXP.search(line)
                 if m:
-                    if is_package( m.group(1) ):
+                    if is_package(m.group(1)):
                         d.add(m.group(1))
         return sorted(list(d))
 
@@ -38,7 +38,7 @@ class Source:
             m = CPLUS.search(line)
             if m:
                 pkg, name = m.groups()
-                if len(name)==0 or name[-2:]!='.h':
+                if len(name) == 0 or name[-2:] != '.h':
                     continue
                 name = name.replace('.h', '')
                 if is_message(pkg, name) or is_service(pkg, name):
@@ -50,7 +50,7 @@ class Source:
         for line in self.lines:
             m = PLUGIN_RE.search(line)
             if m:
-                a.append( m.groups() )
+                a.append(m.groups())
         return a
 
     def is_executable(self):

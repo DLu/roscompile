@@ -7,7 +7,7 @@ FILENAME = os.path.expanduser('~/.ros/roscompile.yaml')
 class Config(dict):
     def __init__(self):
         if os.path.exists(FILENAME):
-            self.update( yaml.load( open( FILENAME ) ) )
+            self.update(yaml.load(open(FILENAME)))
             if 'flags' not in self:
                 keys = set()
                 flags = {}
@@ -39,7 +39,9 @@ class Config(dict):
 CFG = Config()
 
 def get_parser_with_flags():
-    parser = argparse.ArgumentParser(description='Tool for fixing up your ros code. Most options start False by default, unless they are flipped in %s'%FILENAME)
+    parser = argparse.ArgumentParser(description=
+                                     'Tool for fixing up your ros code. Most options start False by default,' +
+                                     ' unless they are flipped in %s' % FILENAME)
     for name, value in sorted(CFG.items()):
         action = 'store_true' if not value else 'store_false'
         parser.add_argument('--' + name, action=action, help='(disable)' if value else '')

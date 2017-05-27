@@ -1,7 +1,6 @@
 import os
 import os.path
 import collections
-import sys
 import re
 from roscompile.launch import Launch
 from roscompile.source import Source
@@ -22,7 +21,8 @@ SIMPLE = ['.launch', '.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
-MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
+MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+" + \
+             "Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
 
 def match(ext):
     for name, exts in EXTS.iteritems():
@@ -45,13 +45,13 @@ class Package:
 
         plugins = self.manifest.get_plugin_xmls()
 
-        for root,dirs,files in os.walk(self.root):
+        for root, dirs, files in os.walk(self.root):
             if '.git' in root or '.svn' in root:
                 continue
             for fn in files:
                 ext = os.path.splitext(fn)[-1]
-                full = '%s/%s'%(root, fn)
-                if fn[-1]=='~' or fn[-4:]=='.pyc':
+                full = '%s/%s' % (root, fn)
+                if fn[-1] == '~' or fn[-4:] == '.pyc':
                     continue
                 ext_match = match(ext)
 
@@ -67,8 +67,8 @@ class Package:
                 else:
                     found = False
                     for tipo, pfilename in plugins:
-                        if fn==pfilename:
-                            data[PLUGIN_CONFIG].append( full )
+                        if fn == pfilename:
+                            data[PLUGIN_CONFIG].append(full)
                             self.plugins[tipo] = PluginXML(full)
                             found = True
                             break
@@ -82,7 +82,7 @@ class Package:
                             continue
 
                     data[EXTRA].append(full)
-        if print_extras and len(data[EXTRA])>0:
+        if print_extras and len(data[EXTRA]) > 0:
             for fn in data[EXTRA]:
                 print '    ', fn
 
@@ -116,7 +116,7 @@ class Package:
         for src in self.sources:
             if exclude_python and src.python:
                 continue
-            d.update( src.get_message_dependencies() )
+            d.update(src.get_message_dependencies())
         return sorted(list(d))
 
     def get_dependencies_from_msgs(self):
@@ -125,12 +125,12 @@ class Package:
             with open(fn) as f:
                 for line in f:
                     if '#' in line:
-                        line = line[ : line.index('#')]
+                        line = line[:line.index('#')]
                     line = line.strip()
-                    if line=='---' or line=='':
+                    if line == '---' or line == '':
                         continue
                     if '=' in line.split():
-                        line = line[ : line.index('=') ]
+                        line = line[:line.index('=')]
                     tipo, name = line.split()
                     if '/' not in tipo:
                         continue
@@ -168,27 +168,26 @@ class Package:
 
     def print_files(self):
         for name, files in sorted(self.files.items()):
-            if len(files)==0:
+            if len(files) == 0:
                 continue
             print name
             for fn in sorted(files):
-                print '\t',fn
+                print '\t', fn
 
     def update_cmake(self):
         deps = self.get_dependencies_from_msgs()
-        self.cmake.check_dependencies( self.get_dependencies() + deps)
+        self.cmake.check_dependencies(self.get_dependencies() + deps)
 
         if CFG.should('check_exported_dependencies'):
             self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())
 
-        self.cmake.check_generators( self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
+        self.cmake.check_generators(self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
 
         if self.has_header_files():
             self.cmake.check_include_path()
 
         setup = self.get_setup_py()
-        if setup and setup.valid and \
-            'catkin_python_setup' not in self.cmake.content_map:
+        if setup and setup.valid and 'catkin_python_setup' not in self.cmake.content_map:
             self.cmake.add_command_string('catkin_python_setup()')
 
         if CFG.should('check_installs'):
@@ -227,7 +226,7 @@ class Package:
 
     def get_setup_py(self):
         sources = self.get_python_source()
-        if len(sources)==0:
+        if len(sources) == 0:
             return
 
         setup = SetupPy(self.name, self.root, sources)
@@ -248,9 +247,9 @@ class Package:
         pattern = '%s::%s'
         for pkg1, name1, pkg2, name2 in plugins:
             if pkg2 not in self.plugins:
-                self.plugins[pkg2] = PluginXML( self.root + '/plugins.xml')
+                self.plugins[pkg2] = PluginXML(self.root + '/plugins.xml')
                 self.manifest.add_plugin_export('plugins.xml', pkg2)
-            self.plugins[pkg2].insert_if_needed(pattern%(pkg1, name1), pattern%(pkg2, name2))
+            self.plugins[pkg2].insert_if_needed(pattern % (pkg1, name1), pattern % (pkg2, name2))
 
         for config in self.plugins.values():
             config.write()
@@ -276,7 +275,7 @@ class Package:
 
 def get_packages(root_fn='.', create_objects=True):
     packages = []
-    for root,dirs,files in os.walk(root_fn):
+    for root, dirs, files in os.walk(root_fn):
         if '.git' in root:
             continue
         if 'package.xml' in files:

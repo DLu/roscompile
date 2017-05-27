@@ -1,4 +1,5 @@
-import re, sys
+import re
+import sys
 from cmake import Command, Section, SectionStyle
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
@@ -30,14 +31,14 @@ class AwesomeParser:
 
         if debug:
             for typ, token in self.tokens:
-                print '[%s]%s'%(typ, repr(token))
+                print '[%s]%s' % (typ, repr(token))
 
         self.contents = []
-        while len(self.tokens)>0:
+        while len(self.tokens) > 0:
             typ = self.get_type()
             if typ == 'comment':
                 self.contents.append(self.match(typ))
-            elif typ == 'newline' or typ=='whitespace':
+            elif typ == 'newline' or typ == 'whitespace':
                 s = self.match(typ)
                 self.contents.append(s)
             elif typ in ['word', 'caps']:
@@ -47,19 +48,19 @@ class AwesomeParser:
                 raise Exception('token ' + typ)
         if debug:
             for chunk in self.contents:
-                print '[%s]'%chunk
+                print '[%s]' % chunk
 
     def parse_command(self):
         command_name = self.match()
         original = command_name
         cmd = Command(command_name)
-        while self.get_type()=='whitespace':
+        while self.get_type() == 'whitespace':
             s = self.match('whitespace')
             cmd.pre_paren += s
             original += s
         original += self.match('left paren')
 
-        while len(self.tokens)>0:
+        while len(self.tokens) > 0:
             typ = self.next_real_type()
             if typ in ['word', 'caps', 'string']:
                 section, s = self.parse_section()
@@ -106,16 +107,16 @@ class AwesomeParser:
                 original += token
                 current += token
             else:
-                if len(current)>0:
+                if len(current) > 0:
                     delims.add(current)
                 current = ''
                 token = self.match()
                 original += token
                 tokens.append(token)
-        if len(current)>0:
+        if len(current) > 0:
             delims.add(current)
-        if len(delims)>0:
-            if len(delims)==1:
+        if len(delims) > 0:
+            if len(delims) == 1:
                 style.val_sep = list(delims)[0]
             else:
                 #TODO: Smarter multi delim parsing
@@ -131,19 +132,19 @@ class AwesomeParser:
             # print '[%s]%s'%(typ, repr(tok))
             return tok
         else:
-            sys.stderr.write('Expected type "%s" but got "%s"\n'%(typ, self.get_type()))
+            sys.stderr.write('Expected type "%s" but got "%s"\n' % (typ, self.get_type()))
             for a in self.tokens:
                 sys.stderr.write(str(a) + '\n')
             exit(-1)
 
     def get_type(self):
-        if len(self.tokens)>0:
+        if len(self.tokens) > 0:
             return self.tokens[0][0]
         else:
             return None
 
     def next_real_type(self):
-        for x,y in self.tokens:
+        for x, y in self.tokens:
             if x not in NOT_REAL:
                 return x
 

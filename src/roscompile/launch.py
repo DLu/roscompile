@@ -1,4 +1,4 @@
-from  xml.dom.minidom import parse
+from xml.dom.minidom import parse
 import re
 
 class Launch:
@@ -8,7 +8,7 @@ class Launch:
     def get_node_pkgs(self):
         s = set()
         for node in self.tree.getElementsByTagName('node'):
-            s.add( str(node.getAttribute('pkg')) )
+            s.add(str(node.getAttribute('pkg')))
         return sorted(list(s))
 
     def get_include_pkgs(self):
@@ -18,7 +18,7 @@ class Launch:
             if 'find' in el:
                 i = el.index('find')
                 i2 = el.index(')', i)
-                s.add( el[i+5:i2] )
+                s.add(el[i + 5:i2])
         return sorted(list(s))
 
     def get_misc_pkgs(self):
@@ -37,4 +37,3 @@ class Launch:
         d.update(self.get_include_pkgs())
         d.update(self.get_misc_pkgs())
         return sorted(list(d))
-

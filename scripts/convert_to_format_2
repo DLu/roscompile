@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-from roscompile.package import Package, get_packages
+from roscompile.package import get_packages
 
 pkgs = get_packages()
 
 for package in pkgs:
     manifest = package.manifest
     if manifest.format == 2:
-        print '%s already in format 2!'%package.name
+        print '%s already in format 2!' % package.name
     else:
         print package.name
         manifest.convert_to_format_2()

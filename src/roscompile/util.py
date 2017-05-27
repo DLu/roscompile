@@ -7,7 +7,7 @@ def get_ignore_data_helper(basename):
         fn = 'package://roscompile/data/' + basename + '.ignore'
         lines = []
         for s in get(fn).read().split('\n'):
-            if len(s)>0:
+            if len(s) > 0:
                 lines.append(s + '\n')
         return lines
     #except:

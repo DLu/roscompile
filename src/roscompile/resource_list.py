@@ -3,7 +3,7 @@ import subprocess
 def get_output_lines(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
-    return [s for s in out.split('\n') if len(s)>0]
+    return [s for s in out.split('\n') if len(s) > 0]
 
 PACKAGES = {}
 MESSAGES = set()
@@ -15,11 +15,11 @@ for line in get_output_lines(['rospack', 'list']):
 
 for line in get_output_lines(['rosmsg', 'list']):
     pkg, msg = line.split('/')
-    MESSAGES.add( (pkg, msg) )
+    MESSAGES.add((pkg, msg))
 
 for line in get_output_lines(['rossrv', 'list']):
     pkg, srv = line.split('/')
-    SERVICES.add( (pkg, srv) )
+    SERVICES.add((pkg, srv))
 
 def is_package(pkg):
     return pkg in PACKAGES
