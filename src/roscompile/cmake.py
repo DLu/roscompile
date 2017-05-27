@@ -379,7 +379,7 @@ class CMake:
             return
         cmd = 'catkin_install_python'
         if cmd not in self.content_map:
-            self.add_command_string('%s(PROGRAMS %s\n' +
+            self.add_command_string('%s(PROGRAMS %s\n'
                                     '                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})'
                                     % (cmd, ' '.join(execs)))
         else:
