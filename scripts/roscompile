@@ -1,15 +1,18 @@
 #!/usr/bin/python
 
 from roscompile.package import get_packages
-from roscompile.people_management import fix_people
+from roscompile.people_management import fix_people, fix_licenses
 from roscompile.config import CFG
 
 CFG.check_command_flags()
 
 pkgs = get_packages()
 
-if CFG.should('update_manifest') and CFG.should('check_names'):
-    fix_people(pkgs)
+if CFG.should('update_manifest'):
+    if CFG.should('check_names'):
+        fix_people(pkgs)
+    if CFG.should('check_licenses'):
+        fix_licenses(pkgs)
 
 for package in pkgs:
     print package.name

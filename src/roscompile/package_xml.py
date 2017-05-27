@@ -123,6 +123,21 @@ class PackageXML:
                 el.setAttribute('email', new_email)
                 print '\tReplacing %s %s/%s with %s/%s' % (tag, name, email, new_name, new_email)
 
+    def get_license_element(self):
+        els = self.root.getElementsByTagName('license')
+        if len(els) == 0:
+            return None
+        return els[0]
+
+    def get_license(self):
+        el = self.get_license_element()
+        return el.childNodes[0].nodeValue
+
+    def set_license(self, license):
+        el = self.get_license_element()
+        el.childNodes[0].nodeValue = license
+        print '\tSetting license to %s' % license
+
     def get_plugin_xmls(self):
         xmls = []
         export = self.root.getElementsByTagName('export')

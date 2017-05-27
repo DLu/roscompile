@@ -139,4 +139,47 @@ def fix_people(pkgs, interactive=True):
                     continue
         else:
             print 'Found %s with multiple names: %s' % (email, ', '.join(names))
-    package.update_people(replace_rules)
+    for package in pkgs:
+        package.update_people(replace_rules)
+
+def fix_licenses(pkgs):
+    license_map = collections.defaultdict(list)
+    for pkg in pkgs:
+        license_map[pkg.get_license()].append(pkg)
+    if 'TODO' not in license_map:
+        return
+    new_license = None
+    if 'default_license' in CFG:
+        new_license = CFG['default_license']
+    else:
+        choice = None
+        keys = sorted(license_map.keys())
+        keys.remove('TODO')
+        while choice is None:
+            print 'Found pkg(s) with license="TODO".'
+            for i, key in enumerate(keys):
+                print '%d) Replace all with %s' % (i, key)
+            print 'n) Replace with New License'
+            print 'i) Ignore'
+            print 'q) Quit'
+            choice = raw_input('? ').lower()
+            if choice == 'q':
+                exit(0)
+            elif choice == 'i':
+                return
+            elif choice == 'n':
+                new_license = raw_input('Input new license: ').strip()
+            else:
+                try:
+                    index = int(choice)
+                    new_license = keys[index]
+                except:
+                    choice = None
+
+        print 'Would you like to make this your default license?'
+        choice = raw_input('Y/N? ').lower()
+        if choice == 'y':
+            CFG['default_license'] = new_license
+
+    for pkg in license_map['TODO']:
+        pkg.set_license(new_license)

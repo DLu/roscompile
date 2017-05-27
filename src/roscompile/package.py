@@ -261,9 +261,15 @@ class Package:
         people['authors'] = self.manifest.get_people('author')
         return people
 
+    def get_license(self):
+        return self.manifest.get_license()
+
     def update_people(self, replace={}):
         self.manifest.update_people('maintainer', replace)
         self.manifest.update_people('author', replace)
+
+    def set_license(self, license):
+        self.manifest.set_license(license)
 
     def remove_useless(self):
         mainpage_pattern = re.compile(MAINPAGE_S % self.name)
