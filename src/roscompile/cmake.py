@@ -184,12 +184,12 @@ class Command:
         return self.get_real_sections()[0].values[0]
 
     def __repr__(self):
-        if self.original and not self.changed and False:
+        if self.original and not self.changed:
             return self.original
 
         s = self.cmd + self.pre_paren + '('
         for section in map(str, self.sections):
-            if s[-1] not in '( \n':
+            if s[-1] not in '( \n' and section[0] not in ' \n':
                 s += ' '
             s += section
         s += ')'
