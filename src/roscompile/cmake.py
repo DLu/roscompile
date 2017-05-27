@@ -22,7 +22,7 @@ INSTALL_CONFIGS = {
                             '${CATKIN_GLOBAL_BIN_DESTINATION}':  'RUNTIME DESTINATION'}),
     'headers': ('FILES',   {'${CATKIN_PACKAGE_INCLUDE_DESTINATION}': 'DESTINATION'}),
     'misc':    ('FILES',   {'${CATKIN_PACKAGE_SHARE_DESTINATION}':   'DESTINATION'})
-    }
+}
 
 def get_ordering_index(cmd):
     for i, o in enumerate(ORDERING):
@@ -184,7 +184,7 @@ class Command:
         return self.get_real_sections()[0].values[0]
 
     def __repr__(self):
-        if self.original and not self.changed:
+        if self.original and not self.changed and False:
             return self.original
 
         s = self.cmd + self.pre_paren + '('
