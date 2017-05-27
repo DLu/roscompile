@@ -135,7 +135,7 @@ def fix_people(pkgs, interactive=True):
                     canonical.append((one_name, email))
                     if 'canonical_names' not in CFG:
                         CFG['canonical_names'] = []
-                    CFG['canonical_names'].append({'name': one_name, 'email': email})
+                    CFG['canonical_names'].append({'name': simplify(one_name), 'email': simplify(email)})
                     continue
         else:
             print 'Found %s with multiple names: %s' % (email, ', '.join(names))
