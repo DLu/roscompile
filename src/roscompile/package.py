@@ -105,12 +105,6 @@ class Package:
             packages.remove(self.name)
         return sorted(list(packages))
 
-    def get_dependencies(self, build=True):
-        if build:
-            return self.get_build_dependencies()
-        else:
-            return self.get_run_dependencies()
-
     def get_message_dependencies(self, exclude_python=True):
         d = set()
         for src in self.sources:
@@ -142,16 +136,13 @@ class Package:
         return sorted(list(deps))
 
     def update_manifest(self):
-        for build in [True, False]:
-            dependencies = self.get_dependencies(build)
-            if build:
-                self.manifest.add_packages(dependencies, build)
-            self.manifest.add_packages(dependencies, False)
+        build_depends = self.get_build_dependencies()
+        run_depends = self.get_run_dependencies()
+        self.manifest.add_packages(build_depends, run_depends)
 
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
             md = self.get_dependencies_from_msgs()
-            self.manifest.add_packages(['message_generation'] + md, True)
-            self.manifest.add_packages(['message_runtime'] + md, False)
+            self.manifest.add_packages(['message_generation'] + md, ['message_runtime'] + md)
 
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()
@@ -162,7 +153,7 @@ class Package:
             if self.name == parent_folder:
                 for package in get_packages(parent_path, create_objects=False):
                     pkg_name = os.path.split(package)[1]
-                    self.manifest.add_packages([pkg_name], False)
+                    self.manifest.add_packages([], [pkg_name])
 
         self.manifest.output()
 
@@ -176,7 +167,7 @@ class Package:
 
     def update_cmake(self):
         deps = self.get_dependencies_from_msgs()
-        self.cmake.check_dependencies(self.get_dependencies() + deps)
+        self.cmake.check_dependencies(self.get_build_dependencies() + deps)
 
         if CFG.should('check_exported_dependencies'):
             self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())

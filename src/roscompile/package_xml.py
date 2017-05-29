@@ -226,6 +226,8 @@ class PackageXML:
         return dict(tags)
 
     def insert_new_elements(self, name, values):
+        if len(values) == 0:
+            return
         x = []
         indexes = self.get_child_indexes()
         for pkg in values:
@@ -255,20 +257,19 @@ class PackageXML:
                 index = indexes[best_tag][-1][-1]
         self.root.childNodes = self.root.childNodes[:index + 1] + x + self.root.childNodes[index + 1:]
 
-    def add_packages(self, pkgs, build=True):
-        for pkg in self.get_packages(build):
-            if pkg in pkgs:
-                pkgs.remove(pkg)
-        if len(pkgs) == 0:
-            return
-
-        if build:
-            new_tag = 'build_depend'
-        elif self.format == 1:
-            new_tag = 'run_depend'
+    def add_packages(self, build_depends, run_depends):
+        existing_build = set(self.get_packages(True))
+        existing_run = set(self.get_packages(False))
+        build_depends = set(build_depends) - existing_build
+        run_depends = set(run_depends) - existing_run
+        if self.format == 1:
+            self.insert_new_elements('build_depend', build_depends)
+            self.insert_new_elements('run_depend', run_depends)
         else:
-            new_tag = 'exec_depend'
-        self.insert_new_elements(new_tag, pkgs)
+            both = build_depends.intersection(run_depends)
+            self.insert_new_elements('depend', both)
+            self.insert_new_elements('build_depend', build_depends - both)
+            self.insert_new_elements('exec_depend', run_depends - both)
 
     def replace_package_set(self, source_tags, new_tag):
         intersection = None
