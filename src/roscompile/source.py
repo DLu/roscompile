@@ -6,6 +6,7 @@ PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
 PYTHON2 = 'from ' + PKG + ' import .*'
 CPLUS = re.compile('#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')
+ROSCPP = re.compile('#include\s*<ros/ros.h>')
 
 EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), CPLUS]
 
@@ -30,6 +31,8 @@ class Source:
                 if m:
                     if is_package(m.group(1)):
                         d.add(m.group(1))
+            if ROSCPP.search(line):
+                d.add('roscpp')
         return sorted(list(d))
 
     def get_message_dependencies(self):
