@@ -60,7 +60,7 @@ class Package:
                 elif ext in SIMPLE:
                     name = ext[1:]
                     data[name].append(full)
-                elif ext == '.cfg' and 'cfg/' in fn:
+                elif ext == '.cfg' and 'cfg/' in full:
                     data['cfg'].append(full)
                 elif fn in BASIC:
                     data[None].append(full)
