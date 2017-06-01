@@ -39,6 +39,7 @@ class Package:
         self.plugins = {}
         self.files = self.sort_files()
         self.sources = [Source(source, self.root) for source in self.files['source']]
+        self.setup_source_tags()
 
     def sort_files(self, print_extras=False):
         data = collections.defaultdict(list)
@@ -87,6 +88,20 @@ class Package:
                 print '    ', fn
 
         return data
+
+    def setup_source_tags(self):
+        src_map = {}
+        for source in self.sources:
+            src_map[source.rel_fn] = source
+
+        for tag, files in [('library', self.cmake.get_library_source()),
+                           ('executable', self.cmake.get_executable_source()),
+                           ('test', self.cmake.get_test_source())]:
+            for fn in files:
+                if fn in src_map:
+                    src_map[fn].tags.add(tag)
+                else:
+                    print '    File %s found in CMake not found!'
 
     def get_build_dependencies(self):
         packages = set()

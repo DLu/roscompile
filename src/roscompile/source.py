@@ -22,6 +22,7 @@ class Source:
             self.rel_fn = fn
         self.lines = map(str.strip, open(fn, 'r').readlines())
         self.python = '.py' in self.fn or (len(self.lines) > 0 and 'python' in self.lines[0])
+        self.tags = set()
 
     def get_dependencies(self):
         d = set()

@@ -183,6 +183,12 @@ class Command:
     def first_token(self):
         return self.get_real_sections()[0].values[0]
 
+    def get_tokens(self):
+        tokens = []
+        for section in self.get_real_sections():
+            tokens += section.values
+        return tokens
+
     def __repr__(self):
         if self.original and not self.changed:
             return self.original
@@ -283,6 +289,34 @@ class CMake:
 
     def get_executables(self):
         return [cmd.first_token() for cmd in self.content_map['add_executable']]
+
+    def get_source_helper(self, tagname):
+        lib_src = set()
+        for cmd in self.content_map[tagname]:
+            tokens = cmd.get_tokens()
+            lib_src.update(tokens[1:])
+        return lib_src
+
+    def get_library_source(self):
+        return self.get_source_helper('add_library')
+
+    def get_executable_source(self):
+        return self.get_source_helper('add_executable')
+
+    def get_test_source(self):
+        test = False
+        test_files = set()
+        for content in self.contents:
+            if content.__class__ != Command:
+                continue
+            if content.cmd == 'if':
+                test = True
+            elif content.cmd == 'endif':
+                test = False
+            elif test and content.cmd in ['add_library', 'add_executable']:
+                tokens = content.get_tokens()
+                test_files.update(tokens[1:])
+        return test_files
 
     def check_exported_dependencies(self, pkg_name, deps):
         if len(deps) == 0:
