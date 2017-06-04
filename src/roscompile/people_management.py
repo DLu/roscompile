@@ -137,7 +137,7 @@ def fix_people(pkgs, interactive=True):
                         CFG['canonical_names'] = []
                     CFG['canonical_names'].append({'name': simplify(one_name), 'email': simplify(email)})
                     continue
-        else:
+        elif len(email) > 0:
             print 'Found %s with multiple names: %s' % (email, ', '.join(names))
     for package in pkgs:
         package.update_people(replace_rules)
