@@ -389,8 +389,8 @@ class CMake:
         if len(items) == 0:
             return
 
+        print '\tInstalling ', ', '.join(items)
         if cmd is None:
-            print '\tInstalling ', ', '.join(items)
             cmd = Command('install')
             cmd.add_section(section_name, items)
             self.add_command(cmd)

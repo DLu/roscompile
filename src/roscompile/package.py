@@ -21,6 +21,8 @@ SIMPLE = ['.launch', '.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
+FILES_TO_NOT_INSTALL = ['CHANGELOG.rst']
+
 MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+" + \
              "Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
 
@@ -205,10 +207,12 @@ class Package:
                 extra_files_by_folder = collections.defaultdict(list)
                 the_root = os.path.join(self.root, '')
                 for category, files in self.files.iteritems():
-                    if category in ['source', 'msg', 'srv', 'action', None]:
+                    if category in ['source', 'msg', 'srv', 'action', 'cfg', None]:
                         continue
                     for fn in files:
                         path, base = os.path.split(fn.replace(the_root, '', 1))
+                        if base in FILES_TO_NOT_INSTALL:
+                            continue
                         extra_files_by_folder[path].append(base)
 
                 for folder, files in extra_files_by_folder.iteritems():
