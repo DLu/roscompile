@@ -128,6 +128,8 @@ class Package:
             if exclude_python and src.python:
                 continue
             d.update(src.get_message_dependencies())
+        if len(self.files['cfg']) > 0:
+            d.add(self.name)
         return sorted(list(d))
 
     def get_dependencies_from_msgs(self):
