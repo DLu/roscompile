@@ -10,7 +10,7 @@ from roscompile.plugin_xml import PluginXML
 from roscompile.cmake import CMake
 from roscompile.config import CFG
 
-SRC_EXTS = ['.py', '.cpp', '.h', '.hpp']
+SRC_EXTS = ['.py', '.cpp', '.h', '.hpp', '.c']
 CONFIG_EXTS = ['.yaml', '.rviz']
 DATA_EXTS = ['.dae', '.jpg', '.stl', '.png']
 MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
@@ -101,7 +101,7 @@ class Package:
                 if fn in src_map:
                     src_map[fn].tags.add(tag)
                 else:
-                    print '    File %s found in CMake not found!'
+                    print '    File %s found in CMake not found!' % fn
 
     def get_build_dependencies(self):
         packages = set()
