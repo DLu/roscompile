@@ -199,6 +199,8 @@ class Package:
 
         if self.has_header_files():
             self.cmake.check_include_path()
+        if len(self.get_cpp_source()) > 0:
+            self.cmake.add_catkin_include_path()
         self.cmake.check_library_setup()
 
         setup = self.get_setup_py()
@@ -238,6 +240,13 @@ class Package:
         sources = []
         for source in self.sources:
             if source.python and 'setup.py' not in source.fn:
+                sources.append(source)
+        return sources
+
+    def get_cpp_source(self):
+        sources = []
+        for source in self.sources:
+            if not source.python:
                 sources.append(source)
         return sources
 
