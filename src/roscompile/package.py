@@ -254,16 +254,21 @@ class Package:
         return
 
     def check_plugins(self):
-        plugins = []
+        plugins = collections.defaultdict(list)
         for source in self.sources:
-            plugins += source.get_plugins()
+            some_plugins = source.get_plugins()
+            if len(some_plugins) == 0:
+                continue
+            library = self.cmake.lookup_library(source.rel_fn)
+            plugins[library] += some_plugins
 
-        pattern = '%s::%s'
-        for pkg1, name1, pkg2, name2 in plugins:
-            if pkg2 not in self.plugins:
-                self.plugins[pkg2] = PluginXML(self.root + '/plugins.xml')
-                self.manifest.add_plugin_export('plugins.xml', pkg2)
-            self.plugins[pkg2].insert_if_needed(pattern % (pkg1, name1), pattern % (pkg2, name2))
+        for library, some_plugins in plugins.iteritems():
+            for pkg1, name1, pkg2, name2 in some_plugins:
+                if pkg2 not in self.plugins:
+                    print '\tCreating plugins.xml'
+                    self.plugins[pkg2] = PluginXML(self.root + '/plugins.xml')
+                    self.manifest.add_plugin_export('plugins.xml', pkg2)
+                self.plugins[pkg2].insert_if_needed(pkg1, name1, pkg2, name2, library=library)
 
         for config in self.plugins.values():
             config.write()

@@ -155,11 +155,17 @@ class PackageXML:
         if len(exports) == 0:
             ex = self.tree.createElement('export')
             self.root.appendChild(ex)
-        else:
-            ex = exports[0]
+            exports = [ex]
+
+        attr = '${prefix}/' + fn
+        for ex_tag in exports:
+            for tag in ex_tag.childNodes:
+                if tag.nodeName == tipo and tag.attributes.get('plugin', '') == attr:
+                    return
+
         pe = self.tree.createElement(tipo)
-        pe.setAttribute('plugin', '${prefix}/' + fn)
-        ex.appendChild(pe)
+        pe.setAttribute('plugin', attr)
+        exports[0].appendChild(pe)
 
     def remove_element(self, element):
         parent = element.parentNode

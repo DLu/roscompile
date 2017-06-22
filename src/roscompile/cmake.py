@@ -218,6 +218,12 @@ class CMake:
                 continue
             self.content_map[c.cmd].append(c)
 
+    def resolve_variables(self, s):
+        VARS = {'${PROJECT_NAME}': self.name}
+        for k, v in VARS.iteritems():
+            s = s.replace(k, v)
+        return s
+
     def section_check(self, items, cmd_name, section_name='', zero_okay=False):
         if len(items) == 0 and not zero_okay:
             return
@@ -302,6 +308,12 @@ class CMake:
 
     def get_executable_source(self):
         return self.get_source_helper('add_executable')
+
+    def lookup_library(self, src_fn):
+        for cmd in self.content_map['add_library']:
+            tokens = cmd.get_tokens()
+            if src_fn in tokens:
+                return self.resolve_variables(tokens[0])
 
     def get_test_source(self):
         test = False
