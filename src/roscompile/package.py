@@ -109,6 +109,8 @@ class Package:
         packages = set()
         for source in self.sources:
             packages.update(source.get_dependencies())
+        if len(self.files['msg'] + self.files['srv'] + self.files['action']) > 0:
+            packages.add('message_generation')
         if self.name in packages:
             packages.remove(self.name)
         return sorted(list(packages))

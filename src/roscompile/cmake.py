@@ -101,7 +101,7 @@ class Section:
         if values is None:
             self.values = []
         else:
-            self.values = values
+            self.values = list(values)
         self.style = style
 
     def add(self, v):
@@ -147,7 +147,7 @@ class Command:
     def get_sections(self, key):
         return [s for s in self.get_real_sections() if s.name == key]
 
-    def add_section(self, key, values=[]):
+    def add_section(self, key, values=None):
         self.sections.append(Section(key, values))
         self.changed = True
 

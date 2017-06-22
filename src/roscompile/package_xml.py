@@ -258,6 +258,8 @@ class PackageXML:
         self.root.childNodes = self.root.childNodes[:index + 1] + x + self.root.childNodes[index + 1:]
 
     def add_packages(self, build_depends, run_depends):
+        if self.format == 1:
+            run_depends += build_depends
         existing_build = set(self.get_packages(True))
         existing_run = set(self.get_packages(False))
         build_depends = set(build_depends) - existing_build
