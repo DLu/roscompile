@@ -189,6 +189,15 @@ class Command:
             tokens += section.values
         return tokens
 
+    def add_token(self, s):
+        sections = self.get_real_sections()
+        if len(sections) == 0:
+            self.add(Section(values=[s]))
+        else:
+            last = sections[-1]
+            last.values.append(s)
+        self.changed = True
+
     def __repr__(self):
         if self.original and not self.changed:
             return self.original
@@ -364,6 +373,21 @@ class CMake:
 
         for target in targets:
             self.add_command_string('add_dependencies(%s %s)' % (target, ' '.join(marks)))
+
+    def check_libraries(self):
+        CATKIN = '${catkin_LIBRARIES}'
+        targets = self.get_libraries() + self.get_executables()
+        for cmd in self.content_map['target_link_libraries']:
+            tokens = cmd.get_tokens()
+            if tokens[0] in targets:
+                if CATKIN not in tokens:
+                    print '\tAdding %s to target_link_libraries for %s' % (CATKIN, tokens[0])
+                    cmd.add_token(CATKIN)
+                targets.remove(tokens[0])
+                continue
+        for target in targets:
+            print '\tAdding target_link_libraries for %s' % target
+            self.add_command_string('target_link_libraries(%s %s)' % (target, CATKIN))
 
     def check_include_path(self):
         self.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')

@@ -192,6 +192,8 @@ class Package:
 
         if CFG.should('check_exported_dependencies'):
             self.cmake.check_exported_dependencies(self.name, self.get_message_dependencies())
+        if CFG.should('target_catkin_libraries'):
+            self.cmake.check_libraries()
 
         self.cmake.check_generators(self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
 
