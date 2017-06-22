@@ -66,6 +66,8 @@
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+# include
+# ${catkin_INCLUDE_DIRS}
 ## Declare a cpp library
 # add_library(${PROJECT_NAME}
 ## Declare a cpp executable
@@ -141,3 +143,5 @@
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
 # set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
