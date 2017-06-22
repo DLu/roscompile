@@ -393,6 +393,9 @@ class CMake:
         self.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
         self.section_check(['include'], 'include_directories')
 
+    def check_library_setup(self):
+        self.section_check(self.get_libraries(), 'catkin_package', 'LIBRARIES')
+
     def get_commands_by_type(self, name, subfolder=''):
         matches = []
         for cmd in self.content_map['install']:

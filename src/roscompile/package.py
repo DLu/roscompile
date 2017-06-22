@@ -199,6 +199,7 @@ class Package:
 
         if self.has_header_files():
             self.cmake.check_include_path()
+        self.cmake.check_library_setup()
 
         setup = self.get_setup_py()
         if setup and setup.valid and 'catkin_python_setup' not in self.cmake.content_map:
