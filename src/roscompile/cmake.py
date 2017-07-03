@@ -207,7 +207,7 @@ class Command:
             if s[-1] not in '( \n' and section[0] not in ' \n':
                 s += ' '
             s += section
-        if '\n' in s:
+        if '\n' in s and s[-1] != '\n':
             s += '\n'
         s += ')'
         return s
