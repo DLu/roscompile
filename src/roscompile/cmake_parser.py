@@ -97,6 +97,8 @@ class AwesomeParser:
                 s = self.match()
                 original += s
                 style.name_val_sep += s
+            if len(style.name_val_sep) == 0:
+                style.name_val_sep = ' '
 
         delims = set()
         current = ''
