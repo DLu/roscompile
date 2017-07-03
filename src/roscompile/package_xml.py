@@ -67,18 +67,27 @@ class PackageXML:
     def enforce_tabbing(self, node, tabs=1):
         ideal_length = self.std_tab * tabs
         prev_was_node = True
-        for c in node.childNodes[:-1]:
+        insert_before_list = []
+        for c in node.childNodes:
             if c.nodeType == c.TEXT_NODE:
                 prev_was_node = False
+                if c == node.childNodes[-1]:
+                    continue
                 spaces = count_trailing_spaces(c.data)
                 if spaces > ideal_length:
                     c.data = c.data[: ideal_length - spaces]
                 elif spaces < ideal_length:
                     c.data = c.data + ' ' * (ideal_length - spaces)
+                if '\n' not in c.data:
+                    c.data = '\n' + c.data
             elif prev_was_node:
-                node.insertBefore(self.get_tab_element(tabs), c)
+                insert_before_list.append(c)
             else:
                 prev_was_node = True
+
+        for c in insert_before_list:
+            node.insertBefore(self.get_tab_element(tabs), c)
+
         if len(node.childNodes) == 0:
             return
         last = node.childNodes[-1]
