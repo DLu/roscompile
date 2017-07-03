@@ -207,6 +207,8 @@ class Command:
             if s[-1] not in '( \n' and section[0] not in ' \n':
                 s += ' '
             s += section
+        if '\n' in s:
+            s += '\n'
         s += ')'
         return s
 
@@ -460,6 +462,12 @@ class CMake:
                                     % (cmd, ' '.join(execs)))
         else:
             self.section_check(execs, cmd, 'PROGRAMS')
+
+    def catkin_package_cleanup(self):
+        for cmd in self.content_map['catkin_package']:
+            for section in cmd.get_real_sections():
+                section.style.prename = '\n    '
+            cmd.changed = True
 
     def enforce_ordering(self):
         chunks = []
