@@ -64,14 +64,29 @@ class PackageXML:
                 tab_ct[spaces] += 1
         self.std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
 
-        if CFG.should('enforce_package_tabbing'):
-            for c in self.root.childNodes:
-                if c.nodeType == c.TEXT_NODE and c != self.root.childNodes[-1]:
-                    spaces = count_trailing_spaces(c.data)
-                    if spaces > self.std_tab:
-                        c.data = c.data[: self.std_tab - spaces]
-                    elif spaces < self.std_tab:
-                        c.data = c.data + ' ' * (self.std_tab - spaces)
+    def enforce_tabbing(self, node, tabs=1):
+        ideal_length = self.std_tab * tabs
+        prev_was_node = True
+        for c in node.childNodes[:-1]:
+            if c.nodeType == c.TEXT_NODE:
+                prev_was_node = False
+                spaces = count_trailing_spaces(c.data)
+                if spaces > ideal_length:
+                    c.data = c.data[: ideal_length - spaces]
+                elif spaces < ideal_length:
+                    c.data = c.data + ' ' * (ideal_length - spaces)
+            elif prev_was_node:
+                node.insertBefore(self.get_tab_element(tabs), c)
+            else:
+                prev_was_node = True
+        if len(node.childNodes) == 0:
+            return
+        last = node.childNodes[-1]
+        if last.nodeType != last.TEXT_NODE:
+            node.appendChild(self.get_tab_element(tabs - 1))
+
+    def get_tab_element(self, tabs=1):
+        return self.tree.createTextNode('\n' + ' ' * (self.std_tab * tabs))
 
     @property
     def format(self):
@@ -160,12 +175,17 @@ class PackageXML:
         attr = '${prefix}/' + fn
         for ex_tag in exports:
             for tag in ex_tag.childNodes:
-                if tag.nodeName == tipo and tag.attributes.get('plugin', '') == attr:
+                if tag.nodeName != tipo:
+                    continue
+                plugin = tag.attributes.get('plugin')
+                if plugin and plugin.value == attr:
                     return
 
+        ex_el = exports[0]
         pe = self.tree.createElement(tipo)
         pe.setAttribute('plugin', attr)
-        exports[0].appendChild(pe)
+        ex_el.appendChild(pe)
+        self.enforce_tabbing(ex_el, 2)
 
     def remove_element(self, element):
         parent = element.parentNode
@@ -240,7 +260,7 @@ class PackageXML:
             if pkg in IGNORE_PACKAGES:
                 continue
             print '\tInserting %s: %s' % (name, pkg)
-            x.append(self.tree.createTextNode('\n' + ' ' * self.std_tab))
+            x.append(self.get_tab_element())
             node = self.tree.createElement(name)
             node.appendChild(self.tree.createTextNode(pkg))
             x.append(node)
@@ -319,6 +339,8 @@ class PackageXML:
     def output(self, new_fn=None):
         if CFG.should('enforce_manifest_ordering'):
             self.enforce_ordering()
+        if CFG.should('enforce_package_tabbing'):
+            self.enforce_tabbing(self.root)
         if self.format == 2 and CFG.should('consolidate_depend_in_package_xml'):
             self.replace_package_set(['build_depend', 'build_export_depend', 'exec_depend'], 'depend')
 
