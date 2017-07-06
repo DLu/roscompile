@@ -1,6 +1,6 @@
 import re
 import os
-from roscompile.resource_list import is_package, is_message, is_service
+from roscompile.resource_list import is_package, is_message, is_service, get_python_dependency
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
@@ -32,6 +32,10 @@ class Source:
                 if m:
                     if is_package(m.group(1)):
                         d.add(m.group(1))
+                    elif self.python:
+                        p_dep = get_python_dependency(m.group(1))
+                        if p_dep:
+                            d.add(p_dep)
             if ROSCPP.search(line):
                 d.add('roscpp')
         return sorted(list(d))

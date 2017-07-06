@@ -1,4 +1,34 @@
+import os
+import yaml
 import subprocess
+import datetime
+import resource_retriever
+
+PY_DEP_FILENAME = os.path.expanduser('~/.ros/py_deps.yaml')
+
+PYTHON_DEPS = {}
+
+def maybe_download_python_deps():
+    global PYTHON_DEPS
+    if os.path.exists(PY_DEP_FILENAME):
+        PYTHON_DEPS = yaml.load(open(PY_DEP_FILENAME))
+        if 'last_download' in PYTHON_DEPS:
+            now = datetime.datetime.now()
+            if now - PYTHON_DEPS['last_download'] < datetime.timedelta(days=3):
+                return
+
+    ff = resource_retriever.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml')
+    PYTHON_DEPS = yaml.load(ff)
+    PYTHON_DEPS['last_download'] = datetime.datetime.now()
+    yaml.dump(PYTHON_DEPS, open(PY_DEP_FILENAME, 'w'))
+
+def get_python_dependency(key):
+    for var in [key, 'python-' + key, 'python3-' + key, key.replace('python-', 'python3-'), key.replace('python-', ''),
+                key.replace('python-', '').replace('-', '_')]:
+        if var in PYTHON_DEPS:
+            return var
+
+maybe_download_python_deps()
 
 def get_output_lines(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
