@@ -470,6 +470,15 @@ class CMake:
                 section.style.prename = '\n    '
             cmd.changed = True
 
+    def msg_srv_cleanup(self):
+        for cmd in self.content_map['add_message_files'] + self.content_map['add_service_files']:
+            for section in cmd.get_real_sections():
+                print section, len(section.values)
+                if len(section.values) > 1:
+                    section.style.name_val_sep = '\n    '
+                    section.style.val_sep = '\n    '
+                cmd.changed = True
+
     def enforce_ordering(self):
         chunks = []
         current = []
