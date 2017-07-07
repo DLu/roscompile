@@ -113,20 +113,22 @@ class PackageXML:
             pkgs.append(el.childNodes[0].nodeValue)
         return pkgs
 
-    def get_packages(self, build=True):
+    def get_packages(self, mode='build'):
         keys = []
-        if build:
+        if mode == 'build':
             keys.append('build_depend')
-        if self.format == 1 and not build:
+        if self.format == 1 and mode == 'run':
             keys.append('run_depend')
-        if self.format == 2:
+        if self.format == 2 and mode != 'test':
             keys.append('depend')
-            if not build:
+            if mode == 'run':
                 keys.append('exec_depend')
+        if mode == 'test':
+            keys.append('test_depend')
         pkgs = []
         for key in keys:
             pkgs += self.get_packages_by_tag(key)
-        return pkgs
+        return set(pkgs)
 
     def get_people(self, tag):
         people = []
@@ -292,11 +294,11 @@ class PackageXML:
                 index = indexes[best_tag][-1][-1]
         self.root.childNodes = self.root.childNodes[:index + 1] + x + self.root.childNodes[index + 1:]
 
-    def add_packages(self, build_depends, run_depends):
+    def add_packages(self, build_depends, run_depends, test_depends=None):
         if self.format == 1:
             run_depends += build_depends
-        existing_build = set(self.get_packages(True))
-        existing_run = set(self.get_packages(False))
+        existing_build = self.get_packages('build')
+        existing_run = self.get_packages('run')
         build_depends = set(build_depends) - existing_build
         run_depends = set(run_depends) - existing_run
         if self.format == 1:
@@ -307,6 +309,11 @@ class PackageXML:
             self.insert_new_elements('depend', both)
             self.insert_new_elements('build_depend', build_depends - both)
             self.insert_new_elements('exec_depend', run_depends - both)
+
+        if test_depends is not None and len(test_depends) > 0:
+            existing_test = self.get_packages('test')
+            test_depends = set(test_depends) - existing_build - build_depends - existing_test
+            self.insert_new_elements('test_depend', test_depends)
 
     def replace_package_set(self, source_tags, new_tag):
         intersection = None

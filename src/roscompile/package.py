@@ -17,7 +17,7 @@ MODEL_EXTS = ['.urdf', '.xacro', '.srdf']
 
 EXTS = {'source': SRC_EXTS, 'config': CONFIG_EXTS, 'data': DATA_EXTS, 'model': MODEL_EXTS}
 BASIC = ['package.xml', 'CMakeLists.txt']
-SIMPLE = ['.launch', '.msg', '.srv', '.action']
+SIMPLE = ['.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
@@ -60,6 +60,8 @@ class Package:
 
                 if ext_match:
                     data[ext_match].append(full)
+                elif ext == '.launch':
+                    data['launch'].append(Launch(full))
                 elif ext in SIMPLE:
                     name = ext[1:]
                     data[name].append(full)
@@ -77,6 +79,12 @@ class Package:
                             break
                     if found:
                         continue
+                    if ext == '.xml':
+                        # Try to make it a launch
+                        launch = Launch(full)
+                        if launch.valid:
+                            data['launch'].append(launch)
+                            continue
 
                     with open(full) as f:
                         l = f.readline()
@@ -108,6 +116,8 @@ class Package:
     def get_build_dependencies(self):
         packages = set()
         for source in self.sources:
+            if 'test' in source.tags:
+                continue
             packages.update(source.get_dependencies())
         if len(self.files['msg'] + self.files['srv'] + self.files['action']) > 0:
             packages.add('message_generation')
@@ -118,8 +128,23 @@ class Package:
     def get_run_dependencies(self):
         packages = set()
         for launch in self.files['launch']:
-            x = Launch(launch)
-            packages.update(x.get_dependencies())
+            if launch.test:
+                continue
+            packages.update(launch.get_dependencies())
+        if self.name in packages:
+            packages.remove(self.name)
+        return sorted(list(packages))
+
+    def get_test_dependencies(self):
+        packages = set()
+        for source in self.sources:
+            if 'test' not in source.tags:
+                continue
+            packages.update(source.get_dependencies())
+        for launch in self.files['launch']:
+            if not launch.test:
+                continue
+            packages.update(launch.get_dependencies())
         if self.name in packages:
             packages.remove(self.name)
         return sorted(list(packages))
@@ -159,7 +184,8 @@ class Package:
     def update_manifest(self):
         build_depends = self.get_build_dependencies()
         run_depends = self.get_run_dependencies()
-        self.manifest.add_packages(build_depends, run_depends)
+        test_depends = self.get_test_dependencies()
+        self.manifest.add_packages(build_depends, run_depends, test_depends)
 
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
             md = self.get_dependencies_from_msgs()

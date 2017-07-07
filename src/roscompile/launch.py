@@ -3,7 +3,10 @@ import re
 
 class Launch:
     def __init__(self, fn):
+        self.fn = fn
         self.tree = parse(fn)
+        self.test = len(self.tree.getElementsByTagName('test')) > 0
+        self.valid = len(self.tree.getElementsByTagName('launch')) > 0
 
     def get_node_pkgs(self):
         s = set()
