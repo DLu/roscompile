@@ -213,22 +213,67 @@ class Command:
         s += ')'
         return s
 
+class CommandGroup:
+    def __init__(self, initial_tag, sub, close_tag):
+        self.initial_tag = initial_tag
+        self.sub = sub
+        self.close_tag = close_tag
+
+    def __repr__(self):
+        return str(self.initial_tag) + str(self.sub) + str(self.close_tag)
+
 from roscompile.cmake_parser import parse_file
 
 class CMake:
-    def __init__(self, fn, name=None):
+    def __init__(self, fn=None, name=None, initial_contents=None):
         self.fn = fn
         self.name = name
-        self.root = os.path.split(fn)[0]
-        if os.path.exists(fn):
-            self.contents = parse_file(open(fn).read())
-        else:
-            self.contents = []
+        self.contents = []
+        self.root = None
         self.content_map = defaultdict(list)
-        for c in self.contents:
-            if type(c) == str:
-                continue
-            self.content_map[c.cmd].append(c)
+
+        if initial_contents:
+            contents = initial_contents
+        elif fn is not None and os.path.exists(fn):
+            contents = parse_file(open(fn).read())
+            self.root = os.path.split(fn)[0]
+        else:
+            contents = []
+
+        current = []
+        group = None
+        depth = 0
+
+        for x in contents:
+            if group is None:
+                if x.__class__ == Command and x.cmd in ['if', 'foreach']:
+                    group = x
+                    depth = 1
+                else:
+                    self.contents.append(x)
+                    if type(x) != str:
+                        self.content_map[x.cmd].append(x)
+            else:
+                if x.__class__ == Command:
+                    if x.cmd == group.cmd:
+                        depth += 1
+                    elif x.cmd == 'end' + group.cmd:
+                        depth -= 1
+                        if depth == 0:
+                            sub = CMake(initial_contents=current)
+                            cg = CommandGroup(group, sub, x)
+                            self.contents.append(cg)
+                            self.content_map['group'].append(cg)
+                            group = None
+                            current = []
+                            continue
+                current.append(x)
+        # Shouldn't happen, but resolve leftovers
+        if len(current) > 0:
+            sub = CMake(initial_contents=current)
+            cg = CommandGroup(group, sub, '')
+            self.contents.append(cg)
+            self.content_map['group'].append(cg)
 
     def resolve_variables(self, s):
         VARS = {'${PROJECT_NAME}': self.name}
@@ -329,18 +374,14 @@ class CMake:
                 return self.resolve_variables(tokens[0])
 
     def get_test_source(self):
-        test = False
         test_files = set()
-        for content in self.contents:
-            if content.__class__ != Command:
+        for content in self.content_map['group']:
+            cmd = content.initial_tag
+            if cmd.cmd != 'if' or len(cmd.sections) == 0 or cmd.sections[0].name != 'CATKIN_ENABLE_TESTING':
                 continue
-            if content.cmd == 'if':
-                test = True
-            elif content.cmd == 'endif':
-                test = False
-            elif test and content.cmd in ['add_library', 'add_executable']:
-                tokens = content.get_tokens()
-                test_files.update(tokens[1:])
+            sub = content.sub
+            test_files.update(sub.get_library_source())
+            test_files.update(sub.get_executable_source())
         return test_files
 
     def check_exported_dependencies(self, pkg_name, deps):
@@ -482,21 +523,14 @@ class CMake:
     def enforce_ordering(self):
         chunks = []
         current = []
-        group = None
         for x in self.contents:
             current.append(x)
-            if x.__class__ == Command:
-                if x.cmd == 'if':
-                    group = 'endif'
-                elif x.cmd == 'foreach':
-                    group = 'endforeach'
-                elif x.cmd == group:
-                    chunks.append(('group', current))
-                    current = []
-                    group = None
-                elif group is None:
-                    chunks.append((x.cmd, current))
-                    current = []
+            if x.__class__ == CommandGroup:
+                chunks.append(('group', current))
+                current = []
+            elif x.__class__ == Command:
+                chunks.append((x.cmd, current))
+                current = []
         if len(current) > 0:
             chunks.append((None, current))
 
