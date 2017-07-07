@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+from roscompile.package import get_packages
+
+pkgs = get_packages()
+
+for package in pkgs:
+    print package.name
+    package.manifest.add_packages(['roslint'], [])
+    package.manifest.output()
+    package.cmake.check_dependencies(['roslint'], check_catkin_pkg=False)
+    if len(package.get_python_source()) > 0:
+        package.cmake.add_command_string('roslint_python()')
+
+    if len(package.get_cpp_source()) > 0:
+        package.cmake.add_command_string('roslint_cpp()')
+    package.cmake.output()

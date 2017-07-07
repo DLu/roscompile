@@ -266,9 +266,10 @@ class CMake:
             cmd.add_section(section_name, items)
         print '\tAdding %s to the %s/%s section of your CMakeLists.txt' % (str(items), cmd_name, section_name)
 
-    def check_dependencies(self, pkgs):
+    def check_dependencies(self, pkgs, check_catkin_pkg=True):
         self.section_check(pkgs, 'find_package', 'COMPONENTS')
-        self.section_check(pkgs, 'catkin_package', 'CATKIN_DEPENDS')
+        if check_catkin_pkg:
+            self.section_check(pkgs, 'catkin_package', 'CATKIN_DEPENDS')
 
     def check_generators(self, msgs, srvs, actions, cfgs, deps):
         self.section_check(map(os.path.basename, msgs), 'add_message_files', 'FILES')
