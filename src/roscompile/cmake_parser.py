@@ -153,3 +153,8 @@ class AwesomeParser:
 def parse_file(s):
     parser = AwesomeParser(s)
     return parser.contents
+
+def parse_command(s):
+    parser = AwesomeParser(s)
+    assert len(parser.contents) == 1
+    return parser.contents[0]

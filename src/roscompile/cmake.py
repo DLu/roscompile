@@ -222,15 +222,16 @@ class CommandGroup:
     def __repr__(self):
         return str(self.initial_tag) + str(self.sub) + str(self.close_tag)
 
-from roscompile.cmake_parser import parse_file
+from roscompile.cmake_parser import parse_file, parse_command
 
 class CMake:
-    def __init__(self, fn=None, name=None, initial_contents=None):
+    def __init__(self, fn=None, name=None, initial_contents=None, indent=0):
         self.fn = fn
         self.name = name
         self.contents = []
         self.root = None
         self.content_map = defaultdict(list)
+        self.indent = indent
 
         if initial_contents:
             contents = initial_contents
@@ -260,7 +261,7 @@ class CMake:
                     elif x.cmd == 'end' + group.cmd:
                         depth -= 1
                         if depth == 0:
-                            sub = CMake(initial_contents=current)
+                            sub = CMake(initial_contents=current, indent=self.indent + 1)
                             cg = CommandGroup(group, sub, x)
                             self.contents.append(cg)
                             self.content_map['group'].append(cg)
@@ -270,7 +271,7 @@ class CMake:
                 current.append(x)
         # Shouldn't happen, but resolve leftovers
         if len(current) > 0:
-            sub = CMake(initial_contents=current)
+            sub = CMake(initial_contents=current, indent=self.indent + 1)
             cg = CommandGroup(group, sub, '')
             self.contents.append(cg)
             self.content_map['group'].append(cg)
@@ -281,13 +282,13 @@ class CMake:
             s = s.replace(k, v)
         return s
 
-    def section_check(self, items, cmd_name, section_name='', zero_okay=False):
+    def section_check(self, items, cmd_name, section_name='', zero_okay=False, prefix=''):
         if len(items) == 0 and not zero_okay:
             return
 
         if cmd_name not in self.content_map:
             if len(items) > 0:
-                params = section_name + ' ' + ' '.join(items)
+                params = prefix + section_name + ' ' + ' '.join(items)
                 self.add_command_string('%s(%s)' % (cmd_name, params))
                 print '\tAdding new %s command to CMakeLists.txt with %s' % (cmd_name, params)
             else:
@@ -313,7 +314,7 @@ class CMake:
         print '\tAdding %s to the %s/%s section of your CMakeLists.txt' % (str(items), cmd_name, section_name)
 
     def check_dependencies(self, pkgs, check_catkin_pkg=True):
-        self.section_check(pkgs, 'find_package', 'COMPONENTS')
+        self.section_check(pkgs, 'find_package', 'COMPONENTS', prefix='catkin REQUIRED ')
         if check_catkin_pkg:
             self.section_check(pkgs, 'catkin_package', 'CATKIN_DEPENDS')
 
@@ -333,15 +334,23 @@ class CMake:
         if len(cfgs) > 0:
             self.section_check(['dynamic_reconfigure'], 'find_package', 'COMPONENTS')
 
-    def add_command_string(self, s):
+    def add_command_string(self, s, in_test_section=False):
         for cmd in parse_file(s):
-            self.add_command(cmd)
+            self.add_command(cmd, in_test_section)
 
-    def add_command(self, cmd):
-        if len(self.contents) > 0 and type(self.contents[-1]) != str:
-            self.contents.append('\n')
-        self.contents.append(cmd)
-        self.content_map[cmd.cmd].append(cmd)
+    def add_command(self, cmd, in_test_section=False):
+        if in_test_section:
+            cg = self.get_test_section(create_if_needed=True)
+            cg.add_command(cmd)
+        else:
+            if len(self.contents) > 0 and type(self.contents[-1]) != str:
+                self.contents.append('\n')
+            if self.indent > 0:
+                self.contents.append('  ' * self.indent)
+            self.contents.append(cmd)
+            self.content_map[cmd.cmd].append(cmd)
+            if self.indent > 0:
+                self.contents.append('\n')
 
     def remove_command(self, cmd):
         print '\tRemoving %s' % str(cmd).replace('\n', ' ').replace('  ', '')
@@ -373,13 +382,35 @@ class CMake:
             if src_fn in tokens:
                 return self.resolve_variables(tokens[0])
 
-    def get_test_source(self):
-        test_files = set()
+    def get_test_sections(self):
+        sections = []
         for content in self.content_map['group']:
             cmd = content.initial_tag
             if cmd.cmd != 'if' or len(cmd.sections) == 0 or cmd.sections[0].name != 'CATKIN_ENABLE_TESTING':
                 continue
-            sub = content.sub
+            sections.append(content.sub)
+        return sections
+
+    def get_test_section(self, create_if_needed=False):
+        sections = self.get_test_sections()
+        if len(sections) > 0:
+            return sections[0]
+        if not create_if_needed:
+            return None
+        # Create Test Section
+        if len(self.contents) > 0 and type(self.contents[-1]) != str:
+            self.contents.append('\n')
+        cg = CommandGroup(parse_command('if(CATKIN_ENABLE_TESTING)'),
+                          CMake(initial_contents=['\n'], indent=self.indent + 1),
+                          parse_command('endif()')
+                          )
+        self.contents.append(cg)
+        self.content_map['group'].append(cg)
+        return cg.sub
+
+    def get_test_source(self):
+        test_files = set()
+        for sub in self.get_test_sections():
             test_files.update(sub.get_library_source())
             test_files.update(sub.get_executable_source())
         return test_files
