@@ -326,6 +326,11 @@ class CMake:
         if len(msgs) + len(srvs) + len(actions) > 0:
             self.section_check(['message_generation'], 'find_package', 'COMPONENTS')
             self.section_check(['message_runtime'], 'catkin_package', 'CATKIN_DEPENDS')
+            for cmd in self.content_map['catkin_package']:
+                section = cmd.get_section('CATKIN_DEPENDS')
+                if 'message_generation' in section.values:
+                    section.remove_pattern('message_generation')
+                    cmd.changed = True
 
             self.section_check(deps, 'generate_messages', 'DEPENDENCIES', zero_okay=True)
 

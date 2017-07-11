@@ -119,8 +119,6 @@ class Package:
             if 'test' in source.tags:
                 continue
             packages.update(source.get_dependencies())
-        if len(self.files['msg'] + self.files['srv'] + self.files['action']) > 0:
-            packages.add('message_generation')
         if self.name in packages:
             packages.remove(self.name)
         return sorted(list(packages))
@@ -189,7 +187,8 @@ class Package:
 
         if len(self.files['msg']) + len(self.files['srv']) + len(self.files['action']) > 0:
             md = self.get_dependencies_from_msgs()
-            self.manifest.add_packages(['message_generation'] + md, ['message_runtime'] + md)
+            self.manifest.add_packages(md, md)
+            self.manifest.add_message_dependencies()
 
         if CFG.should('remove_empty_export_tag'):
             self.manifest.remove_empty_export()

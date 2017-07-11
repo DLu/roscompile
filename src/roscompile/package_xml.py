@@ -318,6 +318,20 @@ class PackageXML:
             test_depends = set(test_depends) - existing_build - build_depends - existing_test
             self.insert_new_elements('test_depend', test_depends)
 
+    def add_message_dependencies(self):
+        if self.format == 1:
+            pairs = [('build_depend', 'message_generation'),
+                     ('run_depend', 'message_runtime')]
+        else:
+            pairs = [('build_depend', 'message_generation'),
+                     ('build_export_depend', 'message_runtime'),
+                     ('exec_depend', 'message_runtime')]
+            self.remove_dependencies('depend', ['message_generation', 'message_runtime'])
+        for tag, package in pairs:
+            existing = self.get_packages_by_tag(tag)
+            if package not in existing:
+                self.insert_new_elements(tag, [package])
+
     def replace_package_set(self, source_tags, new_tag):
         intersection = None
         for tag in source_tags:
