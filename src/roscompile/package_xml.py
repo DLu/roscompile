@@ -304,10 +304,13 @@ class PackageXML:
         if self.format == 1:
             self.insert_new_elements('build_depend', build_depends)
             self.insert_new_elements('run_depend', run_depends)
+        elif CFG.should('always_add_depend_in_format_2'):
+            self.insert_new_elements('depend', build_depends.union(run_depends))
         else:
             both = build_depends.intersection(run_depends)
             self.insert_new_elements('depend', both)
             self.insert_new_elements('build_depend', build_depends - both)
+            self.insert_new_elements('exec_depend', build_depends - both - existing_run)
             self.insert_new_elements('exec_depend', run_depends - both)
 
         if test_depends is not None and len(test_depends) > 0:
