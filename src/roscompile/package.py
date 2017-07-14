@@ -199,7 +199,8 @@ class Package:
             if self.name == parent_folder:
                 for package in get_packages(parent_path, create_objects=False):
                     pkg_name = os.path.split(package)[1]
-                    self.manifest.add_packages([], [pkg_name])
+                    if pkg_name != self.name:
+                        self.manifest.add_packages([], [pkg_name], allow_depend_tag=False)
 
         self.manifest.output()
 

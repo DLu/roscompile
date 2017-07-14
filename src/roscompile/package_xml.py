@@ -294,7 +294,7 @@ class PackageXML:
                 index = indexes[best_tag][-1][-1]
         self.root.childNodes = self.root.childNodes[:index + 1] + x + self.root.childNodes[index + 1:]
 
-    def add_packages(self, build_depends, run_depends, test_depends=None):
+    def add_packages(self, build_depends, run_depends, test_depends=None, allow_depend_tag=True):
         if self.format == 1:
             run_depends += build_depends
         existing_build = self.get_packages('build')
@@ -304,7 +304,7 @@ class PackageXML:
         if self.format == 1:
             self.insert_new_elements('build_depend', build_depends)
             self.insert_new_elements('run_depend', run_depends)
-        elif CFG.should('always_add_depend_in_format_2'):
+        elif CFG.should('always_add_depend_in_format_2') and allow_depend_tag:
             self.insert_new_elements('depend', build_depends.union(run_depends))
         else:
             both = build_depends.intersection(run_depends)
