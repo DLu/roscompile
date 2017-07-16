@@ -61,7 +61,7 @@ class Package:
                 if ext_match:
                     data[ext_match].append(full)
                 elif ext == '.launch':
-                    data['launch'].append(Launch(full))
+                    data['launch'].append(full)
                 elif ext in SIMPLE:
                     name = ext[1:]
                     data[name].append(full)
@@ -81,10 +81,12 @@ class Package:
                         continue
                     if ext == '.xml':
                         # Try to make it a launch
-                        launch = Launch(full)
-                        if launch.valid:
-                            data['launch'].append(launch)
-                            continue
+                        try:
+                            if Launch(full).valid:
+                                data['launch'].append(full)
+                                continue
+                        except: # This way we can catch errors on ill-formatted xml files
+                            pass
 
                     with open(full) as f:
                         l = f.readline()
@@ -127,7 +129,8 @@ class Package:
 
     def get_run_dependencies(self):
         packages = set()
-        for launch in self.files['launch']:
+        for launchf in self.files['launch']:
+            launch = Launch(launchf)
             if launch.test:
                 continue
             packages.update(launch.get_dependencies())
@@ -141,7 +144,8 @@ class Package:
             if 'test' not in source.tags:
                 continue
             packages.update(source.get_dependencies())
-        for launch in self.files['launch']:
+        for launchf in self.files['launch']:
+            launch = Launch(launchf)
             if not launch.test:
                 continue
             packages.update(launch.get_dependencies())
