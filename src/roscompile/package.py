@@ -81,13 +81,10 @@ class Package:
                         continue
                     if ext == '.xml':
                         # Try to make it a launch
-                        try:
-                            if Launch(full).valid:
-                                data['launch'].append(full)
-                                continue
-                        except: # This way we can catch errors on ill-formatted xml files
-                            pass
-
+                        if Launch(full).valid:
+                            data['launch'].append(full)
+                            continue
+                
                     with open(full) as f:
                         l = f.readline()
                         if '#!' in l and 'python' in l:
