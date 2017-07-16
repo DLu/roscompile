@@ -3,15 +3,15 @@ import re
 HASH_PATTERN = re.compile('\n#+\n')
 
 def get_ignore_data_helper(basename):
-    #try:
+    try:
         fn = 'package://roscompile/data/' + basename + '.ignore'
         lines = []
-        for s in get(fn).read().split('\n'):
+        for s in get(fn).split('\n'):
             if len(s) > 0:
                 lines.append(s + '\n')
         return lines
-    #except:
-    #    return []
+    except:
+        return []
 
 def get_ignore_data(name):
     return get_ignore_data_helper(name), get_ignore_data_helper(name + '_patterns')
