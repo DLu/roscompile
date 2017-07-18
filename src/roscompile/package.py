@@ -308,9 +308,10 @@ class Package:
         for library, some_plugins in plugins.iteritems():
             for pkg1, name1, pkg2, name2 in some_plugins:
                 if pkg2 not in self.plugins:
-                    print '\tCreating plugins.xml'
-                    self.plugins[pkg2] = PluginXML(self.root + '/plugins.xml')
-                    self.manifest.add_plugin_export('plugins.xml', pkg2)
+                    new_filename = '%s_plugins.xml' % pkg2
+                    print '\tCreating %s' % new_filename
+                    self.plugins[pkg2] = PluginXML(os.path.join(self.root, new_filename))
+                    self.manifest.add_plugin_export(new_filename, pkg2)
                 self.plugins[pkg2].insert_if_needed(pkg1, name1, pkg2, name2, library=library)
 
         for config in self.plugins.values():
