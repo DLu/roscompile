@@ -7,8 +7,8 @@ from roscompile.util import clean_contents, remove_blank_lines, remove_all_hashe
 BREAKERS = ['catkin_package']
 ALL_CAPS = re.compile('^[A-Z_]+$')
 
-ORDERING = ['cmake_minimum_required', 'project', 'find_package', 'pkg_check_modules', 'catkin_python_setup',
-            'add_definitions', 'add_message_files', 'add_service_files', 'add_action_files',
+ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
+            'catkin_python_setup', 'add_definitions', 'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'include_directories'],
             ['roslint_cpp', 'roslint_python'],
