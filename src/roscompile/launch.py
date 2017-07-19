@@ -1,12 +1,17 @@
 from xml.dom.minidom import parse
+from xml.parsers.expat import ExpatError
 import re
 
 class Launch:
     def __init__(self, fn):
         self.fn = fn
-        self.tree = parse(fn)
-        self.test = len(self.tree.getElementsByTagName('test')) > 0
-        self.valid = len(self.tree.getElementsByTagName('launch')) > 0
+        try:
+            self.tree = parse(fn)
+            self.test = len(self.tree.getElementsByTagName('test')) > 0
+            self.valid = len(self.tree.getElementsByTagName('launch')) > 0
+        except ExpatError: # this is an invalid xml file
+            self.test = False
+            self.valid = False
 
     def get_node_pkgs(self):
         s = set()
