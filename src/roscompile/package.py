@@ -84,7 +84,7 @@ class Package:
                         if Launch(full).valid:
                             data['launch'].append(full)
                             continue
-                
+
                     with open(full) as f:
                         l = f.readline()
                         if '#!' in l and 'python' in l:
