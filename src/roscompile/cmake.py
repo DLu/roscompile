@@ -521,6 +521,7 @@ class CMake:
         elif section:
             section = cmd.get_section(section_name)
             section.values += items
+            section.changed = True
 
     def update_cplusplus_installs(self):
         self.install_section_check(self.get_executables(), 'exec')
