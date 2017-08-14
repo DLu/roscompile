@@ -2,6 +2,7 @@ import os
 import os.path
 import collections
 import re
+import stat
 from roscompile.launch import Launch
 from roscompile.source import Source
 from roscompile.setup_py import SetupPy
@@ -318,6 +319,11 @@ class Package:
         for config in self.plugins.values():
             config.write()
         self.manifest.output()
+
+    def check_permissions(self):
+        for fn in self.files['cfg']:
+            existing_permissions = stat.S_IMODE(os.lstat(fn).st_mode)
+            os.chmod(fn, existing_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
     def get_people(self):
         people = {}

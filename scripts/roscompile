@@ -32,4 +32,7 @@ for package in pkgs:
     if CFG.should('check_plugins'):
         package.check_plugins()
 
+    if CFG.should('check_permissions'):
+        package.check_permissions()
+
 CFG.write()
