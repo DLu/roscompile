@@ -559,6 +559,20 @@ class CMake:
                     section.style.val_sep = '\n    '
                 cmd.changed = True
 
+    def install_cleanup(self):
+        for cmd in self.content_map['install']:
+            cmd.changed = True
+            cmd.sections = [s for s in cmd.sections if type(s) != str]
+            zeroed = False
+            for section in cmd.sections[1:]:
+                if len(section.values) == 0:
+                    section.style.prename = '\n        '
+                    zeroed = True
+                elif not zeroed:
+                    section.style.prename = '\n        '
+                else:
+                    section.style.prename = ''
+
     def enforce_ordering(self):
         chunks = []
         current = []
