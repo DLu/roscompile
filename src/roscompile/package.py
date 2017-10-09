@@ -271,6 +271,9 @@ class Package:
                 return True
         return False
 
+    def has_launch_folder(self):
+        return os.path.exists(os.path.join(self.root, 'launch'))
+
     def get_python_source(self):
         sources = []
         for source in self.sources:
