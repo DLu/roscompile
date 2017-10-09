@@ -22,7 +22,7 @@ SIMPLE = ['.msg', '.srv', '.action']
 PLUGIN_CONFIG = 'plugins'
 EXTRA = 'Extra!'
 
-FILES_TO_NOT_INSTALL = ['CHANGELOG.rst']
+FILES_TO_NOT_INSTALL = ['CHANGELOG.rst', 'README.md']
 
 MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+" + \
              "Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"

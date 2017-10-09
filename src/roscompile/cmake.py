@@ -59,6 +59,8 @@ def get_install_types(cmd, subfolder=''):
     for section in cmd.get_sections('DESTINATION'):
         the_folder = section.values[0]
         if len(subfolder) > 0:
+            if subfolder not in the_folder:
+                continue
             the_folder = the_folder.replace('/' + subfolder, '')
         type_ = get_install_type(the_folder)
         if type_:
@@ -502,7 +504,7 @@ class CMake:
 
         cmd = None
         for cmd in cmds:
-            install_sections(cmd, destination_map)
+            install_sections(cmd, destination_map, subfolder)
             section = cmd.get_section(section_name)
             if not section:
                 continue
