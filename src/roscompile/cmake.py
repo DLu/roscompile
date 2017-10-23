@@ -551,6 +551,18 @@ class CMake:
                 section.style.prename = '\n    '
             cmd.changed = True
 
+    def package_lists_cleanup(self):
+        for cmd_name, section_name in [('find_package', 'COMPONENTS'), ('catkin_package', 'CATKIN_DEPENDS')]:
+            for cmd in self.content_map[cmd_name]:
+                for section in cmd.get_real_sections():
+                    if section.name != section_name:
+                        continue
+                    n = len(str(section))
+                    if n > 120:
+                        section.style.name_val_sep = '\n        '
+                        section.style.val_sep = '\n        '
+                        cmd.changed = True
+
     def msg_srv_cleanup(self):
         for cmd in self.content_map['add_message_files'] + self.content_map['add_service_files']:
             for section in cmd.get_real_sections():

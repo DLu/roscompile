@@ -237,6 +237,8 @@ class Package:
 
         if CFG.should('prettify_catkin_package_cmd'):
             self.cmake.catkin_package_cleanup()
+        if CFG.should('prettify_package_lists'):
+            self.cmake.package_lists_cleanup()
         if CFG.should('prettify_msgs_srvs'):
             self.cmake.msg_srv_cleanup()
         if CFG.should('prettify_installs'):
