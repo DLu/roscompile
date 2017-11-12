@@ -374,7 +374,8 @@ class CMake:
         lib_src = set()
         for cmd in self.content_map[tagname]:
             tokens = cmd.get_tokens()
-            lib_src.update(tokens[1:])
+            tokens_correct = [self.resolve_variables(s) for s in tokens]
+            lib_src.update(tokens_correct[1:])
         return lib_src
 
     def get_library_source(self):
