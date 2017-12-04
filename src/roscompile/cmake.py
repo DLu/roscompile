@@ -473,12 +473,17 @@ class CMake:
             print '\tAdding target_link_libraries for %s' % target
             self.add_command_string('target_link_libraries(%s %s)' % (target, CATKIN))
 
-    def check_include_path(self):
-        self.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
-        self.section_check(['include'], 'include_directories')
+    def check_includes(self, has_header_files, needs_catkin_includes):
+        if has_header_files:
+            self.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
+            self.section_check(['include'], 'include_directories')
 
-    def add_catkin_include_path(self):
-        self.section_check(['${catkin_INCLUDE_DIRS}'], 'include_directories')
+        if needs_catkin_includes:
+            self.section_check(['${catkin_INCLUDE_DIRS}'], 'include_directories')
+
+        if not has_header_files and not needs_catkin_includes and 'include_directories' in self.content_map:
+            for cmd in self.content_map['include_directories']:
+                self.remove_command(cmd)
 
     def check_library_setup(self):
         self.section_check(self.get_libraries(), 'catkin_package', 'LIBRARIES')

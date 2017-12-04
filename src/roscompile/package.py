@@ -229,10 +229,7 @@ class Package:
 
         self.cmake.check_generators(self.files['msg'], self.files['srv'], self.files['action'], self.files['cfg'], deps)
 
-        if self.has_header_files():
-            self.cmake.check_include_path()
-        if len(self.get_cpp_source()) > 0:
-            self.cmake.add_catkin_include_path()
+        self.cmake.check_includes(self.has_header_files(), len(self.get_cpp_source()) > 0)
         self.cmake.check_library_setup()
 
         setup = self.get_setup_py()
