@@ -130,6 +130,10 @@ class Package:
             if launch.test:
                 continue
             packages.update(launch.get_dependencies())
+        for source in self.sources:
+            if 'test' in source.tags:
+                continue
+            packages.update(source.get_external_python_dependencies())
         if self.name in packages:
             packages.remove(self.name)
         return sorted(list(packages))

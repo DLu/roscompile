@@ -24,21 +24,34 @@ class Source:
         self.python = '.py' in self.fn or (len(self.lines) > 0 and 'python' in self.lines[0])
         self.tags = set()
 
-    def get_dependencies(self):
-        d = set()
+    def get_import_packages(self):
+        pkgs = set()
         for line in self.lines:
             for EXP in EXPRESSIONS:
                 m = EXP.search(line)
                 if m:
-                    if is_package(m.group(1)):
-                        d.add(m.group(1))
-                    elif self.python:
-                        p_dep = get_python_dependency(m.group(1))
-                        if p_dep:
-                            d.add(p_dep)
+                    pkgs.add(m.group(1))
             if ROSCPP.search(line):
-                d.add('roscpp')
-        return sorted(list(d))
+                pkgs.add('roscpp')
+        return sorted(list(pkgs))
+
+    def get_dependencies(self):
+        deps = []
+        for pkg in self.get_import_packages():
+            if is_package(pkg):
+                deps.append(pkg)
+        return deps
+
+    def get_external_python_dependencies(self):
+        deps = []
+        if not self.python:
+            return deps
+
+        for pkg in self.get_import_packages():
+            p_dep = get_python_dependency(pkg)
+            if p_dep:
+                deps.append(p_dep)
+        return deps
 
     def get_message_dependencies(self):
         d = set()
