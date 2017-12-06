@@ -263,7 +263,7 @@ class CMake:
                     elif x.cmd == 'end' + group.cmd:
                         depth -= 1
                         if depth == 0:
-                            sub = CMake(initial_contents=current, indent=self.indent + 1)
+                            sub = CMake(name=self.name, initial_contents=current, indent=self.indent + 1)
                             cg = CommandGroup(group, sub, x)
                             self.contents.append(cg)
                             self.content_map['group'].append(cg)
@@ -273,7 +273,7 @@ class CMake:
                 current.append(x)
         # Shouldn't happen, but resolve leftovers
         if len(current) > 0:
-            sub = CMake(initial_contents=current, indent=self.indent + 1)
+            sub = CMake(name=self.name, initial_contents=current, indent=self.indent + 1)
             cg = CommandGroup(group, sub, '')
             self.contents.append(cg)
             self.content_map['group'].append(cg)
