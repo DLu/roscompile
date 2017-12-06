@@ -52,7 +52,7 @@ class PackageXML:
     def __init__(self, name, fn):
         self.name = name
         self.tree = parse(fn)
-        self.root = self.tree.childNodes[0]
+        self.root = self.tree.getElementsByTagName('package')[0]
         self.header = '<?xml' in open(fn).read()
         self.fn = fn
         self._format = None
@@ -62,7 +62,10 @@ class PackageXML:
             if c.nodeType == c.TEXT_NODE:
                 spaces = count_trailing_spaces(c.data)
                 tab_ct[spaces] += 1
-        self.std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
+        if len(tab_ct) == 0:
+            self.std_tab = 4
+        else:
+            self.std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
 
     def enforce_tabbing(self, node, tabs=1):
         ideal_length = self.std_tab * tabs
