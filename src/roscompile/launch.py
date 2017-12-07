@@ -9,7 +9,7 @@ class Launch:
             self.tree = parse(fn)
             self.test = len(self.tree.getElementsByTagName('test')) > 0
             self.valid = len(self.tree.getElementsByTagName('launch')) > 0
-        except ExpatError: # this is an invalid xml file
+        except ExpatError:  # this is an invalid xml file
             self.test = False
             self.valid = False
 

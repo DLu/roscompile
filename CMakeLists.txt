@@ -16,3 +16,10 @@ install(FILES
            data/cmake_patterns.ignore
            data/package_patterns.ignore
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data)
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS roslint)
+  set(ROSLINT_PYTHON_OPTS --max-line-length=120 --ignore=E111,E114,E302,E402)
+  roslint_python()
+  roslint_add_test()
+endif()

@@ -121,11 +121,11 @@ class AwesomeParser:
             if len(delims) == 1:
                 style.val_sep = list(delims)[0]
             else:
-                #TODO: Smarter multi delim parsing
+                # TODO: Smarter multi delim parsing
                 # print delims
                 style.val_sep = list(delims)[0]
 
-        #print cat, tokens, style
+        # print cat, tokens, style
         return Section(cat, tokens, style), original
 
     def match(self, typ=None):

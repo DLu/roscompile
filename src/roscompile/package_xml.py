@@ -367,9 +367,8 @@ class PackageXML:
         self.root.childNodes = []
 
         alpha = CFG.should('alphabetize')
-        key = lambda d: get_sort_key(d[0], alpha)
 
-        for a, b in sorted(chunks, key=key):
+        for a, b in sorted(chunks, key=lambda d: get_sort_key(d[0], alpha)):
             self.root.childNodes += b
 
     def output(self, new_fn=None):

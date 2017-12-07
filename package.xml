@@ -14,4 +14,5 @@
   <run_depend>rospy</run_depend>
   <run_depend>python-urlgrabber</run_depend>
   <run_depend>resource_retriever</run_depend>
+  <test_depend>roslint</test_depend>
 </package>
