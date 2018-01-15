@@ -1,0 +1,58 @@
+#!/usr/bin/python
+
+from ros_introspection.util import get_packages
+from ros_introspection.cmake import Command
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-1', '--cpp11', action='store_true')
+parser.add_argument('-w', '--wall', action='store_true')
+parser.add_argument('-e', '--werror', action='store_true')
+parser.add_argument('-a', '--all', action='store_true')
+args = parser.parse_args()
+
+if not args.cpp11 and not args.wall and not args.werror and not args.all:
+    print 'Error! No tests specified.'
+    exit(0)
+if args.all:
+    args.cpp11 = True
+    args.wall = True
+    args.werror = True
+
+pkgs = get_packages()
+
+for package in pkgs:
+    print package.name
+    if len(package.cmake.content_map['set_directory_properties']) == 0:
+        cmd = Command('set_directory_properties')
+        cmd.add_section('PROPERTIES')
+        package.cmake.add_command(cmd)
+    else:
+        cmd = package.cmake.content_map['set_directory_properties'][0]
+
+    if not cmd.get_section('COMPILE_OPTIONS'):
+        cmd.add_section('COMPILE_OPTIONS')
+
+    section = cmd.get_section('COMPILE_OPTIONS')
+
+    if len(section.values) == 0:
+        section.values = ['""']
+
+    bits = filter(None, section.values[0][1:-1].split(';'))
+
+    if args.cpp11:
+        key = '-std=c++11'
+        if key not in bits:
+            bits.append(key)
+    if args.wall:
+        key = '-Wall'
+        if key not in bits:
+            bits.append(key)
+    if args.werror:
+        key = '-Werror'
+        if key not in bits:
+            bits.append(key)
+
+    section.values = ['"%s"' % ';'.join(bits)]
+
+    package.write()

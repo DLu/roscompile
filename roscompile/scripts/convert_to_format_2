@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-from roscompile.package import get_packages
+from ros_introspection.util import get_packages
+from roscompile.manifest import replace_package_set
 
 pkgs = get_packages()
 
@@ -9,6 +10,9 @@ for package in pkgs:
     if manifest.format == 2:
         print '%s already in format 2!' % package.name
     else:
-        print package.name
-        manifest.convert_to_format_2()
-        manifest.output()
+        print 'Converting', package.name
+        manifest._format = 2
+        manifest.root.setAttribute('format', '2')
+        replace_package_set(manifest, ['build_depend', 'run_depend'], 'depend')
+        replace_package_set(manifest, ['run_depend'], 'exec_depend')
+        manifest.write()

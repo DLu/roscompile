@@ -1,38 +1,11 @@
 #!/usr/bin/python
 
-from roscompile.package import get_packages
-from roscompile.people_management import fix_people, fix_licenses
-from roscompile.config import CFG
-
-CFG.check_command_flags()
+from ros_introspection.util import get_packages
+from roscompile import get_functions
 
 pkgs = get_packages()
 
-if CFG.should('update_manifest'):
-    if CFG.should('check_names'):
-        fix_people(pkgs)
-    if CFG.should('check_licenses'):
-        fix_licenses(pkgs)
-
 for package in pkgs:
-    print package.name
-
-    if CFG.should('update_manifest'):
-        package.update_manifest()
-
-    if CFG.should('update_cmake'):
-        package.update_cmake()
-
-    if CFG.should('remove_useless'):
-        package.remove_useless()
-
-    if CFG.should('generate_setup_py'):
-        package.generate_setup()
-
-    if CFG.should('check_plugins'):
-        package.check_plugins()
-
-    if CFG.should('check_permissions'):
-        package.check_permissions()
-
-CFG.write()
+    for name, fne in get_functions().iteritems():
+        fne(package)
+    package.write()

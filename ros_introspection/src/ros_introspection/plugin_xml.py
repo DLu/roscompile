@@ -4,28 +4,32 @@ import os.path
 
 NS_PATTERN = '%s::%s'
 
-class PluginXML:
-    def __init__(self, fn):
-        self.fn = fn
-        self.CL = False
-        self.libraries = OrderedDict()
 
-        if os.path.exists(self.fn):
+class PluginXML:
+    def __init__(self, rel_fn, file_path):
+        self.rel_fn = rel_fn
+        self.file_path = file_path
+        self.has_class_libraries_tag = False
+        self.libraries = OrderedDict()
+        self.parent_pkgs = set()
+
+        if os.path.exists(self.file_path):
             self.read()
 
     def read(self):
-        tree = parse(self.fn)
+        tree = parse(self.file_path)
 
-        self.CL = len(tree.getElementsByTagName('class_libraries')) > 0
+        self.has_class_libraries_tag = len(tree.getElementsByTagName('class_libraries')) > 0
 
         for el in tree.getElementsByTagName('library'):
-            path = el.getAttribute('path')
+            path = el.getAttribute('path').replace('lib/lib', '')
             cls = OrderedDict()
             self.libraries[path] = cls
 
             for clstag in el.getElementsByTagName('class'):
                 d = {}
                 d['base_class_type'] = clstag.getAttribute('base_class_type')
+                self.parent_pkgs.add(d['base_class_type'].split('::')[0])
                 d['type'] = clstag.getAttribute('type')
                 d['name'] = clstag.getAttribute('name')
 
@@ -38,44 +42,40 @@ class PluginXML:
 
                 cls[d['type']] = d
 
-    def insert_if_needed(self, pkg, name, base_pkg, base_name, description='', library=None):
-        if library is None:
-            if len(self.libraries) == 0:
-                library = 'INSERT_NAME_OF_LIBRARY'
-            else:
-                library = self.libraries.keys()[0]
-        else:
-            if 'lib/lib' not in library:
-                library = 'lib/lib' + library
-
-        if library not in self.libraries:
-            self.libraries[library] = OrderedDict()
-
+    def contains_library(self, library_name, pkg, name):
+        if library_name not in self.libraries:
+            return False
         full_name = NS_PATTERN % (pkg, name)
-        if full_name not in self.libraries[library]:
-            self.libraries[library][full_name] = {'base_class_type': NS_PATTERN % (base_pkg, base_name),
-                                                  'type': full_name,
-                                                  'description': description}
+        return full_name in self.libraries[library_name]
+
+    def insert_new_class(self, library_name, pkg, name, base_pkg, base_name, description=''):
+        if library_name not in self.libraries:
+            self.libraries[library_name] = OrderedDict()
+        library = self.libraries[library_name]
+        full_name = NS_PATTERN % (pkg, name)
+        library[full_name] = {'base_class_type': NS_PATTERN % (base_pkg, base_name),
+                              'type': full_name,
+                              'description': description}
 
     def write(self):
-        with open(self.fn, 'w') as f:
+        with open(self.file_path, 'w') as f:
             f.write(str(self))
 
     def __repr__(self):
         s = ''
         indent = 0
-        CL = len(self.libraries) > 1 or self.CL
-        if CL:
+        need_class_libraries_tag = len(self.libraries) > 1 or self.has_class_libraries_tag
+        if need_class_libraries_tag:
             s += '<class_libraries>\n'
             indent += 2
 
         for name, lib in self.libraries.iteritems():
-            s += ' ' * indent + '<library path="%s">\n' % name
+            s += ' ' * indent + '<library path="lib/lib%s">\n' % name
             for t, clib in lib.iteritems():
                 s += self.class_str(clib, indent + 2)
             s += ' ' * indent + '</library>\n'
 
-        if CL:
+        if need_class_libraries_tag:
             s += '</class_libraries>\n'
         return s
 

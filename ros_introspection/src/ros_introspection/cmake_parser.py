@@ -1,7 +1,11 @@
 import re
 import sys
-from cmake import Command, Section, SectionStyle
+from cmake import CMake, Command, Section, SectionStyle, CommandGroup
+
 ALL_CAPS = re.compile('^[A-Z_]+$')
+ALL_WHITESPACE = ['whitespace', 'newline']
+NOT_REAL = ALL_WHITESPACE + ['comment']
+
 
 def word_cb(scanner, token):
     if ALL_CAPS.match(token):
@@ -9,8 +13,9 @@ def word_cb(scanner, token):
     else:
         return ('word', token)
 
+
 scanner = re.Scanner([
-    (r'#.*', lambda scanner, token: ("comment", token)),
+    (r'#.*\n', lambda scanner, token: ("comment", token)),
     (r'"[^"]*"', lambda scanner, token: ("string", token)),
     (r"\(", lambda scanner, token: ("left paren", token)),
     (r"\)", lambda scanner, token: ("right paren", token)),
@@ -19,8 +24,48 @@ scanner = re.Scanner([
     (r"[ \t]+", lambda scanner, token: ("whitespace", token)),
 ])
 
-ALL_WHITESPACE = ['whitespace', 'newline']
-NOT_REAL = ALL_WHITESPACE + ['comment']
+
+def match_command_groups(contents, base_depth=0):
+    revised_contents = []
+
+    current = []
+    group = None
+    depth = base_depth
+
+    for content in contents:
+        if group is None:
+            if content.__class__ == Command and content.command_name in ['if', 'foreach']:
+                group = content
+                depth = base_depth + 1
+            else:
+                revised_contents.append(content)
+        else:
+            if content.__class__ == Command:
+                if content.command_name == group.command_name:
+                    depth += 1
+                elif content.command_name == 'end' + group.command_name:
+                    depth -= 1
+                    if depth == base_depth:
+                        recursive_contents = match_command_groups(current, base_depth + 1)
+                        sub = CMake(initial_contents=recursive_contents, depth=base_depth + 1)
+                        cg = CommandGroup(group, sub, content)
+                        revised_contents.append(cg)
+                        group = None
+                        current = []
+                        continue
+            current.append(content)
+
+    # Only will happen if the tags don't match. Shouldn't happen, but resolve leftovers
+    if len(current) > 0:
+        revised_contents += current
+
+    return revised_contents
+
+
+class CMakeParseError(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+
 
 class AwesomeParser:
     def __init__(self, s, debug=False):
@@ -46,6 +91,10 @@ class AwesomeParser:
                 self.contents.append(cmd)
             else:
                 raise Exception('token ' + typ)
+
+        # Match Command Groups
+        self.contents = match_command_groups(self.contents)
+
         if debug:
             for chunk in self.contents:
                 print '[%s]' % chunk
@@ -76,8 +125,7 @@ class AwesomeParser:
                     pass
                 else:
                     cmd.sections.append(tok_contents)
-        msg = 'File ended while processing command "%s"' % (command_name)
-        raise CMakeParseError(msg)
+        raise CMakeParseError('File ended while processing command "%s"' % (command_name))
 
     def parse_section(self):
         original = ''
@@ -150,11 +198,19 @@ class AwesomeParser:
             if x not in NOT_REAL:
                 return x
 
-def parse_file(s):
+
+def parse_commands(s):
     parser = AwesomeParser(s)
     return parser.contents
+
 
 def parse_command(s):
     parser = AwesomeParser(s)
     assert len(parser.contents) == 1
     return parser.contents[0]
+
+
+def parse_file(filename):
+    with open(filename) as f:
+        s = f.read()
+        return CMake(file_path=filename, initial_contents=parse_commands(s))

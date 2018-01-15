@@ -8,6 +8,7 @@ PY_DEP_FILENAME = os.path.expanduser('~/.ros/py_deps.yaml')
 
 PYTHON_DEPS = {}
 
+
 def maybe_download_python_deps():
     global PYTHON_DEPS
     if os.path.exists(PY_DEP_FILENAME):
@@ -22,18 +23,22 @@ def maybe_download_python_deps():
     PYTHON_DEPS['last_download'] = datetime.datetime.now()
     yaml.dump(PYTHON_DEPS, open(PY_DEP_FILENAME, 'w'))
 
+
 def get_python_dependency(key):
     for var in [key, 'python-' + key, 'python3-' + key, key.replace('python-', 'python3-'), key.replace('python-', ''),
                 key.replace('python-', '').replace('-', '_')]:
         if var in PYTHON_DEPS:
             return var
 
+
 maybe_download_python_deps()
+
 
 def get_output_lines(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     return [s for s in out.split('\n') if len(s) > 0]
+
 
 PACKAGES = {}
 MESSAGES = set()
@@ -51,11 +56,14 @@ for line in get_output_lines(['rossrv', 'list']):
     pkg, srv = line.split('/')
     SERVICES.add((pkg, srv))
 
+
 def is_package(pkg):
     return pkg in PACKAGES
 
+
 def is_message(pkg, msg):
     return (pkg, msg) in MESSAGES
+
 
 def is_service(pkg, srv):
     return (pkg, srv) in SERVICES

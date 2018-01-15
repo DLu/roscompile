@@ -62,7 +62,6 @@
 #  INCLUDE_DIRS include
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
-###########
 ## Build ##
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -106,6 +105,7 @@
 #############
 ## Testing ##
 #############
+###########
 ## Add gtest based cpp test target and link libraries
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
