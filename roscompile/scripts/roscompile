@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+from ros_introspection.util import get_packages
+from roscompile import get_functions
+
+pkgs = get_packages()
+
+for package in pkgs:
+    for name, fne in get_functions().iteritems():
+        fne(package)
+    package.write()

@@ -1,0 +1,29 @@
+#!/usr/bin/python
+
+from ros_introspection.util import get_packages
+from roscompile import get_functions
+import argparse
+
+all_functions = get_functions()
+parser = argparse.ArgumentParser()
+parser.add_argument('cmds', metavar='command', nargs='+')
+args = parser.parse_args()
+
+pkgs = get_packages()
+
+print_options = False
+for cmd in args.cmds:
+    if cmd not in all_functions:
+        print 'Command {} not recognized'.format(cmd)
+        print_options = True
+if print_options:
+    print
+    print 'Available functions:'
+    print '\n'.join(all_functions.keys())
+    exit(0)
+
+
+for package in pkgs:
+    for cmd in args.cmds:
+        all_functions[cmd](package)
+    package.write()

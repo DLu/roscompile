@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ros_introspection</name>
+  <version>0.0.0</version>
+  <description>The ros_introspection package</description>
+
+  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <test_depend>roslint</test_depend>
+
+</package>
