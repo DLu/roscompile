@@ -28,4 +28,4 @@ endif()
 catkin_install_python(PROGRAMS scripts/roscompile scripts/add_tests scripts/convert_to_format_2
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-install(FILES cmake.ignore cmake_patterns.ignore package.ignore package_patterns.ignore DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data)
+install(FILES data/cmake.ignore data/cmake_patterns.ignore data/package.ignore data/package_patterns.ignore DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data)
