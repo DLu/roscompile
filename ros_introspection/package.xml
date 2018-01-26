@@ -10,6 +10,5 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <test_depend>roslint</test_depend>
-  <test_depend>python-gitpython-pip</test_depend>
 
 </package>

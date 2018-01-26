@@ -8,7 +8,6 @@ catkin_package()
 
 if (CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS roslint)
-  catkin_add_nosetests(test/parse_repos_test.py)
   roslint_python()
   roslint_add_test()
 endif()
