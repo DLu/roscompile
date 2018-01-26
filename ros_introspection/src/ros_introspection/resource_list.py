@@ -4,7 +4,8 @@ import subprocess
 import datetime
 import resource_retriever
 
-PY_DEP_FILENAME = os.path.expanduser('~/.ros/py_deps.yaml')
+DOT_ROS_FOLDER = os.path.expanduser('~/.ros')
+PY_DEP_FILENAME = os.path.join(DOT_ROS_FOLDER, 'py_deps.yaml')
 
 PYTHON_DEPS = {}
 
@@ -21,6 +22,9 @@ def maybe_download_python_deps():
     ff = resource_retriever.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml')
     PYTHON_DEPS = yaml.load(ff)
     PYTHON_DEPS['last_download'] = datetime.datetime.now()
+
+    if not os.path.exists(DOT_ROS_FOLDER):
+        os.mkdir(DOT_ROS_FOLDER)
     yaml.dump(PYTHON_DEPS, open(PY_DEP_FILENAME, 'w'))
 
 
