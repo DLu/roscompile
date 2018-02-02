@@ -1,8 +1,9 @@
 import os
 import yaml
-import subprocess
+import rospkg
 import datetime
 import resource_retriever
+from rosmsg import list_types
 
 DOT_ROS_FOLDER = os.path.expanduser('~/.ros')
 PY_DEP_FILENAME = os.path.join(DOT_ROS_FOLDER, 'py_deps.yaml')
@@ -38,27 +39,17 @@ def get_python_dependency(key):
 maybe_download_python_deps()
 
 
-def get_output_lines(cmd):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    return [s for s in out.split('\n') if len(s) > 0]
-
-
-PACKAGES = {}
+PACKAGES = set()
 MESSAGES = set()
 SERVICES = set()
 
-for line in get_output_lines(['rospack', 'list']):
-    pkg, folder = line.split()
-    PACKAGES[pkg] = folder
-
-for line in get_output_lines(['rosmsg', 'list']):
-    pkg, msg = line.split('/')
-    MESSAGES.add((pkg, msg))
-
-for line in get_output_lines(['rossrv', 'list']):
-    pkg, srv = line.split('/')
-    SERVICES.add((pkg, srv))
+rospack = rospkg.RosPack()
+for pkg in rospack.list():
+    PACKAGES.add(pkg)
+    for mode, ros_set in [('.msg', MESSAGES), ('.srv', SERVICES)]:
+        for gen_key in list_types(pkg, mode, rospack):
+            pkg, gen = gen_key.split('/')
+            ros_set.add((pkg, gen))
 
 
 def is_package(pkg):
