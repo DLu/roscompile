@@ -12,5 +12,8 @@
   <depend>catkin</depend>
   <depend>ros_introspection</depend>
   <test_depend>roslint</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>pluginlib</test_depend>
+  <test_depend>tf</test_depend>
 
 </package>
