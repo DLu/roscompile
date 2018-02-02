@@ -1,4 +1,4 @@
-roscompile is a tool that examines ROS (Catkin) packages, analyzes the files within, fixes common errors and tweaks the style. To run, simply navigate to a folder containing the packages you'd like to tweak, and type
+roscompile is a tool for improving Catkin packages by fixing common errors and tweaking the style. To run, simply navigate to a folder containing the packages you'd like to tweak, and type
  `roscompile`
 
 There are also some other useful scripts described at the bottom of this documentation.

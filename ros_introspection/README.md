@@ -1,3 +1,25 @@
+# ros_introspection
+
+ `ros_introspection` is a library for looking at the files within a ROS package in a structured way.
+
+You can specify the path directly.
+
+```
+from ros_introspection.package import Package
+pkg = Package('/full/path/geometry_msgs')
+```
+or you can use the built-in crawler
+
+```
+from ros_introspection.util import get_packages
+
+for package in get_packages('/home/dlu/catkin_work/src'):
+    print package
+```
+
+If you want to look in the current folder, you don't need to specify a folder to `get_packages`.
+
+
 ## Package Structure
 
 A package is path (where the `$PATH/package.xml` exists) and collection of sets of files.
