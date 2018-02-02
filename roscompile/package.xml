@@ -10,7 +10,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>catkin</depend>
-  <depend>resource_retriever</depend>
   <depend>ros_introspection</depend>
   <test_depend>roslint</test_depend>
 

@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roscompile)
 
 find_package(catkin REQUIRED
-    COMPONENTS catkin resource_retriever ros_introspection
+    COMPONENTS catkin ros_introspection
 )
 
 catkin_python_setup()
 
 catkin_package(
-    CATKIN_DEPENDS catkin resource_retriever ros_introspection
+    CATKIN_DEPENDS catkin ros_introspection
 )
 
 if(CATKIN_ENABLE_TESTING)
