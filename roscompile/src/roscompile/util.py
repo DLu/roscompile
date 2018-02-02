@@ -1,11 +1,12 @@
-from resource_retriever import get
 import collections
+import rospkg
 import os
 import stat
 import yaml
 
 CONFIG_PATH = os.path.expanduser('~/.ros/roscompile.yaml')
 CONFIG = None
+PKG_PATH = rospkg.RosPack().get_path('roscompile')
 
 roscompile_functions = collections.OrderedDict()
 
@@ -16,14 +17,15 @@ def roscompile(f):
 
 
 def get_ignore_data_helper(basename, add_newline=True):
-    fn = 'package://roscompile/data/' + basename + '.ignore'
+    fn = os.path.join(PKG_PATH, 'data', basename + '.ignore')
     lines = []
-    for s in get(fn).split('\n'):
-        if len(s) > 0:
-            if add_newline:
-                lines.append(s + '\n')
-            else:
-                lines.append(s)
+    for s in open(fn):
+        if s == '\n':
+            continue
+        if add_newline:
+            lines.append(s)
+        else:
+            lines.append(s[:-1])
     return lines
 
 

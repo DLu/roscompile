@@ -2,7 +2,7 @@ import os
 import yaml
 import rospkg
 import datetime
-import resource_retriever
+import requests
 from rosmsg import list_types
 
 DOT_ROS_FOLDER = os.path.expanduser('~/.ros')
@@ -20,7 +20,7 @@ def maybe_download_python_deps():
             if now - PYTHON_DEPS['last_download'] < datetime.timedelta(days=3):
                 return
 
-    ff = resource_retriever.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml')
+    ff = requests.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml').text
     PYTHON_DEPS = yaml.load(ff)
     PYTHON_DEPS['last_download'] = datetime.datetime.now()
 
