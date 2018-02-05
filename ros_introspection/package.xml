@@ -10,6 +10,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>rosmsg</exec_depend>
+  <exec_depend>python-requests</exec_depend>
   <test_depend>roslint</test_depend>
 
 </package>
