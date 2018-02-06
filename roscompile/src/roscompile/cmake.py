@@ -122,6 +122,7 @@ def remove_old_style_cpp_dependencies(package):
         section = add_deps.sections[0]
         changed = remove_pattern(section, '_generate_messages_cpp')
         changed = remove_pattern(section, '_gencpp') or changed
+        changed = remove_pattern(section, '_gencfg') or changed
         if changed:
             add_deps.changed = True
             global_changed = True
