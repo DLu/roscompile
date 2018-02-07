@@ -13,8 +13,6 @@ ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'fi
 
 
 def get_ordering_index(command_name):
-    if command_name is None:
-        return len(ORDERING) + 1
     for i, o in enumerate(ORDERING):
         if type(o) == list:
             if command_name in o:
@@ -24,6 +22,26 @@ def get_ordering_index(command_name):
     if command_name:
         print '\tUnsure of ordering for', command_name
     return len(ORDERING)
+
+
+def get_sort_key(content, anchors):
+    if content is None:
+        return len(ORDERING) + 1, None
+    index = None
+    key = None
+    if content.__class__ == CommandGroup:
+        index = get_ordering_index('group')
+        sections = content.initial_tag.get_real_sections()
+        if len(sections) > 0:
+            key = sections[0].name
+    else:  # Command
+        index = get_ordering_index(content.command_name)
+        if content.command_name in BUILD_TARGET_COMMANDS:
+            token = content.first_token()
+            if token not in anchors:
+                anchors.append(token)
+            key = anchors.index(token)
+    return index, key
 
 
 class SectionStyle:
@@ -160,18 +178,40 @@ class CMake:
             s = s.replace(k, v)
         return s
 
+    def get_insertion_index(self, cmd):
+        anchors = self.get_ordered_build_targets()
+
+        new_key = get_sort_key(cmd, anchors)
+        i_index = 0
+
+        for i, content in enumerate(self.contents):
+            if type(content) == str:
+                continue
+            key = get_sort_key(content, anchors)
+            if key <= new_key:
+                i_index = i + 1
+            else:
+                return i_index
+        return len(self.contents)
+
     def add_command(self, cmd):
-        if len(self.contents) > 0 and type(self.contents[-1]) != str:
-            self.contents.append('\n')
+        i_index = self.get_insertion_index(cmd)
+        sub_contents = []
+        if i_index > 0 and type(self.contents[i_index-1]) != str:
+            sub_contents.append('\n')
         if self.depth > 0:
-            self.contents.append('  ' * self.depth)
-        self.contents.append(cmd)
+            sub_contents.append('  ' * self.depth)
+            sub_contents.append(cmd)
+            sub_contents.append('\n')
+        else:
+            sub_contents.append(cmd)
+
+        self.contents = self.contents[:i_index] + sub_contents + self.contents[i_index:]
+
         if cmd.__class__ == Command:
             self.content_map[cmd.command_name].append(cmd)
         elif cmd.__class__ == CommandGroup:
             self.content_map['group'].append(cmd)
-        if self.depth > 0:
-            self.contents.append('\n')
 
     def remove_command(self, cmd):
         print '\tRemoving %s' % str(cmd).replace('\n', ' ').replace('  ', '')
@@ -209,6 +249,16 @@ class CMake:
         targets = {}
         targets.update(self.get_source_build_rules('add_library'))
         targets.update(self.get_source_build_rules('add_executable'))
+        return targets
+
+    def get_ordered_build_targets(self):
+        targets = []
+        for content in self.contents:
+            if content.__class__ != Command or content.command_name not in BUILD_TARGET_COMMANDS:
+                continue
+            token = content.first_token()
+            if token not in targets:
+                targets.append(token)
         return targets
 
     def get_test_sections(self):

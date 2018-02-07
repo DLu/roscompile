@@ -1,4 +1,4 @@
-from ros_introspection.cmake import Command, CommandGroup, get_ordering_index, BUILD_TARGET_COMMANDS
+from ros_introspection.cmake import Command, CommandGroup, get_sort_key
 from ros_introspection.source_code_file import CPLUS
 from ros_introspection.resource_list import is_message, is_service
 from util import get_ignore_data, roscompile
@@ -84,9 +84,11 @@ def check_exported_dependencies(package):
             cat_depend = True
 
         add_deps = get_matching_add_depends(package.cmake, target)
+        add_add_deps = False
+
         if add_deps is None:
             add_deps = Command('add_dependencies')
-            package.cmake.add_command(add_deps)
+            add_add_deps = True  # Need to wait to add the command for proper sorting
 
         if len(add_deps.sections) == 0:
             add_deps.add_section('', [target])
@@ -102,6 +104,9 @@ def check_exported_dependencies(package):
             if key not in tokens:
                 section.add(key)
                 add_deps.changed = True
+
+        if add_add_deps:
+            package.cmake.add_command(add_deps)
 
 
 def remove_pattern(section, pattern):
@@ -304,44 +309,31 @@ def remove_empty_cmake_lines(package):
 
 
 def get_cmake_clusters(cmake):
+    anchors = cmake.get_ordered_build_targets()
     clusters = []
     current = []
-    anchors = []
     for content in cmake.contents:
         current.append(content)
         if type(content) == str:
             continue
-
-        index = None
-        key = None
-        if content.__class__ == CommandGroup:
-            enforce_cmake_ordering_helper(content.sub)
-            index = get_ordering_index('group')
-            sections = content.initial_tag.get_real_sections()
-            if len(sections) > 0:
-                key = sections[0].name
-        else:  # Command
-            index = get_ordering_index(content.command_name)
-            if content.command_name in BUILD_TARGET_COMMANDS:
-                token = content.first_token()
-                if token not in anchors:
-                    anchors.append(token)
-                key = anchors.index(token)
-        clusters.append(((index, key), current))
+        key = get_sort_key(content, anchors)
+        clusters.append((key, current))
         current = []
     if len(current) > 0:
-        clusters.append(((get_ordering_index(None), None), current))
+        clusters.append((get_sort_key(None, anchors), current))
 
-    return clusters
+    return sorted(clusters, key=lambda (key, contents): key)
 
 
 def enforce_cmake_ordering_helper(cmake):
     clusters = get_cmake_clusters(cmake)
     cmake.contents = []
-    for a, b in sorted(clusters, key=lambda x: x[0]):
-        cmake.contents += b
+    for key, contents in clusters:
+        cmake.contents += contents
 
 
 @roscompile
 def enforce_cmake_ordering(package):
     enforce_cmake_ordering_helper(package.cmake)
+    for group in package.cmake.content_map['group']:
+        enforce_cmake_ordering_helper(group.sub)
