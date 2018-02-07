@@ -22,8 +22,9 @@ def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
                 cmd.add_section('COMPONENTS', sorted(dependencies))
             else:
                 needed_items = dependencies - set(section.values)
-                section.values += list(sorted(needed_items))
-                cmd.changed = True
+                if len(needed_items) > 0:
+                    section.values += list(sorted(needed_items))
+                    cmd.changed = True
     if check_catkin_pkg:
         cmake.section_check(dependencies, 'catkin_package', 'CATKIN_DEPENDS')
 
