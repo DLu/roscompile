@@ -3,20 +3,13 @@
 from ros_introspection.util import get_packages
 from ros_introspection.package import Package
 from roscompile import get_functions
+from roscompile.terminal import color_header, color_diff, query_yes_no
 import collections
 import tempfile
 import shutil
 import os
 import difflib
 from filecmp import dircmp
-try:
-    from colorama import Fore, Back, Style, init
-    init()
-except ImportError:  # fallback so that the imported classes always exist
-    class ColorFallback():
-        def __getattr__(self, name):
-            return ''
-    Fore = Back = Style = ColorFallback()
 
 
 def get_diff_helper(dcmp, folder=''):
@@ -47,18 +40,6 @@ def get_lines(folder, filename):
     return open(os.path.join(folder, filename)).readlines()
 
 
-def color_diff(diff):
-    for line in diff:
-        if line.startswith('+'):
-            yield Fore.GREEN + line + Fore.RESET
-        elif line.startswith('-'):
-            yield Fore.RED + line + Fore.RESET
-        elif line.startswith('^'):
-            yield Fore.BLUE + line + Fore.RESET
-        else:
-            yield line
-
-
 def print_diff(filename, left_folder=None, right_folder=None):
     if left_folder is None:
         left = []
@@ -86,7 +67,7 @@ for package in pkgs:
         the_diff = get_diff(package.root, new_package_root)
         if len(the_diff) == 0:
             continue
-        print name
+        print color_header(name)
 
         for filename in the_diff.get('diff', []):
             print_diff(filename, package.root, new_package_root)
@@ -95,9 +76,10 @@ for package in pkgs:
         for filename in the_diff.get('added', []):
             print_diff(filename, right_folder=new_package_root)
 
-        if False:
+        if query_yes_no('Would you like to make this change?'):
             fne(package)
             package.write()
+        print
         shutil.rmtree(new_package_root)
         shutil.copytree(package.root, new_package_root)
 
