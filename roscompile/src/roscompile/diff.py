@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
 from ros_introspection.package import Package
-from roscompile import get_functions
-from roscompile.terminal import color_header, color_diff, query_yes_no
+from .terminal import color_header, color_diff
 import collections
 import tempfile
 import shutil
@@ -55,19 +53,19 @@ def print_diff(filename, left_folder=None, right_folder=None):
     print(''.join(color_diff(diff)))
 
 
-pkgs = get_packages()
-for package in pkgs:
-    temp_dir = tempfile.mkdtemp()
-    new_package_root = os.path.join(temp_dir, package.name)
-    shutil.copytree(package.root, new_package_root)
-    for name, fne in get_functions().iteritems():
+def preview_changes(package, fn_name, fne):
+    try:
+        temp_dir = tempfile.mkdtemp()
+        new_package_root = os.path.join(temp_dir, package.name)
+        shutil.copytree(package.root, new_package_root)
         new_pkg = Package(new_package_root)
         fne(new_pkg)
         new_pkg.write()
         the_diff = get_diff(package.root, new_package_root)
         if len(the_diff) == 0:
-            continue
-        print color_header(name)
+            return False
+
+        print color_header(fn_name)
 
         for filename in the_diff.get('diff', []):
             print_diff(filename, package.root, new_package_root)
@@ -75,12 +73,8 @@ for package in pkgs:
             print_diff(filename, left_folder=package.root)
         for filename in the_diff.get('added', []):
             print_diff(filename, right_folder=new_package_root)
-
-        if query_yes_no('Would you like to make this change?'):
-            fne(package)
-            package.write()
-        print
+    finally:
         shutil.rmtree(new_package_root)
         shutil.copytree(package.root, new_package_root)
-
-    shutil.rmtree(temp_dir)
+        shutil.rmtree(temp_dir)
+    return True
