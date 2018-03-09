@@ -2,10 +2,25 @@
 
 from ros_introspection.util import get_packages
 from roscompile import get_functions
+from roscompile.terminal import query_yes_no
+from roscompile.diff import preview_changes
+import argparse
 
-pkgs = get_packages()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--interactive', action='store_true')
+    args = parser.parse_args()
 
-for package in pkgs:
-    for name, fne in get_functions().iteritems():
-        fne(package)
-    package.write()
+    pkgs = get_packages()
+
+    for package in pkgs:
+        for name, fne in get_functions().iteritems():
+            if args.interactive:
+                if preview_changes(package, name, fne):
+                    if query_yes_no('Would you like to make this change?'):
+                        fne(package)
+                        package.write()
+                    print
+            else:
+                fne(package)
+        package.write()
