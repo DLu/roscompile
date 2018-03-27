@@ -3,7 +3,7 @@ import collections
 from ros_introspection.cmake import Command
 from util import roscompile
 
-FILES_TO_NOT_INSTALL = ['CHANGELOG.rst', 'README.md']
+FILES_TO_NOT_INSTALL = ['CHANGELOG.rst', 'README.md', '.travis.yml', 'bitbucket-pipelines.yml']
 
 # We define four install types, using a unique string to identify each (the keys in this dict)
 # The values define a tuple, where the first element is a CMake keyword.
