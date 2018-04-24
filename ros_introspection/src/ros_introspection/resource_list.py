@@ -20,7 +20,12 @@ def maybe_download_python_deps():
             if now - PYTHON_DEPS['last_download'] < datetime.timedelta(days=3):
                 return
 
-    ff = requests.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml').text
+    try:
+        ff = requests.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml').text
+    except requests.exceptions.ConnectionError:
+        print 'Cannot retrieve latest python dependencies'
+        return
+
     PYTHON_DEPS = yaml.load(ff)
     PYTHON_DEPS['last_download'] = datetime.datetime.now()
 
