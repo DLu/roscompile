@@ -59,6 +59,7 @@ class Package:
         for launch in self.launches:
             if not launch.test:
                 continue
+            packages.add('rostest')
             packages.update(launch.get_dependencies())
         if self.name in packages:
             packages.remove(self.name)
