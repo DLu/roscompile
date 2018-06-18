@@ -176,8 +176,13 @@ def check_generators(package):
             section.values.remove('message_generation')
             cmd.changed = True
 
-    package.cmake.section_check(package.get_dependencies_from_msgs(), 'generate_messages',
-                                'DEPENDENCIES', zero_okay=True)
+    msg_deps = package.get_dependencies_from_msgs()
+    if msg_deps:
+        package.cmake.section_check(msg_deps, 'generate_messages',
+                                    'DEPENDENCIES', zero_okay=True)
+    else:
+        package.cmake.section_check(msg_deps, 'generate_messages',
+                                    zero_okay=True)
 
 
 @roscompile
