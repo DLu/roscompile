@@ -1,4 +1,5 @@
 import os
+import fnmatch
 import collections
 from ros_introspection.cmake import Command
 from util import roscompile
@@ -63,6 +64,13 @@ def get_multiword_section(cmd, words):
             # If the word doesn't match, we need to start searching from the first word again
             i = 0
 
+
+def matches_patterns(item, patterns):
+    for pattern in patterns:
+        if pattern[0] == pattern[-1] and pattern[0] == '"':
+            pattern = pattern[1:-1]
+        if fnmatch.fnmatch(item, pattern):
+            return True
 
 def check_complex_section(cmd, key, value):
     """ This finds the appopriate section of the command (with a possibly multiword key, see get_multiword_section)
@@ -142,9 +150,21 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
         install_sections(cmd, destination_map, subfolder)
         section = cmd.get_section(section_name)
         if not section:
-            continue
-        section.values = [value for value in section.values if value in items]
-        items = [item for item in items if item not in section.values]
+            if section_name != 'FILES':
+                continue
+            section = cmd.get_section('DIRECTORY')
+            if not section:
+                continue
+            pattern = get_multiword_section(cmd, ['FILES_MATCHING', 'PATTERN'])
+            nonmatching_items = []
+            for item in items:
+                if not matches_patterns(item, pattern.values):
+                    nonmatching_items.append(item)
+            items = nonmatching_items
+        else:
+            # We match the section
+            section.values = [value for value in section.values if value in items]
+            items = [item for item in items if item not in section.values]
 
     if len(items) == 0:
         return
