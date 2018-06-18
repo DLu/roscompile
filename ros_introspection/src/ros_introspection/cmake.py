@@ -5,8 +5,7 @@ BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'target_link_libraries
 ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
             'catkin_python_setup', 'add_definitions', 'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
-            BUILD_TARGET_COMMANDS,
-            'include_directories',
+            BUILD_TARGET_COMMANDS + ['include_directories'],
             ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
@@ -41,6 +40,8 @@ def get_sort_key(content, anchors):
             if token not in anchors:
                 anchors.append(token)
             key = anchors.index(token)
+        elif content.command_name == 'include_directories' and 'include_directories' in anchors:
+            key = anchors.index('include_directories')
     return index, key
 
 
@@ -254,7 +255,12 @@ class CMake:
     def get_ordered_build_targets(self):
         targets = []
         for content in self.contents:
-            if content.__class__ != Command or content.command_name not in BUILD_TARGET_COMMANDS:
+            if content.__class__ != Command:
+                continue
+            if content.command_name == 'include_directories':
+                targets.append('include_directories')
+                continue
+            elif content.command_name not in BUILD_TARGET_COMMANDS:
                 continue
             token = content.first_token()
             if token not in targets:
