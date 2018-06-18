@@ -25,7 +25,6 @@ def check_setup_py(package):
             # No library, and no existing setup_py means nothing to write
             return
         package.setup_py = SetupPy(package.name, os.path.join(package.root, 'setup.py'))
-        package.setup_py.write()
 
     if 'catkin_python_setup' not in package.cmake.content_map:
         package.cmake.add_command(Command('catkin_python_setup'))

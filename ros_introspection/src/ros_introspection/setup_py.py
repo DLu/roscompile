@@ -29,6 +29,7 @@ class SetupPy:
         self.execs = []
 
         if os.path.exists(self.file_path):
+            self.changed = False
             original = open(self.file_path, 'r').read()
 
             # Determine variable name
@@ -47,8 +48,12 @@ class SetupPy:
             for var_name, value in EQ_PATTERN.findall(body):
                 if var_name == 'scripts':
                     self.execs = eval(value)
+        else:
+            self.changed = True
 
     def write(self):
+        if not self.changed:
+            return
         with open(self.file_path, 'w') as f:
             f.write(str(self))
 
