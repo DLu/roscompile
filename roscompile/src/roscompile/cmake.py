@@ -4,6 +4,8 @@ from ros_introspection.resource_list import is_message, is_service
 from util import get_ignore_data, roscompile
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
+NEWLINE_PLUS_4 = '\n    '
+NEWLINE_PLUS_8 = '\n        '
 
 
 def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
@@ -219,12 +221,14 @@ def alphabetize_sections(package):
 def prettify_catkin_package_cmd(package):
     for cmd in package.cmake.content_map['catkin_package']:
         for section in cmd.get_real_sections():
-            section.style.prename = '\n    '
+            section.style.prename = NEWLINE_PLUS_4
         cmd.changed = True
 
 
 @roscompile
 def prettify_package_lists(package):
+    acceptable_styles = [(NEWLINE_PLUS_8, NEWLINE_PLUS_8), (NEWLINE_PLUS_4, NEWLINE_PLUS_8)]
+
     for cmd_name, section_name in [('find_package', 'COMPONENTS'), ('catkin_package', 'CATKIN_DEPENDS')]:
         for cmd in package.cmake.content_map[cmd_name]:
             for section in cmd.get_real_sections():
@@ -232,9 +236,11 @@ def prettify_package_lists(package):
                     continue
                 n = len(str(section))
                 if n > 120:
-                    section.style.name_val_sep = '\n        '
-                    section.style.val_sep = '\n        '
-                    cmd.changed = True
+                    key = section.style.name_val_sep, section.style.val_sep
+                    if key not in acceptable_styles:
+                        section.style.name_val_sep = NEWLINE_PLUS_4
+                        section.style.val_sep = NEWLINE_PLUS_8
+                        cmd.changed = True
 
 
 @roscompile
@@ -242,8 +248,8 @@ def prettify_msgs_srvs(package):
     for cmd in package.cmake.content_map['add_message_files'] + package.cmake.content_map['add_service_files']:
         for section in cmd.get_real_sections():
             if len(section.values) > 1:
-                section.style.name_val_sep = '\n    '
-                section.style.val_sep = '\n    '
+                section.style.name_val_sep = NEWLINE_PLUS_4
+                section.style.val_sep = NEWLINE_PLUS_4
             cmd.changed = True
 
 
@@ -255,10 +261,10 @@ def prettify_installs(package):
         zeroed = False
         for section in cmd.sections[1:]:
             if len(section.values) == 0:
-                section.style.prename = '\n        '
+                section.style.prename = NEWLINE_PLUS_8
                 zeroed = True
             elif not zeroed:
-                section.style.prename = '\n        '
+                section.style.prename = NEWLINE_PLUS_8
             else:
                 section.style.prename = ''
 
