@@ -46,8 +46,20 @@ class PackageXML:
         self.root = self.tree.getElementsByTagName('package')[0]
         contents = open(fn).read()
         self.header = contents[:get_package_tag_index(contents)]
+        self._name = None
         self._format = None
         self._std_tab = None
+
+    @property
+    def name(self):
+        if self._name is not None:
+            return self._name
+        name_tags = self.root.getElementsByTagName('name')
+        if not name_tags:
+            return
+        name_tag = name_tags[0]
+        self._name = name_tag.childNodes[0].nodeValue
+        return self._name
 
     @property
     def format(self):

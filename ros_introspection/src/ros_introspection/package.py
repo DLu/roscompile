@@ -1,4 +1,3 @@
-import os.path
 import collections
 from package_structure import get_package_structure
 from package_xml import PackageXML
@@ -13,8 +12,8 @@ from plugin_xml import PluginXML
 class Package:
     def __init__(self, root):
         self.root = root
-        self.name = os.path.split(os.path.abspath(root))[-1]
         self.manifest = PackageXML(self.root + '/package.xml')
+        self.name = self.manifest.name
         self.cmake = parse_file(self.root + '/CMakeLists.txt')
 
         package_structure = get_package_structure(root)
