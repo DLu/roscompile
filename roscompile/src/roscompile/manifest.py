@@ -74,6 +74,8 @@ def enforce_tabbing_helper(manifest, node, tabs=1):
     ideal_length = manifest.std_tab * tabs
     prev_was_node = True
     insert_before_list = []
+    if not node:
+        return
     for c in node.childNodes:
         if c.nodeType == c.TEXT_NODE:
             prev_was_node = False

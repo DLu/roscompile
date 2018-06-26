@@ -3,7 +3,8 @@ import collections
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'add_rostest']
 
 ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
-            'catkin_python_setup', 'add_definitions', 'add_message_files', 'add_service_files', 'add_action_files',
+            'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
+            'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             BUILD_TARGET_COMMANDS + ['include_directories'],
             ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
@@ -191,7 +192,7 @@ class CMake:
             key = get_sort_key(content, anchors)
             if key <= new_key:
                 i_index = i + 1
-            else:
+            elif key[0] != len(ORDERING):
                 return i_index
         return len(self.contents)
 
