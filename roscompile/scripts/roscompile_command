@@ -2,11 +2,14 @@
 
 from ros_introspection.util import get_packages
 from roscompile import get_functions
+from roscompile.terminal import query_yes_no
+from roscompile.diff import preview_changes
 import argparse
 
 all_functions = get_functions()
 parser = argparse.ArgumentParser()
 parser.add_argument('cmds', metavar='command', nargs='+')
+parser.add_argument('-i', '--interactive', action='store_true')
 args = parser.parse_args()
 
 pkgs = get_packages()
@@ -25,5 +28,12 @@ if print_options:
 
 for package in pkgs:
     for cmd in args.cmds:
-        all_functions[cmd](package)
+        if args.interactive:
+            if preview_changes(package, cmd, all_functions[cmd]):
+                if query_yes_no('Would you like to make this change?'):
+                    all_functions[cmd](package)
+                    package.write()
+                print
+        else:
+            all_functions[cmd](package)
     package.write()
