@@ -1,12 +1,12 @@
 import collections
 
-BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'add_rostest']
+BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
 
 ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
             'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
-            BUILD_TARGET_COMMANDS + ['include_directories'],
+            'include_directories', BUILD_TARGET_COMMANDS,
             ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
@@ -40,7 +40,7 @@ def get_sort_key(content, anchors):
             token = content.first_token()
             if token not in anchors:
                 anchors.append(token)
-            key = anchors.index(token)
+            key = anchors.index(token), BUILD_TARGET_COMMANDS.index(content.command_name)
         elif content.command_name == 'include_directories' and 'include_directories' in anchors:
             key = anchors.index('include_directories')
     return index, key
