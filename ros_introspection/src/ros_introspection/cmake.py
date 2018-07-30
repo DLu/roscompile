@@ -214,6 +214,8 @@ class CMake:
             sub_contents.append('\n')
         else:
             sub_contents.append(cmd)
+        if i_index == len(self.contents):
+            sub_contents.append('\n')
 
         self.contents = self.contents[:i_index] + sub_contents + self.contents[i_index:]
 
