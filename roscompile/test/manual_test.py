@@ -40,11 +40,13 @@ def compare(pkg_in, pkg_out, debug=True):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('zipfile')
+    parser.add_argument('-f', '--fail_once', action='store_true')
     parser.add_argument('-l', '--last', action='store_true')
     args = parser.parse_args()
     config, cases = get_test_cases(args.zipfile)
     roscompile_functions = get_functions()
     successes = 0
+    total = 0
 
     for test_config in config:
         if args.last and test_config != config[-1]:
@@ -71,14 +73,17 @@ if __name__ == '__main__':
                     else:
                         fne(pp)
                 pp.write()
+                total += 1
                 if compare(pkg_in, pkg_out):
                     print '  SUCCESS'
                     successes += 1
                 else:
                     print '  FAIL'
+                    if args.fail_once:
+                        break
             except Exception as e:
                 print '  EXCEPTION', e.message
                 if args.last:
                     raise
     if not args.last:
-        print '{}/{}'.format(successes, len(config))
+        print '{}/{}'.format(successes, total)
