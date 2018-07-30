@@ -18,7 +18,8 @@ def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
         cmake.add_command(cmd)
 
     for cmd in cmake.content_map['find_package']:
-        if cmd.get_tokens()[0] == 'catkin' and cmd.get_section('REQUIRED'):
+        tokens = cmd.get_tokens()
+        if tokens and tokens[0] == 'catkin' and cmd.get_section('REQUIRED'):
             section = cmd.get_section('COMPONENTS')
             if section is None:
                 cmd.add_section('COMPONENTS', sorted(dependencies))

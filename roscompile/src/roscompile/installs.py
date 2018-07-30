@@ -158,7 +158,7 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
             pattern = get_multiword_section(cmd, ['FILES_MATCHING', 'PATTERN'])
             nonmatching_items = []
             for item in items:
-                if not matches_patterns(item, pattern.values):
+                if pattern and not matches_patterns(item, pattern.values):
                     nonmatching_items.append(item)
             items = nonmatching_items
         else:
