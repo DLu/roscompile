@@ -250,6 +250,18 @@ def prettify_package_lists(package):
 
 
 @roscompile
+def alphabetize_package_lists(package):
+    for cmd_name, section_name in [('find_package', 'COMPONENTS'), ('catkin_package', 'CATKIN_DEPENDS')]:
+        for cmd in package.cmake.content_map[cmd_name]:
+            for section in cmd.get_real_sections():
+                if section.name != section_name:
+                    continue
+                sorted_values = list(sorted(section.values))
+                if sorted_values != section.values:
+                    section.values = sorted_values
+                    cmd.changed = True
+
+@roscompile
 def prettify_msgs_srvs(package):
     for cmd in package.cmake.content_map['add_message_files'] + package.cmake.content_map['add_service_files']:
         for section in cmd.get_real_sections():
