@@ -82,6 +82,10 @@ class Package:
             plugin_config.write()
         if self.setup_py:
             self.setup_py.write()
+        for gen in self.get_all_generators():
+            gen.write()
+        for src in self.source_code.sources.values():
+            src.write()
 
     def __repr__(self):
         s = '== {} ========\n'.format(self.name)

@@ -20,12 +20,26 @@ class SourceCodeFile:
         self.rel_fn = rel_fn
         self.file_path = file_path
         self.tags = set()
+        self.changed_contents = None
 
-        self.lines = map(str.strip, open(file_path, 'r').readlines())
+        self.lines = map(str.strip, self.get_contents().split('\n'))
         if '.py' in self.file_path or (len(self.lines) > 0 and is_python_hashbang_line(self.lines[0])):
             self.language = 'python'
         else:
             self.language = 'c++'
+
+        parts = os.path.split(rel_fn)
+        if parts and parts[0] == 'test':
+            self.tags.add('test')
+
+    def get_contents(self):
+        if self.changed_contents:
+            return self.changed_contents
+        return open(self.file_path).read()
+
+    def replace_contents(self, contents):
+        self.changed_contents = contents
+        self.lines = map(unicode.strip, unicode(contents).split('\n'))
 
     def search_lines_for_patterns(self, patterns):
         matches = []
@@ -74,3 +88,8 @@ class SourceCodeFile:
     def __repr__(self):
         attribs = [self.language] + list(self.tags)
         return '%s (%s)' % (self.rel_fn, ', '.join(attribs))
+
+    def write(self):
+        if self.changed_contents:
+            with open(self.file_path, 'w') as f:
+                f.write(self.changed_contents)

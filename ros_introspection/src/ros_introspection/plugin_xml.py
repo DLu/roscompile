@@ -12,6 +12,7 @@ class PluginXML:
         self.has_class_libraries_tag = False
         self.libraries = OrderedDict()
         self.parent_pkgs = set()
+        self.changed = False
 
         if os.path.exists(self.file_path):
             self.read()
@@ -56,8 +57,11 @@ class PluginXML:
         library[full_name] = {'base_class_type': NS_PATTERN % (base_pkg, base_name),
                               'type': full_name,
                               'description': description}
+        self.changed = True
 
     def write(self):
+        if not self.changed:
+            return
         with open(self.file_path, 'w') as f:
             f.write(str(self))
 
