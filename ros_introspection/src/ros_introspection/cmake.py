@@ -3,7 +3,7 @@ import collections
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'target_link_libraries', 'add_dependencies', 'add_rostest']
 
 ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
-            'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
+            'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             BUILD_TARGET_COMMANDS + ['include_directories'],
@@ -113,6 +113,13 @@ class Command:
     def first_token(self):
         return self.get_real_sections()[0].values[0]
 
+    def remove_sections(self, key):
+        bad_sections = self.get_sections(key)
+        if not bad_sections:
+            return
+        self.changed = True
+        self.sections = [section for section in self.sections if section not in bad_sections]
+
     def get_tokens(self):
         tokens = []
         for section in self.get_real_sections():
@@ -219,6 +226,11 @@ class CMake:
         print '\tRemoving %s' % str(cmd).replace('\n', ' ').replace('  ', '')
         self.contents.remove(cmd)
         self.content_map[cmd.command_name].remove(cmd)
+
+    def remove_all_commands(self, cmd_name):
+        cmds = list(self.content_map[cmd_name])
+        for cmd in cmds:
+            self.remove_command(cmd)
 
     def get_source_build_rules(self, tag):
         rules = {}
