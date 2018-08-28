@@ -2,7 +2,7 @@ import os.path
 import re
 
 AT_LEAST_THREE_DASHES = re.compile('^\-{3,}$')
-FIELD_LINE = re.compile('([\w_/]+)(\[\])? ([\w_]+)(=.*)?(\s*\#.*)?$', re.DOTALL)
+FIELD_LINE = re.compile('([\w_/]+)(\[\d*\])?\s+([\w_]+)(=.*)?(\s*\#.*)?$', re.DOTALL)
 
 
 class GeneratorField:
@@ -44,7 +44,7 @@ class GeneratorSection:
             else:
                 self.contents.append('\n')
         else:
-            print line
+            print repr(line)
             exit(0)
 
     def __repr__(self):
