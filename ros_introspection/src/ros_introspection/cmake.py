@@ -47,23 +47,26 @@ def get_sort_key(content, anchors):
 
 
 class SectionStyle:
-    def __init__(self):
-        self.prename = ''
-        self.name_val_sep = ' '
-        self.val_sep = ' '
+    def __init__(self, prename='', name_val_sep=' ', val_sep=' '):
+        self.prename = prename
+        self.name_val_sep = name_val_sep
+        self.val_sep = val_sep
 
     def __repr__(self):
         return 'SectionStyle(%s, %s, %s)' % (repr(self.prename), repr(self.name_val_sep), repr(self.val_sep))
 
 
 class Section:
-    def __init__(self, name='', values=None, style=SectionStyle()):
+    def __init__(self, name='', values=None, style=None):
         self.name = name
         if values is None:
             self.values = []
         else:
             self.values = list(values)
-        self.style = style
+        if style:
+            self.style = style
+        else:
+            self.style = SectionStyle()
 
     def add(self, v):
         self.values.append(v)
@@ -101,8 +104,8 @@ class Command:
     def get_sections(self, key):
         return [s for s in self.get_real_sections() if s.name == key]
 
-    def add_section(self, key, values=None):
-        self.sections.append(Section(key, values))
+    def add_section(self, key, values=None, style=None):
+        self.sections.append(Section(key, values, style))
         self.changed = True
 
     def add(self, section):
@@ -119,6 +122,8 @@ class Command:
             return
         self.changed = True
         self.sections = [section for section in self.sections if section not in bad_sections]
+        if len(self.sections) == 1 and type(self.sections[0]) == str:
+            self.sections = []
 
     def get_tokens(self):
         tokens = []
