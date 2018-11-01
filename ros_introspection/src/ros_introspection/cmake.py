@@ -6,7 +6,7 @@ ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'fi
             'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
-            'include_directories', BUILD_TARGET_COMMANDS,
+            BUILD_TARGET_COMMANDS + ['include_directories'],
             ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
