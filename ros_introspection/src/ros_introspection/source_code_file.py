@@ -5,10 +5,11 @@ from ros_introspection.resource_list import is_package, get_python_dependency
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
 PYTHON2 = 'from ' + PKG + ' import .*'
-CPLUS = re.compile('#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')
+CPLUS = re.compile('#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')          # Zero or one slash
+CPLUS2 = re.compile('#include\s*[<\\"]([^/]*)/([^/]*)/([^/]*)[>\\"]')  # Two slashes
 ROSCPP = re.compile('#include\s*<ros/ros.h>')
 
-EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), CPLUS]
+EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), CPLUS, CPLUS2]
 
 
 def is_python_hashbang_line(s):
@@ -40,6 +41,13 @@ class SourceCodeFile:
     def replace_contents(self, contents):
         self.changed_contents = contents
         self.lines = map(unicode.strip, unicode(contents).split('\n'))
+
+    def search_for_patterns(self, patterns):
+        matches = []
+        contents = self.get_contents()
+        for pattern in patterns:
+            matches += pattern.findall(contents)
+        return matches
 
     def search_lines_for_patterns(self, patterns):
         matches = []

@@ -57,16 +57,19 @@ class SourceCode:
             packages.remove(self.pkg_name)
         return packages
 
-    def search_for_patterns(self, patterns):
+    def search_for_patterns(self, patterns, per_line=True):
         files = {}
         for source in self.sources.values():
-            matches = source.search_lines_for_patterns(patterns)
+            if per_line:
+                matches = source.search_lines_for_patterns(patterns)
+            else:
+                matches = source.search_for_patterns(patterns)
             if len(matches) != 0:
                 files[source.rel_fn] = matches
         return files
 
-    def search_for_pattern(self, pattern):
-        return self.search_for_patterns([pattern])
+    def search_for_pattern(self, pattern, per_line=True):
+        return self.search_for_patterns([pattern], per_line)
 
     def __repr__(self):
         return '\n'.join(map(str, sorted(self.sources.values())))
