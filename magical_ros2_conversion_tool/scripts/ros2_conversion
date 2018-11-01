@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+from ros_introspection.util import get_packages
+
+
+pkgs = get_packages()
+
+for package in pkgs:
+    print(package.name)
+    package.write()
