@@ -143,14 +143,32 @@ class PackageXML:
             tags[current].append((current_start, current_last))
         return dict(tags)
 
-    def get_insertion_index(self, tag):
+    def get_insertion_index(self, tag, tag_value=None):
         """ Returns the index where to insert a new element with the given tag type.
-            If there are already elements of that type, then insert after the last matching element.
+            If there are already elements of that type, then either insert after the last matching element,
+            or if the list is alphabetized, insert it in the correct place alphabetically using the tag_value.
             Otherwise, look at the existing elements, and find ones that are supposed to come the closest
             before the given tag, and insert after them. If none found, add at the end.
         """
         indexes = self.get_child_indexes()
         if tag in indexes:
+            if len(indexes[tag]) == 1 and tag in DEPEND_ORDERING:
+                start, end = indexes[tag][0]
+                sub_indexes = []
+                tag_values = []
+                my_index = start
+                value = None
+                for i in range(start, end):
+                    child = self.root.childNodes[i]
+                    if child.nodeType == child.TEXT_NODE:
+                        continue
+                    sub_indexes.append(i)
+                    value = child.firstChild.data
+                    tag_values.append(value)
+                    if tag_value >= value:
+                        my_index = i
+                if sorted(tag_values) == tag_values and tag_value <= value:
+                    return my_index
             return indexes[tag][-1][1]  # last match, end index
 
         max_index = get_ordering_index(tag, whiny=False)
@@ -171,26 +189,37 @@ class PackageXML:
         else:
             return indexes[best_tag][-1][1]
 
-    def insert_new_tags(self, tags):
-        # Assumes all the tags have the same type
-        if len(tags) == 0:
-            return
+    def insert_new_tag(self, tag):
+        if tag.tagName in DEPEND_ORDERING:
+            value = tag.firstChild.data
+        else:
+            value = None
 
-        index = self.get_insertion_index(tags[0].tagName)
-        tags_plus_indents = []
+        index = self.get_insertion_index(tag.tagName, value)
+        self.root.childNodes = self.root.childNodes[:index + 1] + \
+                               [self.get_tab_element(), tag] +    \
+                               self.root.childNodes[index + 1:]
+
+    def insert_new_tags(self, tags):
         for tag in tags:
-            tags_plus_indents.append(self.get_tab_element())
-            tags_plus_indents.append(tag)
-        self.root.childNodes = self.root.childNodes[:index + 1] + tags_plus_indents + self.root.childNodes[index + 1:]
+            self.insert_new_tag(tag)
+
+    def insert_new_tag_inside_another(self, parent, tag, depth=2):
+        all_elements = []
+        all_elements.append(self.get_tab_element(depth))
+        all_elements.append(tag)
+
+        if len(parent.childNodes) == 0:
+            parent.childNodes = all_elements + [self.get_tab_element()]
+        else:
+            parent.childNodes = parent.childNodes[:-1] + all_elements + parent.childNodes[-1:]
 
     def insert_new_packages(self, tag, values):
-        elements_to_insert = []
         for pkg in sorted(values):
             print '\tInserting %s: %s' % (tag, pkg)
             node = self.tree.createElement(tag)
             node.appendChild(self.tree.createTextNode(pkg))
-            elements_to_insert.append(node)
-        self.insert_new_tags(elements_to_insert)
+            self.insert_new_tag(node)
 
     def add_packages(self, build_depends, run_depends, test_depends=None, prefer_depend_tag=True):
         if self.format == 1:
@@ -299,7 +328,7 @@ class PackageXML:
         export_tags = self.root.getElementsByTagName('export')
         if len(export_tags) == 0:
             export_tag = self.tree.createElement('export')
-            self.insert_new_tags([export_tag])
+            self.insert_new_tag(export_tag)
             export_tags = [export_tag]
 
         attr = '${prefix}/' + xml_path
@@ -314,7 +343,7 @@ class PackageXML:
         ex_el = export_tags[0]
         pe = self.tree.createElement(pkg_name)
         pe.setAttribute('plugin', attr)
-        ex_el.appendChild(pe)
+        self.insert_new_tag_inside_another(ex_el, pe)
         return ex_el
 
     def write(self, new_fn=None):
