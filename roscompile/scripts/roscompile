@@ -14,11 +14,11 @@ if __name__ == '__main__':
 
     pkgs = get_packages()
     config = get_config()
-    skip_rules = config.get('skip_rules', [])
+    skip_fixes = config.get('skip_fixes', [])
 
     for package in pkgs:
         for name, fne in get_functions().iteritems():
-            if name in skip_rules:
+            if name in skip_fixes:
                 continue
             if args.interactive:
                 if preview_changes(package, name, fne):

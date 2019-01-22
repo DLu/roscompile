@@ -35,6 +35,15 @@ There are also some other useful scripts described at the bottom of this documen
 ## Configuration
  Located at `~/.ros/roscompile.yaml`
 
+ * `skip_fixes`: An array of strings representing fixes that you'd like to always ignore when running `roscompile`
+ * `default_license` - String for the license you want your package manifest to have (if it is set to TODO originally).
+ * `replace_rules`: An array of dictionaries representing users you'd like to have replaced in the `package.xml`. For example, one entry in the array could be:
+ ```
+ from: {email: dlu@todo.todo, name: dlu}
+ to: {email: davidvlu@gmail.com, name: David V. Lu!!}
+ ```
+ The `to` name and email must be specified, but you only need to specify either the name or email for the `from`.
+
 # Other Scripts
  * `convert_to_format_2` Convert the `manifest.xml` from format 1 to format 2.
  * `add_tests` Add roslaunch and/or roslint tests to your package, updating both the `manifest.xml` and `CMakeLists.txt`.
