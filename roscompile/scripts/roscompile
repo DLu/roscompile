@@ -4,6 +4,7 @@ from ros_introspection.util import get_packages
 from roscompile import get_functions
 from roscompile.terminal import query_yes_no
 from roscompile.diff import preview_changes
+from roscompile.util import get_config
 import argparse
 
 if __name__ == '__main__':
@@ -12,9 +13,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     pkgs = get_packages()
+    config = get_config()
+    skip_rules = config.get('skip_rules', [])
 
     for package in pkgs:
         for name, fne in get_functions().iteritems():
+            if name in skip_rules:
+                continue
             if args.interactive:
                 if preview_changes(package, name, fne):
                     if query_yes_no('Would you like to make this change?'):
