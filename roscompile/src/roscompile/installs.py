@@ -72,6 +72,7 @@ def matches_patterns(item, patterns):
         if fnmatch.fnmatch(item, pattern):
             return True
 
+
 def check_complex_section(cmd, key, value):
     """ This finds the appopriate section of the command (with a possibly multiword key, see get_multiword_section)
         and ensures the given value is in it. If the appopriate section is not found, it adds it. """

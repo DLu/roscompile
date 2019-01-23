@@ -196,9 +196,9 @@ class PackageXML:
             value = None
 
         index = self.get_insertion_index(tag.tagName, value)
-        self.root.childNodes = self.root.childNodes[:index + 1] + \
-                               [self.get_tab_element(), tag] +    \
-                               self.root.childNodes[index + 1:]
+        before = self.root.childNodes[:index + 1]
+        after = self.root.childNodes[index + 1:]
+        self.root.childNodes = before + [self.get_tab_element(), tag] + after
 
     def insert_new_tags(self, tags):
         for tag in tags:
