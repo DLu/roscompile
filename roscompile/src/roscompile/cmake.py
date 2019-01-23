@@ -261,6 +261,7 @@ def alphabetize_package_lists(package):
                     section.values = sorted_values
                     cmd.changed = True
 
+
 @roscompile
 def prettify_msgs_srvs(package):
     for cmd in package.cmake.content_map['add_message_files'] + package.cmake.content_map['add_service_files']:
