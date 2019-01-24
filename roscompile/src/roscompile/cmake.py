@@ -213,7 +213,10 @@ def alphabetize_sections_helper(cmake):
         if content.__class__ == Command:
             for section in content.get_real_sections():
                 if section.name in SHOULD_ALPHABETIZE:
-                    section.values = sorted(section.values)
+                    sorted_values = list(sorted(section.values))
+                    if sorted_values != section.values:
+                        section.values = sorted_values
+                        content.changed = True
         elif content.__class__ == CommandGroup:
             alphabetize_sections_helper(content.sub)
 
@@ -247,19 +250,6 @@ def prettify_package_lists(package):
                         section.style.name_val_sep = NEWLINE_PLUS_4
                         section.style.val_sep = NEWLINE_PLUS_8
                         cmd.changed = True
-
-
-@roscompile
-def alphabetize_package_lists(package):
-    for cmd_name, section_name in [('find_package', 'COMPONENTS'), ('catkin_package', 'CATKIN_DEPENDS')]:
-        for cmd in package.cmake.content_map[cmd_name]:
-            for section in cmd.get_real_sections():
-                if section.name != section_name:
-                    continue
-                sorted_values = list(sorted(section.values))
-                if sorted_values != section.values:
-                    section.values = sorted_values
-                    cmd.changed = True
 
 
 @roscompile
