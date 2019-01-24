@@ -1,38 +1,66 @@
-roscompile is a tool for improving Catkin packages by fixing common errors and tweaking the style. To run, simply navigate to a folder containing the packages you'd like to tweak, and type
- `roscompile`
+roscompile is a tool for improving Catkin packages by fixing common errors and tweaking the style.
+To run, simply navigate to a folder containing the packages you'd like to tweak, and type `roscompile`.
+This will automatically apply all the fixes described below.
+Certain rules can be ignored by tweaking the configuration.
+If you want to interactively apply the rules, use the `-i` option.
+
+You can also explicitly enumerate which fixes you want to run with the `roscompile_command` executable.
 
 There are also some other useful scripts described at the bottom of this documentation.
 
 # `roscompile` Features
 ## Dependencies
  * Checks for dependencies by looking in the source code, message, service, action and launch files.
- * Inserts build/run/test dependencies into your `package.xml`
- * Inserts dependencies into your `CMakeLists.txt` (in both the `find_package` and `catkin_package` commands)
- * Sorts lists of dependencies (in both `package.xml`/`CMakeLists.txt`)
+ * `check_manifest_dependencies` - Inserts build/run/test dependencies into your `package.xml`
+ * `check_cmake_dependencies` - Inserts dependencies into your `CMakeLists.txt` (in both the `find_package` and `catkin_package` commands)
 
 ## package.xml
- * Remove the empty export tag
- * Remove boiler-plate comments
- * Enforce tag ordering and tabbing
- * Reads the &lt;author> and &lt;maintainer> tags and allows you to programmatically replace them. (i.e. 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!')
- * Update your metapackage dependencies
+ * `remove_empty_export_tag` - Remove the empty export tag
+ * `remove_boilerplate_manifest_comments` - Remove boiler-plate comments
+ * `remove_empty_manifest_lines` - Remove empty lines
+ * `greedy_depend_tag` If a format 2 `package.xml`, collapses matching `build_depend/build_export_depend/exec_depend` commands into a single `depend` command
+ * `enforce_manifest_tabbing` Ensure standard indentation of each tag
+ * `enforce_manifest_ordering` - Sort all fo the tags by type and value
+ * `update_people` - Reads the &lt;author> and &lt;maintainer> tags and allows you to programmatically replace them. (i.e. 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!') (see configuration section below)
+ * `update_license` - Updates TODO licenses to a configurable default license (see configuration section below)
+ * `update_metapackage` - Update your metapackage dependencies
 
 ## CMakeLists.txt
- * Automatically looks for `msg`/`srv`/`action`/`dynamic_reconfigure` definitions and ensures they are properly built in the `CMakeLists.txt`
- * Enforces the ordering of the commands
- * Removes boiler-plate comments
- * Modifies the style of commands
- * Ensure all of your files are installed
+ * `check_generators` - Automatically looks for `msg`/`srv`/`action`/`dynamic_reconfigure` definitions and ensures they are properly built in the `CMakeLists.txt`
+ * `enforce_cmake_ordering` - Enforces the ordering of the commands
+
+### CMake Style
+ * `remove_boilerplate_cmake_comments` - Removes boiler-plate comments
+ * `remove_empty_cmake_lines` - Removes empty lines
+ * `alphabetize_sections` - Alphabetizes the `COMPONENTS`, `DEPENDENCIES`, `FILES` and `CATKIN_DEPENDS` sections of CMake commands
+
+ * `prettify_catkin_package_cmd` - Ensures standard indentation of `catkin_package`
+ * `prettify_package_lists` - Ensures standard indentation of `find_package/COMPONENTS` and `catkin_package/CATKIN_DEPENDS`
+ * `prettify_msgs_srvs` - Ensures standard indentation of `add_message_files` and `add_service_files`
+ * `prettify_installs` - Ensures standard indentation of `install` commands
+
+### CMake Installs
+ * `update_cplusplus_installs` - Checks for install commands for C++ executables/libraries/header files
+ * `update_python_installs` - Checks for install commands for Python executables
+ * `update_misc_installs` - Checks for install commands for launch files, plugin configurations and other non-code files.
 
 ## C++
- * Examines the `add_library` and `add_executable` commands in the `CMakeLists.txt` and ensures that they properly depend on `${catkin_EXPORTED_TARGETS}`, `${PKG_NAME_EXPORTED_TARGETS}` and `${catkin_LIBRARIES}`
- * Sets up the `include_directories` command and ensures your libraries are exported into the `catkin_package` command
- * If you use pluginlib, will search your code for PLUGINLIB_EXPORT_CLASS macros, and update your plugin xml accordingly.
+ * Examines the `add_library` and `add_executable` commands in the `CMakeLists.txt` and ensures that each is matched with the appropriate catkin variables.
+    * `target_catkin_libraries` - Checks dependencies on `${catkin_LIBRARIES}`
+    * `check_exported_dependencies` - Checks dependencies on `${catkin_EXPORTED_TARGETS}` and `${PKG_NAME_EXPORTED_TARGETS}`
+    * `remove_old_style_cpp_dependencies` - Removes dependencies on the old style of C++ dependencies (i.e. `__generate_messages_cpp`, `_gencpp` and `_gencfg`) and replaces them with the above `EXPORTED_TARGETS`
+ * `check_includes` - Sets up the `include_directories` command
+ * `check_library_setup` - ensures your libraries are exported into the `catkin_package` command
 
 ## Python
- * If you have python code, will automatically generate setup.py for you.
+ * `check_setup_py` - If you have python code, will automatically generate setup.py for you.
 
-## Configuration
+## Misc
+ * `check_dynamic_reconfigure` - If there are `dynamic_reconfigure` configurations, ensure the package depends on `dynamic_reconfigure`, and the configurations are configured in the `CMake` and executable.
+ * `remove_useless_files` - Removes autogenerated `mainpage.dox` file
+ * `check_plugins` - If you use pluginlib, will search your code for `PLUGINLIB_EXPORT_CLASS` macros, and update your plugin xml accordingly.
+
+# Configuration
  Located at `~/.ros/roscompile.yaml`
 
  * `skip_fixes`: An array of strings representing fixes that you'd like to always ignore when running `roscompile`
