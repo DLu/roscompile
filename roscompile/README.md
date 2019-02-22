@@ -43,6 +43,7 @@ There are also some other useful scripts described at the bottom of this documen
  * `update_cplusplus_installs` - Checks for install commands for C++ executables/libraries/header files
  * `update_python_installs` - Checks for install commands for Python executables
  * `update_misc_installs` - Checks for install commands for launch files, plugin configurations and other non-code files.
+ * `fix_double_directory_installs` - Checks to make sure directory installs don't use the name of the directory twice, a la `$INSTALL_LOCATION/launch/launch/whatever.launch`
 
 ## C++
  * Examines the `add_library` and `add_executable` commands in the `CMakeLists.txt` and ensures that each is matched with the appropriate catkin variables.
