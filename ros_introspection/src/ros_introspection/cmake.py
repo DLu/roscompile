@@ -11,7 +11,7 @@ ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'fi
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             BUILD_TARGET_COMMANDS + ['include_directories'],
-            ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
+            ['catkin_download_test_data', 'roslint_cpp', 'roslint_python', 'roslint_add_test', 'catkin_add_nosetests'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
 
