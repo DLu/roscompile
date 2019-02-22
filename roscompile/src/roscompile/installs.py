@@ -147,6 +147,7 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
         return
 
     cmd = None
+    items = [os.path.join(subfolder, item) for item in items]
     for cmd in cmds:
         install_sections(cmd, destination_map, subfolder)
         section = cmd.get_section(section_name)
