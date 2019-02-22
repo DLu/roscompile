@@ -44,8 +44,7 @@ class GeneratorSection:
             else:
                 self.contents.append('\n')
         else:
-            print repr(line)
-            exit(0)
+            raise Exception('Unable to parse generator line: ' + repr(line))
 
     def __repr__(self):
         return ''.join(map(str, self.contents))

@@ -182,10 +182,10 @@ class AwesomeParser:
             # print '[%s]%s'%(typ, repr(tok))
             return tok
         else:
-            sys.stderr.write('Expected type "%s" but got "%s"\n' % (typ, self.get_type()))
+            sys.stderr.write('Token Dump:\n')
             for a in self.tokens:
                 sys.stderr.write(str(a) + '\n')
-            exit(-1)
+            raise CMakeParseError('Expected type "%s" but got "%s"' % (typ, self.get_type()))
 
     def get_type(self):
         if len(self.tokens) > 0:
