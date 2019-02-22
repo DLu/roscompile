@@ -11,9 +11,12 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>catkin</depend>
   <depend>ros_introspection</depend>
-  <test_depend>roslint</test_depend>
+  <exec_depend>python-argparse</exec_depend>
+  <exec_depend>python-rospkg</exec_depend>
+  <exec_depend>python-yaml</exec_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>pluginlib</test_depend>
+  <test_depend>roslint</test_depend>
   <test_depend>tf</test_depend>
 
 </package>

@@ -25,7 +25,9 @@ if(CATKIN_ENABLE_TESTING)
   roslint_add_test()
 endif()
 
-catkin_install_python(PROGRAMS scripts/roscompile scripts/add_tests scripts/convert_to_format_2
+catkin_install_python(PROGRAMS scripts/roscompile scripts/add_tests scripts/convert_to_format_2 scripts/add_compile_options scripts/roscompile_command
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-install(FILES data/cmake.ignore data/cmake_patterns.ignore data/package.ignore data/package_patterns.ignore DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data)
+install(FILES data/cmake.ignore data/cmake_patterns.ignore data/package.ignore data/package_patterns.ignore
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data
+)
