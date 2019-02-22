@@ -40,9 +40,17 @@ def check_cmake_dependencies(package):
 
 
 def get_matching_add_depends(cmake, search_target):
+    valid_targets = set([search_target])
+    alt_target = cmake.resolve_variables(search_target)
+    if alt_target != search_target:
+        valid_targets.add(alt_target)
+
     for cmd in cmake.content_map['add_dependencies']:
         target = cmd.first_token()
-        if target == search_target:
+        if target in valid_targets:
+            return cmd
+        resolved_target = cmake.resolve_variables(target)
+        if resolved_target in valid_targets:
             return cmd
 
 
