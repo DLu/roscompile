@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
         with cases[test_config['in']] as pkg_in:
             try:
+                total += 1
                 if test_config['in'] == test_config['out']:
                     pkg_out = pkg_in.copy()
                 else:
@@ -73,7 +74,6 @@ if __name__ == '__main__':
                     else:
                         fne(pp)
                 pp.write()
-                total += 1
                 if compare(pkg_in, pkg_out):
                     print '  SUCCESS'
                     successes += 1
@@ -85,5 +85,7 @@ if __name__ == '__main__':
                 print '  EXCEPTION', e.message
                 if args.last:
                     raise
+                if args.fail_once:
+                    break
     if not args.last:
         print '{}/{}'.format(successes, total)
