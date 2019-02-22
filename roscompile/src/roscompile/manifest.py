@@ -27,6 +27,12 @@ def check_manifest_dependencies(package):
                 package.manifest.insert_new_packages(tag, [msg_pkg])
 
 
+@roscompile
+def check_python_dependencies(package):
+    run_depends = package.source_code.get_external_python_dependencies()
+    package.manifest.add_packages(set(), run_depends, prefer_depend_tag=False)
+
+
 def has_element_child(node):
     for child in node.childNodes:
         if child.nodeType == child.ELEMENT_NODE:

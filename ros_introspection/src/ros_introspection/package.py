@@ -47,7 +47,6 @@ class Package:
                 continue
             packages.update(launch.get_dependencies())
 
-        packages.update(self.source_code.get_external_python_dependencies())
         if self.name in packages:
             packages.remove(self.name)
         return packages

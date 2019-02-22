@@ -12,6 +12,7 @@ There are also some other useful scripts described at the bottom of this documen
 ## Dependencies
  * Checks for dependencies by looking in the source code, message, service, action and launch files.
  * `check_manifest_dependencies` - Inserts build/run/test dependencies into your `package.xml`
+ * `check_python_dependencies` - Inserts run dependencies for external Python libraries
  * `check_cmake_dependencies` - Inserts dependencies into your `CMakeLists.txt` (in both the `find_package` and `catkin_package` commands)
 
 ## package.xml
