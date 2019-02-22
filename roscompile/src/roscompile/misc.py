@@ -66,4 +66,3 @@ def misc_xml_formatting(package):
     package.manifest.changed = True
     for config in package.plugin_configs:
         config.changed = True
-
