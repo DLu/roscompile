@@ -1,7 +1,7 @@
 import os.path
 import re
 
-AT_LEAST_THREE_DASHES = re.compile('^\-{3,}$')
+AT_LEAST_THREE_DASHES = re.compile('^\-{3,}\r?$')
 FIELD_LINE = re.compile('([\w_/]+)(\[\d*\])?\s+([\w_]+)\s*(=.*)?(\s*\#.*)?$', re.DOTALL)
 
 
@@ -30,7 +30,8 @@ class GeneratorSection:
         self.fields = []
 
     def add_line(self, line):
-        if line[0] == '#' or line == '\n':
+        stripped = line.strip()
+        if not stripped or stripped[0] == '#':
             self.contents.append(line)
             return
         m = FIELD_LINE.match(line)
