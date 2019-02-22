@@ -235,7 +235,14 @@ class PackageXML:
             self.insert_new_packages('build_depend', build_depends)
             self.insert_new_packages('run_depend', run_depends)
         elif prefer_depend_tag:
-            self.insert_new_packages('depend', build_depends.union(run_depends))
+            depend_tags = build_depends.union(run_depends)
+
+            # Remove tags that overlap with new depends
+            self.remove_dependencies('build_depend', existing_build.intersection(depend_tags))
+            self.remove_dependencies('exec_depend', existing_run.intersection(depend_tags))
+
+            # Insert depends
+            self.insert_new_packages('depend', depend_tags)
         else:
             both = build_depends.intersection(run_depends)
             self.insert_new_packages('depend', both)
