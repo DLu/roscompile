@@ -76,6 +76,7 @@ def enforce_tabbing_helper(manifest, node, tabs=1):
     insert_before_list = []
     if not node:
         return
+    changed = False
     for c in node.childNodes:
         if c.nodeType == c.TEXT_NODE:
             prev_was_node = False
@@ -84,11 +85,15 @@ def enforce_tabbing_helper(manifest, node, tabs=1):
             spaces = count_trailing_spaces(c.data)
             if spaces > ideal_length:
                 c.data = c.data[: ideal_length - spaces]
+                changed = True
             elif spaces < ideal_length:
                 c.data = c.data + ' ' * (ideal_length - spaces)
+                changed = True
             if '\n' not in c.data:
                 c.data = '\n' + c.data
+                changed = True
         elif prev_was_node:
+            changed = True
             insert_before_list.append(c)
         else:
             prev_was_node = True
@@ -96,11 +101,14 @@ def enforce_tabbing_helper(manifest, node, tabs=1):
     for c in insert_before_list:
         node.insertBefore(manifest.get_tab_element(tabs), c)
 
+    manifest.changed = manifest.changed or changed
+
     if len(node.childNodes) == 0:
         return
     last = node.childNodes[-1]
     if last.nodeType != last.TEXT_NODE:
         node.appendChild(manifest.get_tab_element(tabs - 1))
+        manifest.changed = True
 
 
 @roscompile
@@ -145,17 +153,23 @@ def enforce_manifest_ordering(package, alphabetize=True):
     root = package.manifest.root
     chunks = get_chunks(root.childNodes)
 
-    root.childNodes = []
+    new_children = []
 
     for a, b in sorted(chunks, key=lambda d: get_sort_key(d[0], alphabetize)):
-        root.childNodes += b
+        new_children += b
+
+    if root.childNodes != new_children:
+        package.manifest.changed = True
+        root.childNodes = new_children
 
 
 def cleanup_text_elements(node):
     new_children = []
+    changed = False
 
     for child in node.childNodes:
         if child.nodeType == child.TEXT_NODE and len(new_children) and new_children[-1].nodeType == child.TEXT_NODE:
+            changed = True
             new_children[-1].data += child.data
         elif child.nodeType == child.TEXT_NODE and child.data == '':
             continue
@@ -163,9 +177,11 @@ def cleanup_text_elements(node):
             new_children.append(child)
 
     node.childNodes = new_children
+    return changed
 
 
 def replace_text_node_contents(node, ignorables):
+    changed = False
     removable = []
     for i, c in enumerate(node.childNodes):
         if c.nodeType == c.TEXT_NODE:
@@ -174,9 +190,10 @@ def replace_text_node_contents(node, ignorables):
             short = c.data.strip()
             if short in ignorables:
                 removable.append(i)
+                changed = True
                 continue
         else:
-            replace_text_node_contents(c, ignorables)
+            changed = replace_text_node_contents(c, ignorables) or changed
     for node_index in reversed(removable):  # backwards not to affect earlier indices
         if node_index > 0:
             before = node.childNodes[node_index - 1]
@@ -193,29 +210,35 @@ def replace_text_node_contents(node, ignorables):
                     after.data = after.data[1:]
 
         node.childNodes.remove(node.childNodes[node_index])
-    cleanup_text_elements(node)
+    changed = cleanup_text_elements(node) or changed
+    return changed
 
 
 @roscompile
 def remove_boilerplate_manifest_comments(package):
     ignorables = get_ignore_data('package', {'package': package.name}, add_newline=False)
-    replace_text_node_contents(package.manifest.root, ignorables)
-    remove_empty_manifest_lines(package)
+    changed = replace_text_node_contents(package.manifest.root, ignorables)
+    if changed:
+        package.manifest.changed = changed
+        remove_empty_manifest_lines(package)
 
 
 def remove_empty_lines_helper(node):
+    changed = False
     for child in node.childNodes:
         if child.nodeType == child.TEXT_NODE:
             while '\n\n\n' in child.data:
                 child.data = child.data.replace('\n\n\n', '\n\n')
+                changed = True
         else:
-            remove_empty_lines_helper(child)
+            changed = remove_empty_lines_helper(child) or changed
+    return changed
 
 
 @roscompile
 def remove_empty_manifest_lines(package):
-    remove_empty_lines_helper(package.manifest.root)
-
+    if remove_empty_lines_helper(package.manifest.root):
+        package.manifest.changed = True
 
 @roscompile
 def update_people(package, config=None):

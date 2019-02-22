@@ -59,3 +59,10 @@ def update_metapackage(package, require_matching_name=False):
 
     package.manifest.remove_dependencies(pkg_type, existing_sub_packages - sub_packages)
     package.cmake.section_check([], 'catkin_metapackage', zero_okay=True)
+
+
+@roscompile
+def misc_xml_formatting(package):
+    package.manifest.changed = True
+    for config in package.plugin_configs:
+        config.changed = True

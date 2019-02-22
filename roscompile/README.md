@@ -24,6 +24,7 @@ There are also some other useful scripts described at the bottom of this documen
  * `update_people` - Reads the &lt;author> and &lt;maintainer> tags and allows you to programmatically replace them. (i.e. 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!') (see configuration section below)
  * `update_license` - Updates TODO licenses to a configurable default license (see configuration section below)
  * `update_metapackage` - Update your metapackage dependencies
+ * `misc_xml_formatting` - Remove extra whitespace from inside tags in package.xml (and plugin xmls)
 
 ## CMakeLists.txt
  * `check_generators` - Automatically looks for `msg`/`srv`/`action`/`dynamic_reconfigure` definitions and ensures they are properly built in the `CMakeLists.txt`
