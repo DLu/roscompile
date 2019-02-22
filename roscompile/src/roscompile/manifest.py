@@ -246,6 +246,7 @@ def remove_empty_manifest_lines(package):
     if remove_empty_lines_helper(package.manifest.root):
         package.manifest.changed = True
 
+
 @roscompile
 def update_people(package, config=None):
     if config is None:
