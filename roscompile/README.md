@@ -12,6 +12,7 @@ There are also some other useful scripts described at the bottom of this documen
 ## Dependencies
  * Checks for dependencies by looking in the source code, message, service, action and launch files.
  * `check_manifest_dependencies` - Inserts build/run/test dependencies into your `package.xml`
+ * `check_python_dependencies` - Inserts run dependencies for external Python libraries
  * `check_cmake_dependencies` - Inserts dependencies into your `CMakeLists.txt` (in both the `find_package` and `catkin_package` commands)
 
 ## package.xml
@@ -24,6 +25,7 @@ There are also some other useful scripts described at the bottom of this documen
  * `update_people` - Reads the &lt;author> and &lt;maintainer> tags and allows you to programmatically replace them. (i.e. 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!') (see configuration section below)
  * `update_license` - Updates TODO licenses to a configurable default license (see configuration section below)
  * `update_metapackage` - Update your metapackage dependencies
+ * `misc_xml_formatting` - Remove extra whitespace from inside tags in package.xml (and plugin xmls)
 
 ## CMakeLists.txt
  * `check_generators` - Automatically looks for `msg`/`srv`/`action`/`dynamic_reconfigure` definitions and ensures they are properly built in the `CMakeLists.txt`
@@ -43,6 +45,7 @@ There are also some other useful scripts described at the bottom of this documen
  * `update_cplusplus_installs` - Checks for install commands for C++ executables/libraries/header files
  * `update_python_installs` - Checks for install commands for Python executables
  * `update_misc_installs` - Checks for install commands for launch files, plugin configurations and other non-code files.
+ * `fix_double_directory_installs` - Checks to make sure directory installs don't use the name of the directory twice, a la `$INSTALL_LOCATION/launch/launch/whatever.launch`
 
 ## C++
  * Examines the `add_library` and `add_executable` commands in the `CMakeLists.txt` and ensures that each is matched with the appropriate catkin variables.

@@ -49,6 +49,7 @@ class PackageXML:
         self._name = None
         self._format = None
         self._std_tab = None
+        self.changed = False
 
     @property
     def name(self):
@@ -199,6 +200,7 @@ class PackageXML:
         before = self.root.childNodes[:index + 1]
         after = self.root.childNodes[index + 1:]
         self.root.childNodes = before + [self.get_tab_element(), tag] + after
+        self.changed = True
 
     def insert_new_tags(self, tags):
         for tag in tags:
@@ -213,6 +215,7 @@ class PackageXML:
             parent.childNodes = all_elements + [self.get_tab_element()]
         else:
             parent.childNodes = parent.childNodes[:-1] + all_elements + parent.childNodes[-1:]
+        self.changed = True
 
     def insert_new_packages(self, tag, values):
         for pkg in sorted(values):
@@ -232,7 +235,14 @@ class PackageXML:
             self.insert_new_packages('build_depend', build_depends)
             self.insert_new_packages('run_depend', run_depends)
         elif prefer_depend_tag:
-            self.insert_new_packages('depend', build_depends.union(run_depends))
+            depend_tags = build_depends.union(run_depends)
+
+            # Remove tags that overlap with new depends
+            self.remove_dependencies('build_depend', existing_build.intersection(depend_tags))
+            self.remove_dependencies('exec_depend', existing_run.intersection(depend_tags))
+
+            # Insert depends
+            self.insert_new_packages('depend', depend_tags)
         else:
             both = build_depends.intersection(run_depends)
             self.insert_new_packages('depend', both)
@@ -254,6 +264,7 @@ class PackageXML:
             if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
                 parent.removeChild(previous)
         parent.removeChild(element)
+        self.changed = True
 
     def remove_dependencies(self, name, pkgs, quiet=False):
         for el in self.root.getElementsByTagName(name):
@@ -286,6 +297,7 @@ class PackageXML:
                 if target_email:
                     el.setAttribute('email', target_email)
                 print '\tReplacing %s %s/%s with %s/%s' % (el.nodeName, name, email, target_name, target_email)
+                self.changed = True
 
     def get_license_element(self):
         els = self.root.getElementsByTagName('license')
@@ -299,7 +311,9 @@ class PackageXML:
 
     def set_license(self, license):
         el = self.get_license_element()
-        el.childNodes[0].nodeValue = license
+        if license != el.childNodes[0].nodeValue:
+            el.childNodes[0].nodeValue = license
+            self.changed = True
 
     def is_metapackage(self):
         for node in self.root.getElementsByTagName('export'):
@@ -350,13 +364,12 @@ class PackageXML:
         if new_fn is None:
             new_fn = self.fn
 
+        if new_fn == self.fn and not self.changed:
+            return
+
         s = self.tree.toxml(self.tree.encoding)
         index = get_package_tag_index(s)
         s = self.header + s[index:]
-
-        old_s = open(new_fn, 'r').read().decode('UTF-8')
-        if old_s.strip() == s:
-            return
 
         with open(new_fn, 'w') as f:
             f.write(s.encode('UTF-8'))

@@ -1,4 +1,8 @@
 import collections
+import re
+
+VARIABLE_PATTERN = re.compile(r'\$\{([^\}]+)\}')
+QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
 
@@ -7,7 +11,7 @@ ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'fi
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             BUILD_TARGET_COMMANDS + ['include_directories'],
-            ['roslint_cpp', 'roslint_python', 'roslint_add_test'],
+            ['catkin_download_test_data', 'roslint_cpp', 'roslint_python', 'roslint_add_test', 'catkin_add_nosetests'],
             'catkin_add_gtest', 'group',
             ['install', 'catkin_install_python']]
 
@@ -125,9 +129,11 @@ class Command:
         if len(self.sections) == 1 and type(self.sections[0]) == str:
             self.sections = []
 
-    def get_tokens(self):
+    def get_tokens(self, include_name=False):
         tokens = []
         for section in self.get_real_sections():
+            if include_name and section.name:
+                tokens.append(section.name)
             tokens += section.values
         return tokens
 
@@ -180,17 +186,39 @@ class CMake:
                 self.content_map['group'].append(content)
         self.depth = depth
 
+        self.variables = {}
+        for cmd in self.content_map['set']:
+            tokens = cmd.get_tokens(include_name=True)
+            self.variables[tokens[0]] = ' '.join(tokens[1:])
+        self.variables['PROJECT_NAME'] = self.get_project_name()
+
     def get_project_name(self):
         project_tags = self.content_map['project']
         if not project_tags:
             return ''
-        return project_tags[0].get_tokens()[0]
+        # Get all tokens just in case the name is all caps
+        return project_tags[0].get_tokens(include_name=True)[0]
 
     def resolve_variables(self, s):
-        VARS = {'${PROJECT_NAME}': self.get_project_name()}
-        for k, v in VARS.iteritems():
-            s = s.replace(k, v)
+        m = VARIABLE_PATTERN.search(s)
+        if not m:
+            return s
+
+        for k, v in self.variables.iteritems():
+            s = s.replace('${%s}' % k, v)
         return s
+
+    def get_resolved_tokens(self, cmd, include_name=False):
+        tokens = []
+        for token in cmd.get_tokens(include_name):
+            if token and token[0] == '#':
+                continue
+            m = QUOTED_PATTERN.match(token)
+            if m:
+                token = m.group(1)
+            token = self.resolve_variables(token)
+            tokens += token.split(' ')
+        return tokens
 
     def get_insertion_index(self, cmd):
         anchors = self.get_ordered_build_targets()
@@ -239,12 +267,18 @@ class CMake:
         for cmd in cmds:
             self.remove_command(cmd)
 
-    def get_source_build_rules(self, tag):
+    def get_source_build_rules(self, tag, resolve_target_name=False):
         rules = {}
         for cmd in self.content_map[tag]:
-            tokens = [self.resolve_variables(s) for s in cmd.get_tokens()]
-            target = tokens[0]
-            deps = tokens[1:]
+            resolved_tokens = self.get_resolved_tokens(cmd, True)
+
+            if resolve_target_name:
+                target = resolved_tokens[0]
+            else:
+                tokens = cmd.get_tokens(True)
+                target = tokens[0]
+
+            deps = resolved_tokens[1:]
             rules[target] = deps
         return rules
 

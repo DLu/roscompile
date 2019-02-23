@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 from package import Package
 
 
@@ -9,7 +11,11 @@ def get_packages(root_fn='.', create_objects=True):
             continue
         if 'package.xml' in files:
             if create_objects:
-                packages.append(Package(root))
+                try:
+                    packages.append(Package(root))
+                except:
+                    sys.stderr.write('ERROR: Trouble parsing package @ %s\n' % root)
+                    sys.stderr.write(traceback.format_exc())
             else:
                 packages.append(root)
     return packages

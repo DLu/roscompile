@@ -9,8 +9,10 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>rosmsg</exec_depend>
+  <depend>rosmsg</depend>
   <exec_depend>python-requests</exec_depend>
+  <exec_depend>python-rospkg</exec_depend>
+  <exec_depend>python-yaml</exec_depend>
   <test_depend>roslint</test_depend>
 
 </package>

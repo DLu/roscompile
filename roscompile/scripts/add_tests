@@ -4,6 +4,7 @@ from ros_introspection.util import get_packages
 from ros_introspection.cmake import Command
 from roscompile.cmake import check_cmake_dependencies_helper
 import argparse
+import os
 
 
 def add_test_command(test_section, cmd_name, values=None):
@@ -52,8 +53,24 @@ for package in pkgs:
         # TODO: Assumes that the launch files are in the launch folder
 
     if args.lint:
-        if package.source_code.get_source_by_language('python'):
-            add_test_command(test_section, 'roslint_python')
+        python_source = package.source_code.get_source_by_language('python')
+        if python_source:
+            # Split into two sections, things with the .py extension and those without
+            py_extension = []
+            without = []
+
+            for src in python_source:
+                fn = src.rel_fn
+                ext = os.path.splitext(fn)[-1]
+                if ext == '.py':
+                    py_extension.append(fn)
+                else:
+                    without.append(fn)
+
+            if py_extension:
+                add_test_command(test_section, 'roslint_python')
+            if without:
+                add_test_command(test_section, 'roslint_python', without)
 
         if package.source_code.get_source_by_language('c++'):
             add_test_command(test_section, 'roslint_cpp')
