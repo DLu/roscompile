@@ -52,7 +52,7 @@ def check_plugins(package):
             # Create file if needed
             if pkg2 not in existing_plugins:
                 xml_filename = '%s_plugins.xml' % pkg2
-                print '\tCreating %s' % xml_filename
+                print('\tCreating %s' % xml_filename)
                 p_xml = PluginXML(xml_filename, os.path.join(package.root, xml_filename))
                 package.plugin_configs.append(p_xml)
                 existing_plugins[pkg2] = [p_xml]

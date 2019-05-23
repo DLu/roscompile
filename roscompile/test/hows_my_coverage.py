@@ -23,10 +23,10 @@ for test_config in config:
         coverage_counts[fne_name] += 1
 
 z_count = 0
-for name, count in sorted(coverage_counts.items(), key=lambda (a, b): b, reverse=True):
-    print '{:{}} {:=3d}'.format(name, max_len, count)
+for name, count in sorted(coverage_counts.items(), key=lambda kv: kv[1], reverse=True):
+    print('{:{}} {:=3d}'.format(name, max_len, count))
     if count == 0:
         z_count += 1
 
 if z_count > 0:
-    print 'Zero tests written for {} functions'.format(z_count)
+    print('Zero tests written for {} functions'.format(z_count))

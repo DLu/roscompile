@@ -76,7 +76,7 @@ class AwesomeParser:
 
         if debug:
             for typ, token in self.tokens:
-                print '[%s]%s' % (typ, repr(token))
+                print('[%s]%s' % (typ, repr(token)))
 
         self.contents = []
         while len(self.tokens) > 0:
@@ -97,7 +97,7 @@ class AwesomeParser:
 
         if debug:
             for chunk in self.contents:
-                print '[%s]' % chunk
+                print('[%s]' % chunk)
 
     def parse_command(self):
         command_name = self.match()
@@ -173,16 +173,16 @@ class AwesomeParser:
                 style.val_sep = list(delims)[0]
             else:
                 # TODO: Smarter multi delim parsing
-                # print delims
+                # print(delims)
                 style.val_sep = list(delims)[0]
 
-        # print cat, tokens, style
+        # print(cat, tokens, style)
         return Section(cat, tokens, style), original
 
     def match(self, typ=None):
         if typ is None or self.get_type() == typ:
             typ, tok = self.tokens.pop(0)
-            # print '[%s]%s'%(typ, repr(tok))
+            # print('[%s]%s'%(typ, repr(tok)))
             return tok
         else:
             sys.stderr.write('Token Dump:\n')

@@ -23,7 +23,7 @@ def maybe_download_python_deps():
     try:
         ff = requests.get('https://raw.githubusercontent.com/ros/rosdistro/master/rosdep/python.yaml').text
     except requests.exceptions.ConnectionError:
-        print 'Cannot retrieve latest python dependencies'
+        print('Cannot retrieve latest python dependencies')
         return
 
     PYTHON_DEPS = yaml.load(ff)

@@ -17,12 +17,12 @@ pkgs = get_packages()
 print_options = False
 for cmd in args.cmds:
     if cmd not in all_functions:
-        print 'Command {} not recognized'.format(cmd)
+        print('Command {} not recognized'.format(cmd))
         print_options = True
 if print_options:
     print
-    print 'Available functions:'
-    print '\n'.join(all_functions.keys())
+    print('Available functions:')
+    print('\n'.join(all_functions.keys()))
     exit(0)
 
 

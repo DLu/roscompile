@@ -14,7 +14,7 @@ or you can use the built-in crawler
 from ros_introspection.util import get_packages
 
 for package in get_packages('/home/dlu/catkin_work/src'):
-    print package
+    print(package)
 ```
 
 If you want to look in the current folder, you don't need to specify a folder to `get_packages`.

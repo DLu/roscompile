@@ -49,7 +49,6 @@ def remove_empty_export_tag(package):
         if not has_element_child(export):
             package.manifest.remove_element(export)
             return True
-            # print '\tRemoving empty export tag'
 
 
 def replace_package_set(manifest, source_tags, new_tag):

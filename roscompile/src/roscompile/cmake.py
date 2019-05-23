@@ -155,12 +155,12 @@ def target_catkin_libraries(package):
         tokens = cmd.get_tokens()
         if tokens[0] in targets:
             if CATKIN not in tokens:
-                print '\tAdding %s to target_link_libraries for %s' % (CATKIN, tokens[0])
+                print('\tAdding %s to target_link_libraries for %s' % (CATKIN, tokens[0]))
                 cmd.add_token(CATKIN)
             targets.remove(tokens[0])
             continue
     for target in targets:
-        print '\tAdding target_link_libraries for %s' % target
+        print('\tAdding target_link_libraries for %s' % target)
         cmd = Command('target_link_libraries')
         cmd.add_section('', [target, CATKIN])
         package.cmake.add_command(cmd)
@@ -346,7 +346,7 @@ def get_cmake_clusters(cmake):
     if len(current) > 0:
         clusters.append((get_sort_key(None, anchors), current))
 
-    return sorted(clusters, key=lambda (key, contents): key)
+    return sorted(clusters, key=lambda kv: kv[0])
 
 
 def enforce_cmake_ordering_helper(cmake):

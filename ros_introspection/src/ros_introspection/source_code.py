@@ -27,7 +27,7 @@ class SourceCode:
                 if fn in self.sources:
                     self.sources[fn].tags.add(tag)
                 else:
-                    print '    File %s found in CMake not found in folder!' % fn
+                    print('    File %s found in CMake not found in folder!' % fn)
 
     def get_build_dependencies(self):
         packages = set()

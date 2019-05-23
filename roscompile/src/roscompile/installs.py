@@ -171,7 +171,7 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
     if len(items) == 0:
         return
 
-    print '\tInstalling', ', '.join(items)
+    print('\tInstalling', ', '.join(items))
     if cmd is None:
         cmd = Command('install')
         cmd.add_section(section_name, items)

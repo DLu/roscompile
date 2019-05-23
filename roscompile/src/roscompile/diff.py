@@ -65,7 +65,7 @@ def preview_changes(package, fn_name, fne):
         if len(the_diff) == 0:
             return False
 
-        print color_header(fn_name)
+        print(color_header(fn_name))
 
         for filename in the_diff.get('diff', []):
             print_diff(filename, package.root, new_package_root)

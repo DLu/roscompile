@@ -10,7 +10,7 @@ def single_repo_parse(git_url):
     Repo.clone_from(git_url, directory_name)
 
     for package in get_packages(directory_name):
-        print package
+        print(package)
 
     shutil.rmtree(directory_name)
 

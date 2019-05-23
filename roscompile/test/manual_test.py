@@ -13,11 +13,11 @@ def compare(pkg_in, pkg_out, debug=True):
 
     for fn in missed_deletes:
         if debug:
-            print 'Should have deleted %s' % fn
+            print('Should have deleted %s' % fn)
         success = False
     for fn in missed_generations:
         if debug:
-            print 'Failed to generate %s' % fn
+            print('Failed to generate %s' % fn)
         success = False
     for filename in matches:
         generated_contents = pkg_in.get_contents(filename)
@@ -33,7 +33,7 @@ def compare(pkg_in, pkg_out, debug=True):
             while len(B) < len(A):
                 B.append(None)
             for a, b in zip(A, B):
-                print a == b, repr(a), repr(b)
+                print(a == b, repr(a), repr(b))
     return success
 
 
@@ -60,8 +60,8 @@ if __name__ == '__main__':
                 else:
                     pkg_out = cases[test_config['out']]
 
-                print '{:25} >> {:25} {}'.format(test_config['in'], test_config['out'],
-                                                 ','.join(test_config['functions']))
+                print('{:25} >> {:25} {}'.format(test_config['in'], test_config['out'],
+                                                 ','.join(test_config['functions'])))
                 root = pkg_in.root
                 if 'subpkg' in test_config:
                     root = os.path.join(root, test_config['subpkg'])
@@ -75,17 +75,17 @@ if __name__ == '__main__':
                         fne(pp)
                 pp.write()
                 if compare(pkg_in, pkg_out):
-                    print '  SUCCESS'
+                    print('  SUCCESS')
                     successes += 1
                 else:
-                    print '  FAIL'
+                    print('  FAIL')
                     if args.fail_once:
                         break
             except Exception as e:
-                print '  EXCEPTION', e.message
+                print('  EXCEPTION', e.message)
                 if args.last:
                     raise
                 if args.fail_once:
                     break
     if not args.last:
-        print '{}/{}'.format(successes, total)
+        print('{}/{}'.format(successes, total))

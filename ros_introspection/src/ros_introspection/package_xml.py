@@ -22,7 +22,7 @@ def get_ordering_index(name, whiny=True):
         elif name == o:
             return i
     if name and whiny:
-        print '\tUnsure of ordering for', name
+        print('\tUnsure of ordering for', name)
     return len(ORDERING)
 
 
@@ -219,7 +219,7 @@ class PackageXML:
 
     def insert_new_packages(self, tag, values):
         for pkg in sorted(values):
-            print '\tInserting %s: %s' % (tag, pkg)
+            print('\tInserting %s: %s' % (tag, pkg))
             node = self.tree.createElement(tag)
             node.appendChild(self.tree.createTextNode(pkg))
             self.insert_new_tag(node)
@@ -271,7 +271,7 @@ class PackageXML:
             pkg = el.childNodes[0].nodeValue
             if pkg in pkgs:
                 if not quiet:
-                    print '\tRemoving %s %s' % (name, pkg)
+                    print('\tRemoving %s %s' % (name, pkg))
                 self.remove_element(el)
 
     def get_elements_by_tags(self, tags):
@@ -296,7 +296,7 @@ class PackageXML:
                 el.childNodes[0].nodeValue = target_name
                 if target_email:
                     el.setAttribute('email', target_email)
-                print '\tReplacing %s %s/%s with %s/%s' % (el.nodeName, name, email, target_name, target_email)
+                print('\tReplacing %s %s/%s with %s/%s' % (el.nodeName, name, email, target_name, target_email))
                 self.changed = True
 
     def get_license_element(self):

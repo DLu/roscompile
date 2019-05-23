@@ -24,7 +24,7 @@ def get_ordering_index(command_name):
         elif command_name == o:
             return i
     if command_name:
-        print '\tUnsure of ordering for', command_name
+        print('\tUnsure of ordering for', command_name)
     return len(ORDERING)
 
 
@@ -239,7 +239,7 @@ class CMake:
     def add_command(self, cmd):
         i_index = self.get_insertion_index(cmd)
         sub_contents = []
-        if i_index > 0 and type(self.contents[i_index-1]) != str:
+        if i_index > 0 and type(self.contents[i_index - 1]) != str:
             sub_contents.append('\n')
         if self.depth > 0:
             sub_contents.append('  ' * self.depth)
@@ -258,7 +258,7 @@ class CMake:
             self.content_map['group'].append(cmd)
 
     def remove_command(self, cmd):
-        print '\tRemoving %s' % str(cmd).replace('\n', ' ').replace('  ', '')
+        print('\tRemoving %s' % str(cmd).replace('\n', ' ').replace('  ', ''))
         self.contents.remove(cmd)
         self.content_map[cmd.command_name].remove(cmd)
 
