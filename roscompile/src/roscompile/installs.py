@@ -180,7 +180,7 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
     elif section:
         section = cmd.get_section(section_name)
         section.values += items
-        section.changed = True
+        cmd.changed = True
 
 
 @roscompile

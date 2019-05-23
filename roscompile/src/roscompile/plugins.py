@@ -43,7 +43,7 @@ def check_plugins(package):
     defined_macros = package.source_code.search_for_pattern(PLUGIN_RE)
     existing_plugins = plugin_xml_by_package(package)
     defined_plugins = package.manifest.get_plugin_xmls()
-    build_rules = package.cmake.get_source_build_rules('add_library')
+    build_rules = package.cmake.get_source_build_rules('add_library', resolve_target_name=True)
 
     for rel_fn, plugin_info in defined_macros.iteritems():
         library = lookup_library(build_rules, rel_fn)

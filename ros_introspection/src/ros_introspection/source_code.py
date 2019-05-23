@@ -24,6 +24,8 @@ class SourceCode:
                            ('executable', cmake.get_executable_source()),
                            ('test', cmake.get_test_source())]:
             for fn in files:
+                if fn and fn[0] == '$':
+                    continue
                 if fn in self.sources:
                     self.sources[fn].tags.add(tag)
                 else:

@@ -63,6 +63,8 @@ def match_generator_name(package, name):
 def get_msg_dependencies_from_source(package, sources):
     deps = set()
     for rel_fn in sources:
+        if rel_fn not in package.source_code.sources:
+            continue
         src = package.source_code.sources[rel_fn]
         for pkg, name in src.search_lines_for_pattern(CPLUS):
             if len(name) == 0 or name[-2:] != '.h':
