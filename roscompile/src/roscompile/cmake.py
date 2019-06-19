@@ -20,11 +20,15 @@ def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
     for cmd in cmake.content_map['find_package']:
         tokens = cmd.get_tokens()
         if tokens and tokens[0] == 'catkin' and cmd.get_section('REQUIRED'):
+            req_sec = cmd.get_section('REQUIRED')
             section = cmd.get_section('COMPONENTS')
+            if section is None and req_sec.values:
+                section = req_sec  # Allow packages to be listed without COMPONENTS keyword
             if section is None:
                 cmd.add_section('COMPONENTS', sorted(dependencies))
             else:
-                needed_items = dependencies - set(section.values)
+                existing = cmake.resolve_variables(section.values)
+                needed_items = dependencies - set(existing)
                 if len(needed_items) > 0:
                     section.values += list(sorted(needed_items))
                     cmd.changed = True

@@ -199,26 +199,30 @@ class CMake:
         # Get all tokens just in case the name is all caps
         return project_tags[0].get_tokens(include_name=True)[0]
 
-    def resolve_variables(self, s):
-        m = VARIABLE_PATTERN.search(s)
-        if not m:
-            return s
+    def resolve_variables(self, var):
+        if type(var) == str:
+            s = var
+            m = VARIABLE_PATTERN.search(s)
+            if not m:
+                return s
 
-        for k, v in self.variables.iteritems():
-            s = s.replace('${%s}' % k, v)
-        return s
+            for k, v in self.variables.iteritems():
+                s = s.replace('${%s}' % k, v)
+            return s
+        else:
+            tokens = []
+            for token in var:
+                if token and token[0] == '#':
+                    continue
+                m = QUOTED_PATTERN.match(token)
+                if m:
+                    token = m.group(1)
+                token = self.resolve_variables(token)
+                tokens += token.split(' ')
+            return tokens
 
     def get_resolved_tokens(self, cmd, include_name=False):
-        tokens = []
-        for token in cmd.get_tokens(include_name):
-            if token and token[0] == '#':
-                continue
-            m = QUOTED_PATTERN.match(token)
-            if m:
-                token = m.group(1)
-            token = self.resolve_variables(token)
-            tokens += token.split(' ')
-        return tokens
+        return self.resolve_variables(cmd.get_tokens(include_name))
 
     def get_insertion_index(self, cmd):
         anchors = self.get_ordered_build_targets()
@@ -383,7 +387,8 @@ class CMake:
         if section is None:
             cmd.add_section(section_name, sorted(items))
         else:
-            needed_items = [item for item in items if item not in section.values]
+            existing = self.resolve_variables(section.values)
+            needed_items = [item for item in items if item not in existing]
             section.values += sorted(needed_items)
             cmd.changed = True
 
