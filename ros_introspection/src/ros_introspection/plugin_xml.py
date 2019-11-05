@@ -73,9 +73,9 @@ class PluginXML:
             s += '<class_libraries>\n'
             indent += 2
 
-        for name, lib in self.libraries.iteritems():
+        for name, lib in self.libraries.items():
             s += ' ' * indent + '<library path="lib/lib%s">\n' % name
-            for t, clib in lib.iteritems():
+            for clib in lib.values():
                 s += self.class_str(clib, indent + 2)
             s += ' ' * indent + '</library>\n'
 

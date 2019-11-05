@@ -20,7 +20,7 @@ INSTALL_CONFIGS = {
 
 def get_install_type(destination):
     """ For a given catkin destination, return the matching install type """
-    for name, (kw, destination_map) in INSTALL_CONFIGS.iteritems():
+    for name, (kw, destination_map) in INSTALL_CONFIGS.items():
         if destination in destination_map:
             return name
 
@@ -95,7 +95,7 @@ def install_sections(cmd, destination_map, subfolder=''):
     """ For a given command and destination_map, ensure that the command has all
         the appropriate CMake sections with the matching catkin destinations.
         If the subfolder is defined, the subfolder is appended to the catkin destination."""
-    for destination, section_names in destination_map.iteritems():
+    for destination, section_names in destination_map.items():
         for section_name in section_names:
             if len(subfolder) > 0:
                 destination = os.path.join(destination, subfolder)
@@ -104,7 +104,7 @@ def install_sections(cmd, destination_map, subfolder=''):
 
 def remove_install_section(cmd, destination_map):
     empty_sections_to_remove = {}
-    for destination, section_names in destination_map.iteritems():
+    for destination, section_names in destination_map.items():
         for section_name in section_names:
             parts = section_name.split()
             if len(parts) == 2:
@@ -178,7 +178,7 @@ def install_section_check(cmake, items, install_type, directory=False, subfolder
         cmake.add_command(cmd)
         install_sections(cmd, destination_map, subfolder)
     elif section:
-        section = cmd.get_section(section_name)
+        # section = cmd.get_section(section_name)
         section.values += items
         cmd.changed = True
 

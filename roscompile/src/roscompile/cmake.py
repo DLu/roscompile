@@ -86,7 +86,7 @@ def get_msg_dependencies_from_source(package, sources):
 @roscompile
 def check_exported_dependencies(package):
     targets = package.cmake.get_target_build_rules()
-    for target, sources in targets.iteritems():
+    for target, sources in targets.items():
         deps = get_msg_dependencies_from_source(package, sources)
         if len(deps) == 0:
             continue
@@ -137,7 +137,7 @@ def remove_pattern(section, pattern):
 def remove_old_style_cpp_dependencies(package):
     global_changed = False
     targets = package.cmake.get_target_build_rules()
-    for target, sources in targets.iteritems():
+    for target in targets:
         add_deps = get_matching_add_depends(package.cmake, target)
         if add_deps is None or len(add_deps.sections) == 0:
             continue

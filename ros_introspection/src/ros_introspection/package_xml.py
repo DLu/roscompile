@@ -84,7 +84,7 @@ class PackageXML:
         if len(tab_ct) == 0:
             self._std_tab = 4
         else:
-            self._std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
+            self._std_tab = max(tab_ct.items(), key=operator.itemgetter(1))[0]
         return self._std_tab
 
     def get_packages_by_tag(self, tag):

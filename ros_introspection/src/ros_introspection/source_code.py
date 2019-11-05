@@ -6,7 +6,7 @@ class SourceCode:
     def __init__(self, filenames, pkg_name):
         self.pkg_name = pkg_name
         self.sources = {}
-        for rel_fn, file_path in filenames.iteritems():
+        for rel_fn, file_path in filenames.items():
             self.sources[rel_fn] = SourceCodeFile(rel_fn, file_path)
 
     def has_header_files(self):

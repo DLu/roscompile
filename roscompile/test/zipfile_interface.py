@@ -62,7 +62,7 @@ class ROSCompilePackageFiles:
     def write(self):
         self.clear()
         os.mkdir(self.root)
-        for fn, contents in self.pkg_files.iteritems():
+        for fn, contents in self.pkg_files.items():
             outfile = os.path.join(self.root, fn)
             parts = outfile.split(os.sep)
             # Parts will be '', tmp, pkg_name, possible_folders, actual_filename
@@ -103,7 +103,7 @@ def get_test_cases(zip_filename):
             executables.add(path)
 
     test_data = {}
-    for package, D in file_data.iteritems():
+    for package, D in file_data.items():
         test_data[package] = ROSCompilePackageFiles(package, D, executables)
     for D in config:
         if 'function' in D:

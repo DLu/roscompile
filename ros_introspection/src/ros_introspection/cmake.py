@@ -206,7 +206,7 @@ class CMake:
             if not m:
                 return s
 
-            for k, v in self.variables.iteritems():
+            for k, v in self.variables.items():
                 s = s.replace('${%s}' % k, v)
             return s
         else:
@@ -288,7 +288,7 @@ class CMake:
 
     def get_source_helper(self, tag):
         lib_src = set()
-        for target, deps in self.get_source_build_rules(tag).iteritems():
+        for deps in self.get_source_build_rules(tag).values():
             lib_src.update(deps)
         return lib_src
 

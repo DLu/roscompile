@@ -25,7 +25,7 @@ def contains_library(xmls, library, pkg, name):
 
 
 def lookup_library(build_rules, rel_fn):
-    for library, deps in build_rules.iteritems():
+    for library, deps in build_rules.items():
         if rel_fn in deps:
             return library
 
@@ -45,7 +45,7 @@ def check_plugins(package):
     defined_plugins = package.manifest.get_plugin_xmls()
     build_rules = package.cmake.get_source_build_rules('add_library', resolve_target_name=True)
 
-    for rel_fn, plugin_info in defined_macros.iteritems():
+    for rel_fn, plugin_info in defined_macros.items():
         library = lookup_library(build_rules, rel_fn)
         # pkg2/name2 is the parent class
         for pkg1, name1, pkg2, name2 in plugin_info:
