@@ -35,7 +35,7 @@ class Package:
             gen = ROSGenerator(rel_fn, path)
             self.generators[gen.type].append(gen)
         self.dynamic_reconfigs = package_structure['cfg'].keys()
-        self.misc_files = package_structure[None].keys()
+        self.misc_files = list(package_structure[None].keys())
 
     def get_build_dependencies(self):
         return self.source_code.get_build_dependencies()

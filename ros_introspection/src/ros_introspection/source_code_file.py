@@ -23,7 +23,7 @@ class SourceCodeFile:
         self.tags = set()
         self.changed_contents = None
 
-        self.lines = map(str.strip, self.get_contents().split('\n'))
+        self.lines = list(map(str.strip, self.get_contents().split('\n')))
         if '.py' in self.file_path or (len(self.lines) > 0 and is_python_hashbang_line(self.lines[0])):
             self.language = 'python'
         else:

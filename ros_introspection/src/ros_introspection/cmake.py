@@ -299,10 +299,10 @@ class CMake:
         return self.get_source_helper('add_executable')
 
     def get_libraries(self):
-        return self.get_source_build_rules('add_library').keys()
+        return list(self.get_source_build_rules('add_library').keys())
 
     def get_executables(self):
-        return self.get_source_build_rules('add_executable').keys()
+        return list(self.get_source_build_rules('add_executable').keys())
 
     def get_target_build_rules(self):
         targets = {}

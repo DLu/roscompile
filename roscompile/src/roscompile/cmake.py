@@ -293,7 +293,7 @@ def prettify_installs(package):
 
 
 def remove_empty_strings(a):
-    return filter(lambda x: x != '', a)
+    return list(filter(lambda x: x != '', a))
 
 
 def remove_cmake_command_comments_helper(command, ignorables, replacement=''):
