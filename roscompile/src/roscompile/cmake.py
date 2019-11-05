@@ -1,7 +1,7 @@
 from ros_introspection.cmake import Command, CommandGroup, get_sort_key
 from ros_introspection.source_code_file import CPLUS
 from ros_introspection.resource_list import is_message, is_service
-from util import get_ignore_data, roscompile
+from .util import get_ignore_data, roscompile
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 NEWLINE_PLUS_4 = '\n    '

@@ -1,6 +1,6 @@
 import re
 import os
-from ros_introspection.resource_list import is_package, get_python_dependency
+from .resource_list import is_package, get_python_dependency
 
 PKG = '([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG

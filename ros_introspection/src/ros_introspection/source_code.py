@@ -1,5 +1,5 @@
 import os.path
-from source_code_file import SourceCodeFile
+from .source_code_file import SourceCodeFile
 
 
 class SourceCode:

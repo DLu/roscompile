@@ -1,8 +1,8 @@
 import os
 import collections
 from ros_introspection.plugin_xml import PluginXML
-from manifest import enforce_tabbing_helper
-from util import roscompile
+from .manifest import enforce_tabbing_helper
+from .util import roscompile
 import re
 
 PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+),\s*([^:]+)::([^,]+)\)'

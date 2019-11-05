@@ -1,6 +1,6 @@
 import re
 import os
-from util import roscompile, make_executable
+from .util import roscompile, make_executable
 from ros_introspection.util import get_packages
 
 MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+" + \

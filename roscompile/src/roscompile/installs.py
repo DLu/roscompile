@@ -2,7 +2,7 @@ import os
 import fnmatch
 import collections
 from ros_introspection.cmake import Command
-from util import roscompile
+from .util import roscompile
 
 FILES_TO_NOT_INSTALL = ['CHANGELOG.rst', 'README.md', '.travis.yml', 'bitbucket-pipelines.yml']
 

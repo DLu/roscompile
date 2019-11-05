@@ -1,12 +1,12 @@
 import collections
-from package_structure import get_package_structure
-from package_xml import PackageXML
-from cmake_parser import parse_file
-from source_code import SourceCode
-from ros_generator import ROSGenerator
-from setup_py import SetupPy
-from launch import Launch
-from plugin_xml import PluginXML
+from .package_structure import get_package_structure
+from .package_xml import PackageXML
+from .cmake_parser import parse_file
+from .source_code import SourceCode
+from .ros_generator import ROSGenerator
+from .setup_py import SetupPy
+from .launch import Launch
+from .plugin_xml import PluginXML
 
 
 class Package:
