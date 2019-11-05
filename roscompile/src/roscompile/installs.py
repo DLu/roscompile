@@ -201,7 +201,7 @@ def update_misc_installs(package):
         path, base = os.path.split(rel_path)
         extra_files_by_folder[path].append(base)
 
-    for folder, files in extra_files_by_folder.iteritems():
+    for folder, files in sorted(extra_files_by_folder.items()):
         install_section_check(package.cmake, files, 'misc', subfolder=folder)
 
 
