@@ -369,8 +369,7 @@ class PackageXML:
 
         s = self.tree.toxml(self.tree.encoding)
         index = get_package_tag_index(s)
-        s = self.header + s[index:]
+        s = self.header + s[index:] + '\n'
 
-        with open(new_fn, 'w') as f:
+        with open(new_fn, 'wb') as f:
             f.write(s.encode('UTF-8'))
-            f.write('\n')

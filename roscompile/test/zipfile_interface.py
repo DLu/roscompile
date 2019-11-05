@@ -98,7 +98,7 @@ def get_test_cases(zip_filename):
         parts = file.filename.split(os.path.sep)
         package = parts[0]
         path = os.path.join(*parts[1:])
-        file_data[package][path] = zf.read(file)
+        file_data[package][path] = zf.read(file).decode()
         if (file.external_attr >> 16) & 0o111:
             executables.add(path)
 
