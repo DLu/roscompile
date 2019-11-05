@@ -168,7 +168,7 @@ class PackageXML:
                     tag_values.append(value)
                     if tag_value >= value:
                         my_index = i
-                if sorted(tag_values) == tag_values and tag_value <= value:
+                if sorted(tag_values) == tag_values and value is not None and tag_value <= value:
                     return my_index
             return indexes[tag][-1][1]  # last match, end index
 

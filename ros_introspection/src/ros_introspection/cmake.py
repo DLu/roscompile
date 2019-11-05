@@ -32,7 +32,7 @@ def get_sort_key(content, anchors):
     if content is None:
         return len(ORDERING) + 1, None
     index = None
-    key = None
+    key = ()
     if content.__class__ == CommandGroup:
         index = get_ordering_index('group')
         sections = content.initial_tag.get_real_sections()
@@ -46,7 +46,7 @@ def get_sort_key(content, anchors):
                 anchors.append(token)
             key = anchors.index(token), BUILD_TARGET_COMMANDS.index(content.command_name)
         elif content.command_name == 'include_directories' and 'include_directories' in anchors:
-            key = anchors.index('include_directories')
+            key = -1, anchors.index('include_directories')
     return index, key
 
 
