@@ -62,7 +62,7 @@ class ROSCompilePackageFiles:
     def write(self):
         self.clear()
         os.mkdir(self.root)
-        for fn, contents in self.pkg_files.iteritems():
+        for fn, contents in self.pkg_files.items():
             outfile = os.path.join(self.root, fn)
             parts = outfile.split(os.sep)
             # Parts will be '', tmp, pkg_name, possible_folders, actual_filename
@@ -98,12 +98,12 @@ def get_test_cases(zip_filename):
         parts = file.filename.split(os.path.sep)
         package = parts[0]
         path = os.path.join(*parts[1:])
-        file_data[package][path] = zf.read(file)
+        file_data[package][path] = zf.read(file).decode()
         if (file.external_attr >> 16) & 0o111:
             executables.add(path)
 
     test_data = {}
-    for package, D in file_data.iteritems():
+    for package, D in file_data.items():
         test_data[package] = ROSCompilePackageFiles(package, D, executables)
     for D in config:
         if 'function' in D:

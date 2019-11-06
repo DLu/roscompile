@@ -37,8 +37,15 @@ def color_text(s, fore='YELLOW'):
     return getattr(Fore, fore) + s + Fore.RESET
 
 
+# Python2/3 input function
+try:
+    my_input = raw_input
+except NameError:
+    my_input = input
+
+
 def query_yes_no(question, default="no"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via my_input() and return their answer.
 
     Based on http://code.activestate.com/recipes/577058/
 
@@ -61,7 +68,7 @@ def query_yes_no(question, default="no"):
         raise ValueError("invalid default answer: '%s'" % default)
 
     while True:
-        choice = raw_input(color_text(question + prompt)).lower()
+        choice = my_input(color_text(question + prompt)).lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:

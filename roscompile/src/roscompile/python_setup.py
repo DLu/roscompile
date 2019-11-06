@@ -1,7 +1,7 @@
 import os
 from ros_introspection.cmake import Command
 from ros_introspection.setup_py import SetupPy
-from util import roscompile
+from .util import roscompile
 
 
 def has_python(package):

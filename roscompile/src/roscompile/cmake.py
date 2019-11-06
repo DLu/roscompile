@@ -1,7 +1,7 @@
 from ros_introspection.cmake import Command, CommandGroup, get_sort_key
 from ros_introspection.source_code_file import CPLUS
 from ros_introspection.resource_list import is_message, is_service
-from util import get_ignore_data, roscompile
+from .util import get_ignore_data, roscompile
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 NEWLINE_PLUS_4 = '\n    '
@@ -86,7 +86,7 @@ def get_msg_dependencies_from_source(package, sources):
 @roscompile
 def check_exported_dependencies(package):
     targets = package.cmake.get_target_build_rules()
-    for target, sources in targets.iteritems():
+    for target, sources in targets.items():
         deps = get_msg_dependencies_from_source(package, sources)
         if len(deps) == 0:
             continue
@@ -137,7 +137,7 @@ def remove_pattern(section, pattern):
 def remove_old_style_cpp_dependencies(package):
     global_changed = False
     targets = package.cmake.get_target_build_rules()
-    for target, sources in targets.iteritems():
+    for target in targets:
         add_deps = get_matching_add_depends(package.cmake, target)
         if add_deps is None or len(add_deps.sections) == 0:
             continue
@@ -293,7 +293,7 @@ def prettify_installs(package):
 
 
 def remove_empty_strings(a):
-    return filter(lambda x: x != '', a)
+    return list(filter(lambda x: x != '', a))
 
 
 def remove_cmake_command_comments_helper(command, ignorables, replacement=''):

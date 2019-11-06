@@ -1,12 +1,12 @@
 import collections
-from package_structure import get_package_structure
-from package_xml import PackageXML
-from cmake_parser import parse_file
-from source_code import SourceCode
-from ros_generator import ROSGenerator
-from setup_py import SetupPy
-from launch import Launch
-from plugin_xml import PluginXML
+from .package_structure import get_package_structure
+from .package_xml import PackageXML
+from .cmake_parser import parse_file
+from .source_code import SourceCode
+from .ros_generator import ROSGenerator
+from .setup_py import SetupPy
+from .launch import Launch
+from .plugin_xml import PluginXML
 
 
 class Package:
@@ -22,20 +22,20 @@ class Package:
 
         self.launches = []
         self.plugin_configs = []
-        for rel_fn, file_path in package_structure['launch'].iteritems():
+        for rel_fn, file_path in package_structure['launch'].items():
             self.launches.append(Launch(rel_fn, file_path))
-        for rel_fn, file_path in package_structure['plugin_config'].iteritems():
+        for rel_fn, file_path in package_structure['plugin_config'].items():
             self.plugin_configs.append(PluginXML(rel_fn, file_path))
 
         self.setup_py = None
         if 'setup.py' in package_structure['key']:
             self.setup_py = SetupPy(self.name, package_structure['key']['setup.py'])
         self.generators = collections.defaultdict(list)
-        for rel_fn, path in package_structure['generators'].iteritems():
+        for rel_fn, path in package_structure['generators'].items():
             gen = ROSGenerator(rel_fn, path)
             self.generators[gen.type].append(gen)
         self.dynamic_reconfigs = package_structure['cfg'].keys()
-        self.misc_files = package_structure[None].keys()
+        self.misc_files = list(package_structure[None].keys())
 
     def get_build_dependencies(self):
         return self.source_code.get_build_dependencies()
@@ -100,7 +100,7 @@ class Package:
                       }
         for ext in self.generators:
             components[ext] = '\n'.join(map(str, self.generators[ext]))
-        for name, c_str in sorted(components.iteritems()):
+        for name, c_str in sorted(components.items()):
             if len(c_str) == 0:
                 continue
             s += '  {}\n'.format(name)

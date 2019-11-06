@@ -17,7 +17,7 @@ if __name__ == '__main__':
     skip_fixes = config.get('skip_fixes', [])
 
     for package in pkgs:
-        for name, fne in get_functions().iteritems():
+        for name, fne in get_functions().items():
             if name in skip_fixes:
                 continue
             if args.interactive:

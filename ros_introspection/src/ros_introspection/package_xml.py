@@ -84,7 +84,7 @@ class PackageXML:
         if len(tab_ct) == 0:
             self._std_tab = 4
         else:
-            self._std_tab = max(tab_ct.iteritems(), key=operator.itemgetter(1))[0]
+            self._std_tab = max(tab_ct.items(), key=operator.itemgetter(1))[0]
         return self._std_tab
 
     def get_packages_by_tag(self, tag):
@@ -168,7 +168,7 @@ class PackageXML:
                     tag_values.append(value)
                     if tag_value >= value:
                         my_index = i
-                if sorted(tag_values) == tag_values and tag_value <= value:
+                if sorted(tag_values) == tag_values and value is not None and tag_value <= value:
                     return my_index
             return indexes[tag][-1][1]  # last match, end index
 
@@ -369,8 +369,7 @@ class PackageXML:
 
         s = self.tree.toxml(self.tree.encoding)
         index = get_package_tag_index(s)
-        s = self.header + s[index:]
+        s = self.header + s[index:] + '\n'
 
-        with open(new_fn, 'w') as f:
+        with open(new_fn, 'wb') as f:
             f.write(s.encode('UTF-8'))
-            f.write('\n')

@@ -20,8 +20,8 @@ def compare(pkg_in, pkg_out, debug=True):
             print('Failed to generate %s' % fn)
         success = False
     for filename in matches:
-        generated_contents = pkg_in.get_contents(filename)
-        canonical_contents = pkg_out.get_contents(filename)
+        generated_contents = pkg_in.get_contents(filename).replace('\r\n', '\n')
+        canonical_contents = pkg_out.get_contents(filename).replace('\r\n', '\n')
         if generated_contents.strip() == canonical_contents.strip():
             continue
         success = False
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                     if args.fail_once:
                         break
             except Exception as e:
-                print('  EXCEPTION', e.message)
+                print('  EXCEPTION ' + str(e))
                 if args.last:
                     raise
                 if args.fail_once:

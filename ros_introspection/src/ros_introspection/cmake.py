@@ -32,7 +32,7 @@ def get_sort_key(content, anchors):
     if content is None:
         return len(ORDERING) + 1, None
     index = None
-    key = None
+    key = ()
     if content.__class__ == CommandGroup:
         index = get_ordering_index('group')
         sections = content.initial_tag.get_real_sections()
@@ -46,7 +46,7 @@ def get_sort_key(content, anchors):
                 anchors.append(token)
             key = anchors.index(token), BUILD_TARGET_COMMANDS.index(content.command_name)
         elif content.command_name == 'include_directories' and 'include_directories' in anchors:
-            key = anchors.index('include_directories')
+            key = -1, anchors.index('include_directories')
     return index, key
 
 
@@ -206,7 +206,7 @@ class CMake:
             if not m:
                 return s
 
-            for k, v in self.variables.iteritems():
+            for k, v in self.variables.items():
                 s = s.replace('${%s}' % k, v)
             return s
         else:
@@ -288,7 +288,7 @@ class CMake:
 
     def get_source_helper(self, tag):
         lib_src = set()
-        for target, deps in self.get_source_build_rules(tag).iteritems():
+        for deps in self.get_source_build_rules(tag).values():
             lib_src.update(deps)
         return lib_src
 
@@ -299,10 +299,10 @@ class CMake:
         return self.get_source_helper('add_executable')
 
     def get_libraries(self):
-        return self.get_source_build_rules('add_library').keys()
+        return list(self.get_source_build_rules('add_library').keys())
 
     def get_executables(self):
-        return self.get_source_build_rules('add_executable').keys()
+        return list(self.get_source_build_rules('add_executable').keys())
 
     def get_target_build_rules(self):
         targets = {}

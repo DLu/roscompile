@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-from package import Package
+from .package import Package
 
 
 def get_packages(root_fn='.', create_objects=True):
