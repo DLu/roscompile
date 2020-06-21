@@ -1,4 +1,5 @@
 from . import cmake  # noqa: F401
+from . import generators  # noqa: F401
 from . import installs  # noqa: F401
 from . import manifest  # noqa: F401
 from . import misc  # noqa: F401
