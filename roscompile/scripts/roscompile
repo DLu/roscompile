@@ -21,7 +21,7 @@ if __name__ == '__main__':
             if name in skip_fixes:
                 continue
             if args.interactive:
-                if preview_changes(package, name, fne):
+                if preview_changes(package, name, fne, len(pkgs) > 1):
                     if query_yes_no('Would you like to make this change?'):
                         fne(package)
                         package.write()
