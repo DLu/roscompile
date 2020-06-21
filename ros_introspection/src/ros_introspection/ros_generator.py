@@ -3,6 +3,8 @@ import re
 
 AT_LEAST_THREE_DASHES = re.compile('^\-{3,}\r?$')
 FIELD_LINE = re.compile('([\w_/]+)(\[\d*\])?\s+([\w_]+)\s*(=.*)?(\s*\#.*)?$', re.DOTALL)
+PRIMITIVES = ['bool', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64',
+              'float32', 'float64', 'string', 'time', 'duration']
 
 
 class GeneratorField:
