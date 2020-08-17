@@ -5,15 +5,19 @@ VARIABLE_PATTERN = re.compile(r'\$\{([^\}]+)\}')
 QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
+TEST_COMMANDS = ['catkin_download_test_data',
+                 'roslint_cpp', 'roslint_python', 'roslint_add_test',
+                 'catkin_add_nosetests', 'catkin_add_gtest']
+INSTALL_COMMANDS = ['install', 'catkin_install_python']
 
 ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
             'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
             'add_message_files', 'add_service_files', 'add_action_files',
             'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
             BUILD_TARGET_COMMANDS + ['include_directories'],
-            ['catkin_download_test_data', 'roslint_cpp', 'roslint_python', 'roslint_add_test', 'catkin_add_nosetests'],
-            'catkin_add_gtest', 'group',
-            ['install', 'catkin_install_python']]
+            TEST_COMMANDS,
+            'group',
+            INSTALL_COMMANDS]
 
 
 def get_ordering_index(command_name):
