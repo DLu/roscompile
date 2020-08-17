@@ -1,4 +1,4 @@
-from ros_introspection.cmake import Command, CommandGroup, get_sort_key
+from ros_introspection.cmake import Command, CommandGroup
 from ros_introspection.source_code_file import CPLUS
 from ros_introspection.resource_list import is_message, is_service
 from .util import get_ignore_data, roscompile
@@ -338,32 +338,6 @@ def remove_empty_cmake_lines(package):
     package.cmake.contents = remove_empty_strings(package.cmake.contents)
 
 
-def get_cmake_clusters(cmake):
-    anchors = cmake.get_ordered_build_targets()
-    clusters = []
-    current = []
-    for content in cmake.contents:
-        current.append(content)
-        if type(content) == str:
-            continue
-        key = get_sort_key(content, anchors)
-        clusters.append((key, current))
-        current = []
-    if len(current) > 0:
-        clusters.append((get_sort_key(None, anchors), current))
-
-    return sorted(clusters, key=lambda kv: kv[0])
-
-
-def enforce_cmake_ordering_helper(cmake):
-    clusters = get_cmake_clusters(cmake)
-    cmake.contents = []
-    for key, contents in clusters:
-        cmake.contents += contents
-
-
 @roscompile
 def enforce_cmake_ordering(package):
-    enforce_cmake_ordering_helper(package.cmake)
-    for group in package.cmake.content_map['group']:
-        enforce_cmake_ordering_helper(group.sub)
+    package.cmake.enforce_ordering()

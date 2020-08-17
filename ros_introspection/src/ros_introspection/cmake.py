@@ -17,6 +17,16 @@ ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'fi
 
 
 def get_ordering_index(command_name):
+    """
+        Given a command name, determine the integer index into the ordering
+
+        If the command name matches one of the strings in the inner arrays,
+        the index of the inner array is returned.
+
+        If the command name matches one of the other strings, its index is returned.
+
+         Otherwise, the length of the ordering is returned (putting non-matches at the end)
+    """
     for i, o in enumerate(ORDERING):
         if type(o) == list:
             if command_name in o:
@@ -29,6 +39,17 @@ def get_ordering_index(command_name):
 
 
 def get_sort_key(content, anchors):
+    """
+        Given a piece of cmake content, return a tuple representing its sort_key
+
+        The first element of the tuple is the ordering_index of the content.
+        The second element is an additional variable used for sorting among elements with the same ordering_index
+
+        Most notably, we want all build commands with a particular library/executable to be grouped together.
+        In that case, we use the anchors parameter, which is an ordered list of all the library/executables in the file.
+        Then, the second variable is a tuple itself, with the first element being the index of library/executable in the
+        anchors list, and the second is an integer representing the canonical order of the build commands.
+    """
     if content is None:
         return len(ORDERING) + 1, None
     index = None
@@ -391,6 +412,38 @@ class CMake:
             needed_items = [item for item in items if item not in existing]
             section.values += sorted(needed_items)
             cmd.changed = True
+
+    def get_clusters(self):
+        """
+            Generate a sorted list of clusters, where each cluster
+            is an array of strings with a Command/CommandGroup at the end.
+
+            The clusters are sorted according to their sort_key.
+            The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
+        """
+        anchors = self.get_ordered_build_targets()
+        clusters = []
+        current = []
+        for content in self.contents:
+            current.append(content)
+            if type(content) == str:
+                continue
+            key = get_sort_key(content, anchors)
+            clusters.append((key, current))
+            current = []
+        if len(current) > 0:
+            clusters.append((get_sort_key(None, anchors), current))
+
+        return [kv[1] for kv in sorted(clusters, key=lambda kv: kv[0])]
+
+    def enforce_ordering(self):
+        clusters = self.get_clusters()
+        self.contents = []
+        for contents in clusters:
+            self.contents += contents
+
+        for group in self.content_map['group']:
+            group.sub.enforce_ordering()
 
     def __repr__(self):
         return ''.join(map(str, self.contents))
