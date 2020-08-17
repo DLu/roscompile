@@ -238,6 +238,11 @@ class CommandGroup:
         return str(self.initial_tag) + str(self.sub) + str(self.close_tag)
 
 
+def is_testing_group(content):
+    cmd = content.initial_tag
+    return cmd.command_name == 'if' and cmd.sections and cmd.sections[0].name == 'CATKIN_ENABLE_TESTING'
+
+
 class CMake:
     def __init__(self, file_path=None, initial_contents=None, depth=0):
         self.file_path = file_path
@@ -398,10 +403,8 @@ class CMake:
     def get_test_sections(self):
         sections = []
         for content in self.content_map['group']:
-            cmd = content.initial_tag
-            if cmd.command_name != 'if' or len(cmd.sections) == 0 or cmd.sections[0].name != 'CATKIN_ENABLE_TESTING':
-                continue
-            sections.append(content.sub)
+            if is_testing_group(content):
+                sections.append(content.sub)
         return sections
 
     def get_test_source(self):
