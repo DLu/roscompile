@@ -1,7 +1,8 @@
 import os
 import fnmatch
 import collections
-from ros_introspection.cmake import Command
+from ros_introspection.cmake import Command, SectionStyle
+from .cmake import NEWLINE_PLUS_8
 from .util import roscompile
 
 FILES_TO_NOT_INSTALL = ['CHANGELOG.rst', 'README.md', '.travis.yml', 'bitbucket-pipelines.yml']
@@ -88,7 +89,7 @@ def check_complex_section(cmd, key, value):
             section.add(value)
             cmd.changed = True
     else:
-        cmd.add_section(key, [value])
+        cmd.add_section(key, [value], SectionStyle(NEWLINE_PLUS_8))
 
 
 def install_sections(cmd, destination_map, subfolder=''):
