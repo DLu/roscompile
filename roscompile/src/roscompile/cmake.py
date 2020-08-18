@@ -1,7 +1,7 @@
 from ros_introspection.cmake import Command, CommandGroup
 from ros_introspection.source_code_file import CPLUS
 from ros_introspection.resource_list import is_message, is_service
-from .util import get_ignore_data, roscompile
+from .util import get_ignore_data, roscompile, get_config
 
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 NEWLINE_PLUS_4 = '\n    '
@@ -339,5 +339,8 @@ def remove_empty_cmake_lines(package):
 
 
 @roscompile
-def enforce_cmake_ordering(package):
-    package.cmake.enforce_ordering()
+def enforce_cmake_ordering(package, config=None):
+    if config is None:
+        config = get_config()
+    default_style = config.get('cmake_style')
+    package.cmake.enforce_ordering(default_style)
