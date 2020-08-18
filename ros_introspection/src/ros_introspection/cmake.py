@@ -10,19 +10,20 @@ TEST_COMMANDS = ['catkin_download_test_data',
                  'catkin_add_nosetests', 'catkin_add_gtest']
 INSTALL_COMMANDS = ['install', 'catkin_install_python']
 
-ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
-            'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
-            'add_message_files', 'add_service_files', 'add_action_files',
-            'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
-            BUILD_TARGET_COMMANDS + ['include_directories'],
-            TEST_COMMANDS,
-            'group',
-            INSTALL_COMMANDS]
+BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
+                 'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
+                 'add_message_files', 'add_service_files', 'add_action_files',
+                 'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
+                 BUILD_TARGET_COMMANDS + ['include_directories']]
 
+def get_ordering():
+    return BASE_ORDERING + TEST_COMMANDS + ['group'] + INSTALL_COMMANDS
 
-def get_ordering_index(command_name):
+def get_ordering_index(command_name, ordering):
     """
         Given a command name, determine the integer index into the ordering
+
+        The ordering is a list of strings and arrays of strings.
 
         If the command name matches one of the strings in the inner arrays,
         the index of the inner array is returned.
@@ -31,7 +32,7 @@ def get_ordering_index(command_name):
 
          Otherwise, the length of the ordering is returned (putting non-matches at the end)
     """
-    for i, o in enumerate(ORDERING):
+    for i, o in enumerate(ordering):
         if type(o) == list:
             if command_name in o:
                 return i
@@ -39,10 +40,10 @@ def get_ordering_index(command_name):
             return i
     if command_name:
         print('\tUnsure of ordering for', command_name)
-    return len(ORDERING)
+    return len(ordering)
 
 
-def get_sort_key(content, anchors):
+def get_sort_key(content, anchors, ordering):
     """
         Given a piece of cmake content, return a tuple representing its sort_key
 
@@ -55,16 +56,16 @@ def get_sort_key(content, anchors):
         anchors list, and the second is an integer representing the canonical order of the build commands.
     """
     if content is None:
-        return len(ORDERING) + 1, None
+        return len(ordering) + 1, None
     index = None
     key = ()
     if content.__class__ == CommandGroup:
-        index = get_ordering_index('group')
+        index = get_ordering_index('group', ordering)
         sections = content.initial_tag.get_real_sections()
         if len(sections) > 0:
             key = sections[0].name
     else:  # Command
-        index = get_ordering_index(content.command_name)
+        index = get_ordering_index(content.command_name, ordering)
         if content.command_name in BUILD_TARGET_COMMANDS:
             token = content.first_token()
             if token not in anchors:
@@ -251,17 +252,18 @@ class CMake:
 
     def get_insertion_index(self, cmd):
         anchors = self.get_ordered_build_targets()
+        ordering = get_ordering()
 
-        new_key = get_sort_key(cmd, anchors)
+        new_key = get_sort_key(cmd, anchors, ordering)
         i_index = 0
 
         for i, content in enumerate(self.contents):
             if type(content) == str:
                 continue
-            key = get_sort_key(content, anchors)
+            key = get_sort_key(content, anchors, ordering)
             if key <= new_key:
                 i_index = i + 1
-            elif key[0] != len(ORDERING):
+            elif key[0] != len(ordering):
                 return i_index
         return len(self.contents)
 
@@ -426,17 +428,18 @@ class CMake:
             The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
         """
         anchors = self.get_ordered_build_targets()
+        ordering = get_ordering()
         clusters = []
         current = []
         for content in self.contents:
             current.append(content)
             if type(content) == str:
                 continue
-            key = get_sort_key(content, anchors)
+            key = get_sort_key(content, anchors, ordering)
             clusters.append((key, current))
             current = []
         if len(current) > 0:
-            clusters.append((get_sort_key(None, anchors), current))
+            clusters.append((get_sort_key(None, anchors, ordering), current))
 
         return [kv[1] for kv in sorted(clusters, key=lambda kv: kv[0])]
 
