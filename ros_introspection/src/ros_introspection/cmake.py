@@ -16,8 +16,49 @@ BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties'
                  'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
                  BUILD_TARGET_COMMANDS + ['include_directories']]
 
-def get_ordering():
-    return BASE_ORDERING + TEST_COMMANDS + ['group'] + INSTALL_COMMANDS
+
+def get_style(cmake):
+    """ Examines the contents of the cmake parameter and determine the style.
+
+        There are four possible styles:
+        1) test_first (where test commands come strictly before install commands)
+        2) install_first (where test commands come strictly after install commands)
+        3) mixed (where test and install commands are not clearly delineated)
+        4) None (where there are only install commands, or only test commands, or neither)
+    """
+    cats = []
+    for content in cmake.contents:
+        cat = None
+        if isinstance(content, CommandGroup) and is_testing_group(content):
+            cat = 'test'
+        elif isinstance(content, Command):
+            if content.command_name in TEST_COMMANDS:
+                cat = 'test'
+            elif content.command_name in INSTALL_COMMANDS:
+                cat = 'install'
+        if cat is None:
+            continue
+
+        if len(cats) == 0 or cats[-1] != cat:
+            cats.append(cat)
+
+        if len(cats) > 2:
+            return 'mixed'
+    if len(cats) < 2:
+        return None
+    first_cat = cats[0]
+    return first_cat + '_first'
+
+
+def get_ordering(style):
+    """
+        Given the style, return the correct ordering.
+    """
+    if style == 'install_first':
+        return BASE_ORDERING + INSTALL_COMMANDS + ['group'] + TEST_COMMANDS
+    else:
+        return BASE_ORDERING + TEST_COMMANDS + ['group'] + INSTALL_COMMANDS
+
 
 def get_ordering_index(command_name, ordering):
     """
@@ -218,6 +259,8 @@ class CMake:
             self.variables[tokens[0]] = ' '.join(tokens[1:])
         self.variables['PROJECT_NAME'] = self.get_project_name()
 
+        self.existing_style = get_style(self)
+
     def get_project_name(self):
         project_tags = self.content_map['project']
         if not project_tags:
@@ -252,7 +295,7 @@ class CMake:
 
     def get_insertion_index(self, cmd):
         anchors = self.get_ordered_build_targets()
-        ordering = get_ordering()
+        ordering = get_ordering(self.get_desired_style())
 
         new_key = get_sort_key(cmd, anchors, ordering)
         i_index = 0
@@ -419,16 +462,16 @@ class CMake:
             section.values += sorted(needed_items)
             cmd.changed = True
 
-    def get_clusters(self):
+    def get_clusters(self, desired_style):
         """
-            Generate a sorted list of clusters, where each cluster
+            Given a desired_style, generate a sorted list of clusters, where each cluster
             is an array of strings with a Command/CommandGroup at the end.
 
-            The clusters are sorted according to their sort_key.
+            The clusters are sorted according to the desired style.
             The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
         """
         anchors = self.get_ordered_build_targets()
-        ordering = get_ordering()
+        ordering = get_ordering(desired_style)
         clusters = []
         current = []
         for content in self.contents:
@@ -443,14 +486,34 @@ class CMake:
 
         return [kv[1] for kv in sorted(clusters, key=lambda kv: kv[0])]
 
-    def enforce_ordering(self):
-        clusters = self.get_clusters()
+    def get_desired_style(self, default_style=None):
+        """
+            Determine which style to use, install_first or test_first.
+
+            If the default style is one of those two, use it
+        """
+        if default_style in ['install_first', 'test_first']:
+            desired_style = default_style
+        elif default_style is not None:
+            raise RuntimeError('Configured default cmake style "{}"'
+                               ' is not install_first or test_first'.format(default_style))
+        elif self.existing_style in ['install_first', 'test_first']:
+            desired_style = self.existing_style
+        else:
+            # Otherwise, do test first
+            desired_style = 'test_first'
+
+        return desired_style
+
+    def enforce_ordering(self, default_style=None):
+        desired_style = self.get_desired_style(default_style)
+        clusters = self.get_clusters(desired_style)
         self.contents = []
         for contents in clusters:
             self.contents += contents
 
         for group in self.content_map['group']:
-            group.sub.enforce_ordering()
+            group.sub.enforce_ordering(default_style)
 
     def __repr__(self):
         return ''.join(map(str, self.contents))
