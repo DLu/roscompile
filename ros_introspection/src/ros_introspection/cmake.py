@@ -5,19 +5,75 @@ VARIABLE_PATTERN = re.compile(r'\$\{([^\}]+)\}')
 QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
+TEST_COMMANDS = ['catkin_download_test_data',
+                 'roslint_cpp', 'roslint_python', 'roslint_add_test',
+                 'catkin_add_nosetests', 'catkin_add_gtest']
+INSTALL_COMMANDS = ['install', 'catkin_install_python']
 
-ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
-            'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
-            'add_message_files', 'add_service_files', 'add_action_files',
-            'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
-            BUILD_TARGET_COMMANDS + ['include_directories'],
-            ['catkin_download_test_data', 'roslint_cpp', 'roslint_python', 'roslint_add_test', 'catkin_add_nosetests'],
-            'catkin_add_gtest', 'group',
-            ['install', 'catkin_install_python']]
+BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
+                 'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
+                 'add_message_files', 'add_service_files', 'add_action_files',
+                 'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
+                 BUILD_TARGET_COMMANDS + ['include_directories']]
 
 
-def get_ordering_index(command_name):
-    for i, o in enumerate(ORDERING):
+def get_style(cmake):
+    """ Examines the contents of the cmake parameter and determine the style.
+
+        There are four possible styles:
+        1) test_first (where test commands come strictly before install commands)
+        2) install_first (where test commands come strictly after install commands)
+        3) mixed (where test and install commands are not clearly delineated)
+        4) None (where there are only install commands, or only test commands, or neither)
+    """
+    cats = []
+    for content in cmake.contents:
+        cat = None
+        if isinstance(content, CommandGroup) and is_testing_group(content):
+            cat = 'test'
+        elif isinstance(content, Command):
+            if content.command_name in TEST_COMMANDS:
+                cat = 'test'
+            elif content.command_name in INSTALL_COMMANDS:
+                cat = 'install'
+        if cat is None:
+            continue
+
+        if len(cats) == 0 or cats[-1] != cat:
+            cats.append(cat)
+
+        if len(cats) > 2:
+            return 'mixed'
+    if len(cats) < 2:
+        return None
+    first_cat = cats[0]
+    return first_cat + '_first'
+
+
+def get_ordering(style):
+    """
+        Given the style, return the correct ordering.
+    """
+    if style == 'install_first':
+        return BASE_ORDERING + INSTALL_COMMANDS + ['group'] + TEST_COMMANDS
+    else:
+        return BASE_ORDERING + TEST_COMMANDS + ['group'] + INSTALL_COMMANDS
+
+
+def get_ordering_index(command_name, ordering):
+    """
+        Given a command name, determine the integer index into the ordering
+
+        The ordering is a list of strings and arrays of strings.
+
+        If the command name matches one of the strings in the inner arrays,
+        the index of the inner array is returned.
+
+        If the command name matches one of the other strings, its index is returned.
+
+         Otherwise, the length of the ordering is returned (putting non-matches at the end)
+    """
+    for i, o in enumerate(ordering):
         if type(o) == list:
             if command_name in o:
                 return i
@@ -25,21 +81,32 @@ def get_ordering_index(command_name):
             return i
     if command_name:
         print('\tUnsure of ordering for', command_name)
-    return len(ORDERING)
+    return len(ordering)
 
 
-def get_sort_key(content, anchors):
+def get_sort_key(content, anchors, ordering):
+    """
+        Given a piece of cmake content, return a tuple representing its sort_key
+
+        The first element of the tuple is the ordering_index of the content.
+        The second element is an additional variable used for sorting among elements with the same ordering_index
+
+        Most notably, we want all build commands with a particular library/executable to be grouped together.
+        In that case, we use the anchors parameter, which is an ordered list of all the library/executables in the file.
+        Then, the second variable is a tuple itself, with the first element being the index of library/executable in the
+        anchors list, and the second is an integer representing the canonical order of the build commands.
+    """
     if content is None:
-        return len(ORDERING) + 1, None
+        return len(ordering) + 1, None
     index = None
     key = ()
     if content.__class__ == CommandGroup:
-        index = get_ordering_index('group')
+        index = get_ordering_index('group', ordering)
         sections = content.initial_tag.get_real_sections()
         if len(sections) > 0:
             key = sections[0].name
     else:  # Command
-        index = get_ordering_index(content.command_name)
+        index = get_ordering_index(content.command_name, ordering)
         if content.command_name in BUILD_TARGET_COMMANDS:
             token = content.first_token()
             if token not in anchors:
@@ -192,6 +259,8 @@ class CMake:
             self.variables[tokens[0]] = ' '.join(tokens[1:])
         self.variables['PROJECT_NAME'] = self.get_project_name()
 
+        self.existing_style = get_style(self)
+
     def get_project_name(self):
         project_tags = self.content_map['project']
         if not project_tags:
@@ -226,17 +295,18 @@ class CMake:
 
     def get_insertion_index(self, cmd):
         anchors = self.get_ordered_build_targets()
+        ordering = get_ordering(self.get_desired_style())
 
-        new_key = get_sort_key(cmd, anchors)
+        new_key = get_sort_key(cmd, anchors, ordering)
         i_index = 0
 
         for i, content in enumerate(self.contents):
             if type(content) == str:
                 continue
-            key = get_sort_key(content, anchors)
+            key = get_sort_key(content, anchors, ordering)
             if key <= new_key:
                 i_index = i + 1
-            elif key[0] != len(ORDERING):
+            elif key[0] != len(ordering):
                 return i_index
         return len(self.contents)
 
@@ -391,6 +461,59 @@ class CMake:
             needed_items = [item for item in items if item not in existing]
             section.values += sorted(needed_items)
             cmd.changed = True
+
+    def get_clusters(self, desired_style):
+        """
+            Given a desired_style, generate a sorted list of clusters, where each cluster
+            is an array of strings with a Command/CommandGroup at the end.
+
+            The clusters are sorted according to the desired style.
+            The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
+        """
+        anchors = self.get_ordered_build_targets()
+        ordering = get_ordering(desired_style)
+        clusters = []
+        current = []
+        for content in self.contents:
+            current.append(content)
+            if type(content) == str:
+                continue
+            key = get_sort_key(content, anchors, ordering)
+            clusters.append((key, current))
+            current = []
+        if len(current) > 0:
+            clusters.append((get_sort_key(None, anchors, ordering), current))
+
+        return [kv[1] for kv in sorted(clusters, key=lambda kv: kv[0])]
+
+    def get_desired_style(self, default_style=None):
+        """
+            Determine which style to use, install_first or test_first.
+
+            If the default style is one of those two, use it
+        """
+        if default_style in ['install_first', 'test_first']:
+            desired_style = default_style
+        elif default_style is not None:
+            raise RuntimeError('Configured default cmake style "{}"'
+                               ' is not install_first or test_first'.format(default_style))
+        elif self.existing_style in ['install_first', 'test_first']:
+            desired_style = self.existing_style
+        else:
+            # Otherwise, do test first
+            desired_style = 'test_first'
+
+        return desired_style
+
+    def enforce_ordering(self, default_style=None):
+        desired_style = self.get_desired_style(default_style)
+        clusters = self.get_clusters(desired_style)
+        self.contents = []
+        for contents in clusters:
+            self.contents += contents
+
+        for group in self.content_map['group']:
+            group.sub.enforce_ordering(default_style)
 
     def __repr__(self):
         return ''.join(map(str, self.contents))

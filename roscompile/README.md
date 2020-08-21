@@ -67,6 +67,7 @@ There are also some other useful scripts described at the bottom of this documen
  Located at `~/.ros/roscompile.yaml`
 
  * `skip_fixes`: An array of strings representing fixes that you'd like to always ignore when running `roscompile`
+ * `cmake_style`: Can be either `test_first` or `install_first` to indicate whether to convert to having the tests or the installs first in the CMakeLists if the existing commands are improperly ordered.
  * `default_license` - String for the license you want your package manifest to have (if it is set to TODO originally).
  * `replace_rules`: An array of dictionaries representing users you'd like to have replaced in the `package.xml`. For example, one entry in the array could be:
  ```
