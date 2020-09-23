@@ -7,7 +7,7 @@ QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
 TEST_COMMANDS = ['catkin_download_test_data',
                  'roslint_cpp', 'roslint_python', 'roslint_add_test',
-                 'catkin_add_nosetests', 'catkin_add_gtest']
+                 'catkin_add_nosetests', 'catkin_add_gtest', 'add_rostest_gtest']
 INSTALL_COMMANDS = ['install', 'catkin_install_python']
 
 BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',

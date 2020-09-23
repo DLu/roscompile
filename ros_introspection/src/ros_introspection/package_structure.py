@@ -9,7 +9,10 @@ GENERATORS = ['.msg', '.srv', '.action']
 
 def get_filetype_by_contents(filename, ext):
     with open(filename) as f:
-        first_line = f.readline()
+        try:
+            first_line = f.readline()
+        except UnicodeDecodeError:
+            return
         if is_python_hashbang_line(first_line):
             return 'source'
         elif '<launch' in first_line:

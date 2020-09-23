@@ -47,7 +47,7 @@ def get_config():
     global CONFIG
     if CONFIG is None:
         if os.path.exists(CONFIG_PATH):
-            CONFIG = yaml.load(open(CONFIG_PATH))
+            CONFIG = yaml.safe_load(open(CONFIG_PATH))
         else:
             CONFIG = {}
     return CONFIG

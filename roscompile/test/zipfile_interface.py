@@ -93,7 +93,7 @@ def get_test_cases(zip_filename):
         if file.filename[-1] == '/':
             continue
         if file.filename == 'list_o_tests.yaml':
-            config = yaml.load(zf.read(file))
+            config = yaml.safe_load(zf.read(file))
             continue
         parts = file.filename.split(os.path.sep)
         package = parts[0]
