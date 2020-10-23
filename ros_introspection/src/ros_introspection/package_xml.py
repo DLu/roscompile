@@ -152,43 +152,53 @@ class PackageXML:
             before the given tag, and insert after them. If none found, add at the end.
         """
         indexes = self.get_child_indexes()
+        # If there are elements of this type already
         if tag in indexes:
             if len(indexes[tag]) == 1 and tag in DEPEND_ORDERING:
                 start, end = indexes[tag][0]
-                sub_indexes = []
                 tag_values = []
                 my_index = start
-                value = None
-                for i in range(start, end):
+                for i in range(start, end + 1):
                     child = self.root.childNodes[i]
                     if child.nodeType == child.TEXT_NODE:
                         continue
-                    sub_indexes.append(i)
                     value = child.firstChild.data
                     tag_values.append(value)
                     if tag_value >= value:
                         my_index = i
-                if sorted(tag_values) == tag_values and value is not None and tag_value <= value:
-                    return my_index
+
+                # If already sorted, and first_value is defined (meaning there are existing tags)
+                if tag_values and sorted(tag_values) == tag_values:
+                    # If it should go before the current first tag, we XXX
+                    if tag_value <= tag_values[0]:
+                        return my_index - 1
+
+                    # If it should go before some existing tag
+                    if tag_value <= tag_values[-1]:
+                        return my_index
+
+            # If all else fails, we insert the tag after the last matching tag
             return indexes[tag][-1][1]  # last match, end index
 
-        max_index = get_ordering_index(tag, whiny=False)
-        best_tag = None
-        best_index = None
-        for tag in indexes:
-            ni = get_ordering_index(tag, whiny=False)
-            if ni >= max_index:
-                # This tag should appear after our tag
-                continue
-
-            if best_tag is None or ni > best_index or indexes[tag][-1] > indexes[best_tag][-1]:
-                best_tag = tag
-                best_index = ni
-
-        if best_tag is None:
-            return len(self.root.childNodes)
+        # If no elements match this type, then find the right place to insert
         else:
-            return indexes[best_tag][-1][1]
+            max_index = get_ordering_index(tag, whiny=False)
+            best_tag = None
+            best_index = None
+            for tag in indexes:
+                ni = get_ordering_index(tag, whiny=False)
+                if ni >= max_index:
+                    # This tag should appear after our tag
+                    continue
+
+                if best_tag is None or ni > best_index or indexes[tag][-1] > indexes[best_tag][-1]:
+                    best_tag = tag
+                    best_index = ni
+
+            if best_tag is None:
+                return len(self.root.childNodes)
+            else:
+                return indexes[best_tag][-1][1]
 
     def insert_new_tag(self, tag):
         if tag.tagName in DEPEND_ORDERING:
@@ -199,7 +209,18 @@ class PackageXML:
         index = self.get_insertion_index(tag.tagName, value)
         before = self.root.childNodes[:index + 1]
         after = self.root.childNodes[index + 1:]
-        self.root.childNodes = before + [self.get_tab_element(), tag] + after
+
+        new_tab_element = self.get_tab_element()
+
+        # if the tag immediately before where we're going to insert is a text node,
+        # then insert the new element and then the tab
+        if before and before[-1].nodeType == before[-1].TEXT_NODE:
+            new_bits = [tag, new_tab_element]
+        else:
+            # Otherwise (i.e. most cases) insert the tab then the element
+            new_bits = [new_tab_element, tag]
+
+        self.root.childNodes = before + new_bits + after
         self.changed = True
 
     def insert_new_tags(self, tags):
