@@ -142,6 +142,19 @@ class Section:
     def add(self, v):
         self.values.append(v)
 
+    def add_values(self, new_values, alpha_order=True):
+        """ Adds the new_values to the values. If alpha_order is true AND the existing values are already alphabetized,
+            add the new values in alphabetical order.
+
+            Return True if values changed.
+        """
+        # Check if existing values are sorted
+        if alpha_order and self.values == sorted(self.values):
+            all_values = self.values + list(new_values)
+            self.values = list(sorted(all_values))
+        else:
+            self.values += list(sorted(new_values))
+
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0
 
@@ -445,7 +458,7 @@ class CMake:
                 return cmd, s
         return self.content_map[command_name][0], None
 
-    def section_check(self, items, cmd_name, section_name='', zero_okay=False):
+    def section_check(self, items, cmd_name, section_name='', zero_okay=False, alpha_order=True):
         """ This function ensures that there's a CMake command of the given type
             with the given section name and items somewhere in the file. """
         if len(items) == 0 and not zero_okay:
@@ -461,9 +474,10 @@ class CMake:
             cmd.add_section(section_name, sorted(items))
         else:
             existing = self.resolve_variables(section.values)
-            needed_items = [item for item in items if item not in existing]
-            section.values += sorted(needed_items)
-            cmd.changed = True
+            needed_items = [item for item in items if item not in existing and item not in section.values]
+            if needed_items:
+                section.add_values(needed_items, alpha_order)
+                cmd.changed = True
 
     def get_clusters(self, desired_style):
         """
