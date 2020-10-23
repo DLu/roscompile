@@ -16,7 +16,7 @@ if(CATKIN_ENABLE_TESTING)
   set(ROSLINT_PYTHON_OPTS --max-line-length=120 --ignore=E111,E114,E302)
 
   catkin_download_test_data(test_data.zip
-      https://github.com/DLu/roscompile_test_data/raw/master/test_data.zip
+      https://github.com/DLu/roscompile_test_data/raw/main/test_data.zip
       DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test
   )
 
