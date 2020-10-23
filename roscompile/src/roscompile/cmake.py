@@ -29,8 +29,8 @@ def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
             else:
                 existing = cmake.resolve_variables(section.values)
                 needed_items = dependencies - set(existing)
-                if len(needed_items) > 0:
-                    section.values += list(sorted(needed_items))
+                if needed_items:
+                    section.add_values(needed_items)
                     cmd.changed = True
     if check_catkin_pkg:
         cmake.section_check(dependencies, 'catkin_package', 'CATKIN_DEPENDS')
@@ -205,11 +205,11 @@ def check_includes(package):
     has_includes = False
     if package.source_code.has_header_files():
         package.cmake.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
-        package.cmake.section_check(['include'], 'include_directories')
+        package.cmake.section_check(['include'], 'include_directories', alpha_order=False)
         has_includes = True
 
     if len(package.source_code.get_source_by_language('c++')) > 0:
-        package.cmake.section_check(['${catkin_INCLUDE_DIRS}'], 'include_directories')
+        package.cmake.section_check(['${catkin_INCLUDE_DIRS}'], 'include_directories', alpha_order=False)
         has_includes = True
 
     if not has_includes and 'include_directories' in package.cmake.content_map:
