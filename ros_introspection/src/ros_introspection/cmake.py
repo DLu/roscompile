@@ -80,7 +80,7 @@ def get_ordering_index(command_name, ordering):
         elif command_name == o:
             return i
     if command_name:
-        print('\tUnsure of ordering for', command_name)
+        print('\tUnsure of ordering for ' + command_name)
     return len(ordering)
 
 

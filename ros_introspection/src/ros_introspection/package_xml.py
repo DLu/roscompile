@@ -22,7 +22,7 @@ def get_ordering_index(name, whiny=True):
         elif name == o:
             return i
     if name and whiny:
-        print('\tUnsure of ordering for', name)
+        print('\tUnsure of ordering for ' + name)
     return len(ORDERING)
 
 

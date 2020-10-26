@@ -20,7 +20,7 @@ for cmd in args.cmds:
         print('Command {} not recognized'.format(cmd))
         print_options = True
 if print_options:
-    print
+    print()
     print('Available functions:')
     print('\n'.join(all_functions.keys()))
     exit(0)
@@ -33,7 +33,7 @@ for package in pkgs:
                 if query_yes_no('Would you like to make this change?'):
                     all_functions[cmd](package)
                     package.write()
-                print
+                print()
         else:
             all_functions[cmd](package)
     package.write()
