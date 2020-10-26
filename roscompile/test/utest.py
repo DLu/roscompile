@@ -4,6 +4,7 @@ from catkin.find_in_workspaces import find_in_workspaces
 import zipfile_interface
 from ros_introspection.package import Package
 from roscompile import get_functions
+from roscompile.diff import prepare_diff_lines
 import os.path
 
 FILE_ERROR_MESSAGE = 'These files should have been {} but weren\'t: {}'
@@ -41,4 +42,9 @@ def roscompile_check(input_package, output_package, list_o_functions, subpkg=Non
         for filename in matches:
             generated_contents = pkg_in.get_contents(filename).strip()
             canonical_contents = pkg_out.get_contents(filename).strip()
+            if generated_contents != canonical_contents:
+                for gen_line, can_line in prepare_diff_lines(generated_contents, canonical_contents):
+                    if gen_line != can_line:
+                        print(repr(gen_line) + ' should be ' + repr(can_line))
+
             assert generated_contents == canonical_contents, 'The contents of {} do not match!'.format(filename)

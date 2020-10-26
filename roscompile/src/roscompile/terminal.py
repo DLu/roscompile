@@ -8,8 +8,6 @@ except ImportError:  # fallback so that the imported classes always exist
             return ''
     Fore = Back = ColorFallback()
 
-rows, columns = map(int, subprocess.check_output(['stty', 'size']).split())
-
 
 def color_diff(diff):
     for line in diff:
@@ -22,12 +20,16 @@ def color_diff(diff):
         else:
             yield line
 
+COLUMNS = None
 
 def color_header(s, fore='WHITE', back='BLUE'):
+    global COLUMNS
+    if not COLUMNS:
+        COLUMNS = map(int, subprocess.check_output(['stty', 'size']).split())[1]
     header = ''
-    line = '+' + ('-' * (columns - 2)) + '+'
+    line = '+' + ('-' * (COLUMNS - 2)) + '+'
     header += getattr(Fore, fore) + getattr(Back, back) + line
-    n = columns - len(s) - 3
+    n = COLUMNS - len(s) - 3
     header += '| ' + s + ' ' * n + '|'
     header += line + Back.RESET + Fore.RESET
     return header

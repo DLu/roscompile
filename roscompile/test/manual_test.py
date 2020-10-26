@@ -3,6 +3,7 @@ import inspect
 from zipfile_interface import get_test_cases
 from ros_introspection.package import Package
 from roscompile import get_functions
+from roscompile.diff import prepare_diff_lines
 import os.path
 import click
 
@@ -27,17 +28,11 @@ def compare(pkg_in, pkg_out, debug=True):
             continue
         success = False
         if debug:
-            A = generated_contents.split('\n')
-            B = canonical_contents.split('\n')
-            while len(A) < len(B):
-                A.append(None)
-            while len(B) < len(A):
-                B.append(None)
-            for a, b in zip(A, B):
-                if a == b:
-                    click.echo(repr(a))
+            for gen_line, can_line in prepare_diff_lines(generated_contents, canonical_contents):
+                if gen_line == can_line:
+                    click.echo(repr(gen_line))
                 else:
-                    click.secho(repr(a) + ' ' + repr(b), fg='yellow')
+                    click.secho(repr(gen_line) + ' should be ' + repr(can_line), fg='yellow')
     return success
 
 

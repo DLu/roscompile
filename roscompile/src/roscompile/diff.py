@@ -81,3 +81,12 @@ def preview_changes(package, fn_name, fne, use_package_name=False):
         shutil.copytree(package.root, new_package_root)
         shutil.rmtree(temp_dir)
     return True
+
+def prepare_diff_lines(string_a, string_b):
+    a_lines = string_a.split('\n')
+    b_lines = string_b.split('\n')
+    while len(a_lines) < len(b_lines):
+        a_lines.append(None)
+    while len(b_lines) < len(a_lines):
+        b_lines.append(None)
+    return zip(a_lines, b_lines)
