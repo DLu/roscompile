@@ -2,6 +2,7 @@ import collections
 from .package_structure import get_package_structure
 from .package_xml import PackageXML
 from .cmake_parser import parse_file
+from .urdf import UrdfFile
 from .source_code import SourceCode
 from .ros_generator import ROSGenerator
 from .setup_py import SetupPy
@@ -22,10 +23,13 @@ class Package:
 
         self.launches = []
         self.plugin_configs = []
+        self.urdf_files = []
         for rel_fn, file_path in package_structure['launch'].items():
             self.launches.append(Launch(rel_fn, file_path))
         for rel_fn, file_path in package_structure['plugin_config'].items():
             self.plugin_configs.append(PluginXML(rel_fn, file_path))
+        for rel_fn, file_path in package_structure['urdf'].items():
+            self.urdf_files.append(UrdfFile(rel_fn, file_path))
 
         self.setup_py = None
         if 'setup.py' in package_structure['key']:
@@ -46,6 +50,9 @@ class Package:
             if launch.test:
                 continue
             packages.update(launch.get_dependencies())
+
+        for urdf in self.urdf_files:
+            packages.update(urdf.get_dependencies())
 
         if self.name in packages:
             packages.remove(self.name)
@@ -96,6 +103,7 @@ class Package:
                       'launch': '\n'.join(map(str, self.launches)),
                       'dynamic reconfigure configs': '\n'.join(self.dynamic_reconfigs),
                       'plugin configs': '\n'.join([cfg.rel_fn for cfg in self.plugin_configs]),
+                      'urdf models': '\n'.join(map(str, self.urdf_files)),
                       '{misc}': '\n'.join(self.misc_files)
                       }
         for ext in self.generators:
