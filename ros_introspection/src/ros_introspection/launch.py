@@ -17,7 +17,7 @@ class Launch:
         s = set()
         for node in self.tree.getElementsByTagName('node'):
             s.add(str(node.getAttribute('pkg')))
-        return sorted(list(s))
+        return sorted(s)
 
     def get_include_pkgs(self):
         s = set()
@@ -27,7 +27,7 @@ class Launch:
                 i = el.index('find')
                 i2 = el.index(')', i)
                 s.add(el[i + 5:i2])
-        return sorted(list(s))
+        return sorted(s)
 
     def get_misc_pkgs(self):
         s = set()
@@ -44,7 +44,7 @@ class Launch:
         d.update(self.get_node_pkgs())
         d.update(self.get_include_pkgs())
         d.update(self.get_misc_pkgs())
-        return sorted(list(d))
+        return sorted(d)
 
     def __repr__(self):
         return self.rel_fn

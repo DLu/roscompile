@@ -20,12 +20,13 @@ def color_diff(diff):
         else:
             yield line
 
+
 COLUMNS = None
 
 def color_header(s, fore='WHITE', back='BLUE'):
     global COLUMNS
     if not COLUMNS:
-        COLUMNS = map(int, subprocess.check_output(['stty', 'size']).split())[1]
+        COLUMNS = list(map(int, subprocess.check_output(['stty', 'size']).split()))[1]
     header = ''
     line = '+' + ('-' * (COLUMNS - 2)) + '+'
     header += getattr(Fore, fore) + getattr(Back, back) + line
