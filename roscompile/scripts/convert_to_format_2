@@ -1,18 +1,10 @@
 #!/usr/bin/python
 
 from ros_introspection.util import get_packages
-from roscompile.manifest import replace_package_set
+import click
 
-pkgs = get_packages()
+click.secho('Deprecated: Use upgrade_manifest script instead', fg='yellow')
 
-for package in pkgs:
-    manifest = package.manifest
-    if manifest.format == 2:
-        print('%s already in format 2!' % package.name)
-    else:
-        print('Converting ' + package.name)
-        manifest._format = 2
-        manifest.root.setAttribute('format', '2')
-        replace_package_set(manifest, ['build_depend', 'run_depend'], 'depend')
-        replace_package_set(manifest, ['run_depend'], 'exec_depend')
-        manifest.write()
+for package in get_packages():
+    package.manifest.upgrade(2, quiet=False)
+    package.write()

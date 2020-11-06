@@ -1,4 +1,4 @@
-from ros_introspection.package_xml import count_trailing_spaces, get_ordering_index
+from ros_introspection.package_xml import count_trailing_spaces, get_ordering_index, replace_package_set
 from .util import get_ignore_data, roscompile, get_config
 
 
@@ -49,23 +49,6 @@ def remove_empty_export_tag(package):
         if not has_element_child(export):
             package.manifest.remove_element(export)
             return True
-
-
-def replace_package_set(manifest, source_tags, new_tag):
-    """
-       Find the set of packages that are defined in the manifest using all of the tags listed in source_tags.
-       Remove all those elements and replace them with the new_tag.
-    """
-    intersection = None
-    for tag in source_tags:
-        pkgs = set(manifest.get_packages_by_tag(tag))
-        if intersection is None:
-            intersection = pkgs
-        else:
-            intersection = intersection.intersection(pkgs)
-    for tag in source_tags:
-        manifest.remove_dependencies(tag, intersection)
-    manifest.insert_new_packages(new_tag, intersection)
 
 
 @roscompile

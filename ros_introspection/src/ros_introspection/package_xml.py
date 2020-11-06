@@ -13,6 +13,12 @@ INDENT_PATTERN = re.compile('\n *')
 
 PEOPLE_TAGS = ['maintainer', 'author']
 
+FORMAT_3_HEADER = """<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+"""
+
 
 def get_ordering_index(name, whiny=True):
     for i, o in enumerate(ORDERING):
@@ -37,6 +43,23 @@ def count_trailing_spaces(s):
     while c < len(s) and s[-c - 1] == ' ':
         c += 1
     return c
+
+
+def replace_package_set(manifest, source_tags, new_tag):
+    """
+       Find the set of packages that are defined in the manifest using all of the tags listed in source_tags.
+       Remove all those elements and replace them with the new_tag.
+    """
+    intersection = None
+    for tag in source_tags:
+        pkgs = set(manifest.get_packages_by_tag(tag))
+        if intersection is None:
+            intersection = pkgs
+        else:
+            intersection = intersection.intersection(pkgs)
+    for tag in source_tags:
+        manifest.remove_dependencies(tag, intersection)
+    manifest.insert_new_packages(new_tag, intersection)
 
 
 class PackageXML:
@@ -380,6 +403,32 @@ class PackageXML:
         pe.setAttribute('plugin', attr)
         self.insert_new_tag_inside_another(ex_el, pe)
         return ex_el
+
+    def upgrade(self, new_format=2, quiet=True):
+        if self.format == new_format:
+            if not quiet:
+                print('%s already in format %d!' % (self.name, self.format))
+            return
+
+        if new_format not in [2, 3]:
+            raise RuntimeError('Unknown PackageXML version: ' + repr(new_format))
+
+        if self.format == 1:
+            if not quiet:
+                print('Converting {} from version {} to 2'.format(self.name, self.format))
+            self._format = 2
+            self.root.setAttribute('format', '2')
+            replace_package_set(self, ['build_depend', 'run_depend'], 'depend')
+            replace_package_set(self, ['run_depend'], 'exec_depend')
+
+        if new_format == 3:
+            if not quiet:
+                print('Converting {} from version {} to 3'.format(self.name, self.format))
+            self._format = 3
+            self.root.setAttribute('format', '3')
+            self.header = FORMAT_3_HEADER
+
+        self.changed = True
 
     def write(self, new_fn=None):
         if new_fn is None:
