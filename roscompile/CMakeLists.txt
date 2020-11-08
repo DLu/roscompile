@@ -32,6 +32,7 @@ catkin_install_python(PROGRAMS
                       scripts/add_compile_options
                       scripts/roscompile_command
                       scripts/upgrade_manifest
+                      scripts/noetic_migration
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 install(FILES data/cmake.ignore data/cmake_patterns.ignore data/package.ignore data/package_patterns.ignore

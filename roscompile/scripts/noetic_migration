@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import argparse
+from ros_introspection.package_xml import DEPEND_ORDERING
+from ros_introspection.util import get_packages
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-m', '--multiple_distros', action='store_true',
+                    help='Use this option when a single branch will be used for both Python2 and Python3')
+args = parser.parse_args()
+
+pkgs = get_packages()
+
+MIN_CMAKE_VERSION = (3, 0, 2)
+
+# TODO(dlu): Replace Orocos KDL and BFL rosdep keys
+# TODO(dlu): package_dir option for weird Python location
+
+
+for package in pkgs:
+    # Upgrade CMake Version
+    for cmd in package.cmake.content_map['cmake_minimum_required']:
+        section = cmd.get_section('VERSION')
+        version = tuple(map(int, section.values[0].split('.')))
+        if version < MIN_CMAKE_VERSION:
+            section.values[0] = '.'.join(map(str, MIN_CMAKE_VERSION))
+        cmd.changed = True
+
+    # Setuptools instead of Distutils
+    if package.setup_py and not package.setup_py.noetic:
+        package.setup_py.noetic = True
+        package.setup_py.changed = True
+
+    # Python 3 Dependencies
+    for tag_name in DEPEND_ORDERING:
+        for el in package.manifest.root.getElementsByTagName(tag_name):
+            dependency = el.childNodes[0].nodeValue
+            if not dependency.startswith('python'):
+                continue
+            py3 = dependency.startswith('python3-')
+            if not py3:
+                py3_version = dependency.replace('python-', 'python3-')
+                if args.multiple_distros:
+                    el.setAttribute('condition', '$ROS_PYTHON_VERSION == 2')
+                    new_tag = package.manifest.tree.createElement(tag_name)
+                    new_tag.setAttribute('condition', '$ROS_PYTHON_VERSION == 3')
+                    new_tag.appendChild(package.manifest.tree.createTextNode(py3_version))
+                    package.manifest.insert_new_tag(new_tag)
+                else:
+                    el.childNodes[0].nodeValue = py3_version
+                package.manifest.changed = True
+
+    # Upgrade to package.xml format 3
+    if package.manifest.format < 3 and package.manifest.changed:
+        package.manifest.upgrade(3)
+    package.write()

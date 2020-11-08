@@ -9,7 +9,7 @@ EXEC_TEMPLATE = """
 
 TEMPLATE = """#!/usr/bin/env python
 
-from distutils.core import setup
+from %(import_pkg)s import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 %(var)s = generate_distutils_setup(
@@ -32,6 +32,9 @@ class SetupPy:
             self.changed = False
             original = open(self.file_path, 'r').read()
 
+            # Determine Setuptools or Distutils
+            self.noetic = 'distutils.core' not in original
+
             # Determine variable name
             m = VAR_PATTERN.search(original)
             if m:
@@ -50,6 +53,7 @@ class SetupPy:
                     self.execs = eval(value)
         else:
             self.changed = True
+            self.noetic = False
 
     def write(self):
         if not self.changed:
@@ -62,4 +66,10 @@ class SetupPy:
             execs = EXEC_TEMPLATE % repr(self.execs)
         else:
             execs = ''
-        return TEMPLATE % {'name': self.pkg_name, 'var': self.var, 'exec': execs}
+
+        params = {'name': self.pkg_name, 'var': self.var, 'exec': execs}
+        if self.noetic:
+            params['import_pkg'] = 'setuptools'
+        else:
+            params['import_pkg'] = 'distutils.core'
+        return TEMPLATE % params
