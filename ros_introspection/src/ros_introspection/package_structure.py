@@ -1,5 +1,6 @@
-import os
 import collections
+import os
+
 from .source_code_file import is_python_hashbang_line
 
 KEY = ['package.xml', 'CMakeLists.txt', 'setup.py']
@@ -44,6 +45,8 @@ def get_package_structure(pkg_root):
                 structure['generators'][rel_fn] = full
             elif ext == '.cfg' and 'cfg/' in full:
                 structure['cfg'][rel_fn] = full
+            elif ext in ['.urdf', '.xacro']:
+                structure['urdf'][rel_fn] = full
             else:
                 structure[get_filetype_by_contents(full, ext)][rel_fn] = full
     return structure

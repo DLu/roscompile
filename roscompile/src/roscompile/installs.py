@@ -195,7 +195,8 @@ def update_cplusplus_installs(package):
 @roscompile
 def update_misc_installs(package):
     extra_files_by_folder = collections.defaultdict(list)
-    rel_paths = [obj.rel_fn for obj in package.launches + package.plugin_configs] + package.misc_files
+    rel_paths = [obj.rel_fn for obj in package.launches + package.plugin_configs + package.urdf_files]
+    rel_paths += package.misc_files
     for rel_path in sorted(rel_paths):
         if rel_path in FILES_TO_NOT_INSTALL:
             continue
