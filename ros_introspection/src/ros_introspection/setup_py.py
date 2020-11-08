@@ -1,8 +1,8 @@
 import os
 import re
 
-VAR_PATTERN = re.compile('\*\*([\w_]+)\)')
-EQ_PATTERN = re.compile('([\w_]+)\s*=([^,]+)')
+VAR_PATTERN = re.compile(r'\*\*([\w_]+)\)')
+EQ_PATTERN = re.compile(r'([\w_]+)\s*=([^,]+)')
 
 EXEC_TEMPLATE = """
     scripts=%s,"""

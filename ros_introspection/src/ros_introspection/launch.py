@@ -32,10 +32,10 @@ class Launch:
     def get_misc_pkgs(self):
         s = set()
         xml_str = self.tree.toxml()
-        for x in re.finditer('\$\(find ([^\)]*)\)', xml_str):
+        for x in re.finditer(r'\$\(find ([^\)]*)\)', xml_str):
             s.add(x.group(1))
         # rosrun PKG (e.g. <param command="rosrun xacro xacro.py xacrofile.xacro" />
-        for x in re.finditer('rosrun\s+(\w+)\s', xml_str):
+        for x in re.finditer(r'rosrun\s+(\w+)\s', xml_str):
             s.add(x.group(1))
         return s
 

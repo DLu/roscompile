@@ -2,12 +2,12 @@ import re
 import os
 from .resource_list import is_package, get_python_dependency
 
-PKG = '([^\.;]+)(\.?[^;]*)?'
+PKG = r'([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
 PYTHON2 = 'from ' + PKG + ' import .*'
-CPLUS = re.compile('#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')          # Zero or one slash
-CPLUS2 = re.compile('#include\s*[<\\"]([^/]*)/([^/]*)/([^/]*)[>\\"]')  # Two slashes
-ROSCPP = re.compile('#include\s*<ros/ros.h>')
+CPLUS = re.compile(r'#include\s*[<\\"]([^/]*)/?([^/]*)[>\\"]')          # Zero or one slash
+CPLUS2 = re.compile(r'#include\s*[<\\"]([^/]*)/([^/]*)/([^/]*)[>\\"]')  # Two slashes
+ROSCPP = re.compile(r'#include\s*<ros/ros.h>')
 
 EXPRESSIONS = [re.compile(PYTHON1), re.compile(PYTHON2), CPLUS, CPLUS2]
 

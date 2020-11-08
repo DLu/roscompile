@@ -3,8 +3,8 @@ import os
 from .util import roscompile, make_executable
 from ros_introspection.util import get_packages
 
-MAINPAGE_S = "/\*\*\s+\\\\mainpage\s+\\\\htmlinclude manifest.html\s+\\\\b %s\s+<!--\s+" + \
-             "Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/"
+MAINPAGE_S = r'/\*\*\s+\\mainpage\s+\\htmlinclude manifest.html\s+\\b %s\s+<!--\s+' + \
+             r'Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/'
 
 
 @roscompile

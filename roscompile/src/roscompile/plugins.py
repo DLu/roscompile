@@ -5,7 +5,7 @@ from .manifest import enforce_tabbing_helper
 from .util import roscompile
 import re
 
-PLUGIN_PATTERN = 'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+),\s*([^:]+)::([^,]+)\)'
+PLUGIN_PATTERN = r'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+),\s*([^:]+)::([^,]+)\)'
 PLUGIN_RE = re.compile(PLUGIN_PATTERN)
 
 
