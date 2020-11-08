@@ -12,7 +12,7 @@ INSTALL_COMMANDS = ['install', 'catkin_install_python']
 
 BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties', 'find_package', 'pkg_check_modules',
                  'set', 'catkin_generate_virtualenv', 'catkin_python_setup', 'add_definitions',
-                 'add_message_files', 'add_service_files', 'add_action_files',
+                 'add_message_files', 'add_service_files', 'add_action_files', 'rosidl_generate_interfaces',
                  'generate_dynamic_reconfigure_options', 'generate_messages', 'catkin_package', 'catkin_metapackage',
                  BUILD_TARGET_COMMANDS + ['include_directories']]
 
