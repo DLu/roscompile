@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import argparse
+from ros_introspection.util import get_packages
+
+parser = argparse.ArgumentParser()
+parser.add_argument('format', choices=[2, 3], type=int, default=2, nargs='?')
+args = parser.parse_args()
+
+for package in get_packages():
+    package.manifest.upgrade(args.format, quiet=False)
+    package.write()
