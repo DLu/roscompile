@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>roscompile</name>
   <version>1.0.3</version>
   <description>The roscompile package</description>
@@ -11,10 +14,14 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>catkin</depend>
   <depend>ros_introspection</depend>
-  <depend>python-click</depend>
-  <exec_depend>python-argparse</exec_depend>
-  <exec_depend>python-rospkg</exec_depend>
-  <exec_depend>python-yaml</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-argparse</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-click</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-rospkg</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-yaml</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-argparse</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-click</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-rospkg</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-yaml</exec_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>pluginlib</test_depend>
   <test_depend>pluginlib_tutorials</test_depend>

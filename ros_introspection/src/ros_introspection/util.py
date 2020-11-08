@@ -13,7 +13,7 @@ def get_packages(root_fn='.', create_objects=True):
             if create_objects:
                 try:
                     packages.append(Package(root))
-                except:
+                except Exception:
                     sys.stderr.write('ERROR: Trouble parsing package @ %s\n' % root)
                     sys.stderr.write(traceback.format_exc())
             else:
