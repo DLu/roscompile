@@ -380,29 +380,33 @@ class PackageXML:
                     xmls[n.nodeName].append(plugin)
         return xmls
 
-    def add_plugin_export(self, pkg_name, xml_path):
-        """ Adds the plugin configuration if not found. Adds export tag as needed.
-            Returns the export tag it was added to."""
+    def get_export_tag(self):
+        """ Creates it if it doesn't exist. """
         export_tags = self.root.getElementsByTagName('export')
         if len(export_tags) == 0:
             export_tag = self.tree.createElement('export')
             self.insert_new_tag(export_tag)
-            export_tags = [export_tag]
+            return export_tag
+        else:
+            return export_tags[0]
+
+    def add_plugin_export(self, pkg_name, xml_path):
+        """ Adds the plugin configuration if not found. Adds export tag as needed.
+            Returns the export tag it was added to."""
+        ex_tag = self.get_export_tag()
 
         attr = '${prefix}/' + xml_path
-        for ex_tag in export_tags:
-            for tag in ex_tag.childNodes:
-                if tag.nodeName != pkg_name:
-                    continue
-                plugin = tag.attributes.get('plugin')
-                if plugin and plugin.value == attr:
-                    return
+        for tag in ex_tag.childNodes:
+            if tag.nodeName != pkg_name:
+                continue
+            plugin = tag.attributes.get('plugin')
+            if plugin and plugin.value == attr:
+                return
 
-        ex_el = export_tags[0]
         pe = self.tree.createElement(pkg_name)
         pe.setAttribute('plugin', attr)
-        self.insert_new_tag_inside_another(ex_el, pe)
-        return ex_el
+        self.insert_new_tag_inside_another(ex_tag, pe)
+        return ex_tag
 
     def upgrade(self, new_format=2, quiet=True):
         if self.format == new_format:
