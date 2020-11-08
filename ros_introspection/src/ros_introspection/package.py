@@ -39,6 +39,9 @@ class Package:
             gen = ROSGenerator(rel_fn, path)
             self.generators[gen.type].append(gen)
         self.dynamic_reconfigs = package_structure['cfg'].keys()
+        self.urdf_files = []
+        for rel_fn, path in package_structure['urdf'].items():
+            self.urdf_files.append(UrdfFile(rel_fn, path))
         self.misc_files = list(package_structure[None].keys())
 
     def get_build_dependencies(self):
