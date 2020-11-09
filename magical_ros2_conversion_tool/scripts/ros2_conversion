@@ -2,6 +2,7 @@
 
 import os
 
+from magical_ros2_conversion_tool.cmake import update_cmake
 from magical_ros2_conversion_tool.generators import update_generators
 from magical_ros2_conversion_tool.manifest import set_build_type, update_manifest
 
@@ -27,5 +28,8 @@ for package in pkgs:
         set_build_type(package.manifest, 'ament_python')
         os.remove(package.cmake.file_path)
         # TODO(dlu): Update the ``setup.py`` file to be a standard Python setup script
+    else:
+        set_build_type(package.manifest, 'ament_cmake')
+        update_cmake(package)
 
     package.write()
