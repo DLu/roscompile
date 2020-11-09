@@ -6,6 +6,7 @@ from magical_ros2_conversion_tool.cmake import update_cmake
 from magical_ros2_conversion_tool.cplusplus import update_cplusplus
 from magical_ros2_conversion_tool.generators import update_generators
 from magical_ros2_conversion_tool.manifest import set_build_type, update_manifest
+from magical_ros2_conversion_tool.pythonic import update_python
 
 from ros_introspection.util import get_packages
 
@@ -33,5 +34,7 @@ for package in pkgs:
         set_build_type(package.manifest, 'ament_cmake')
         update_cmake(package)
         update_cplusplus(package)
+
+    update_python(package)
 
     package.write()
