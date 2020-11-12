@@ -532,6 +532,15 @@ class CMake:
         for group in self.content_map['group']:
             group.sub.enforce_ordering(default_style)
 
+    def upgrade_minimum_version(self, new_version):
+        """ New version is a tuple """
+        for cmd in self.content_map['cmake_minimum_required']:
+            section = cmd.get_section('VERSION')
+            version = tuple(map(int, section.values[0].split('.')))
+            if version < new_version:
+                section.values[0] = '.'.join(map(str, new_version))
+                cmd.changed = True
+
     def __repr__(self):
         return ''.join(map(str, self.contents))
 

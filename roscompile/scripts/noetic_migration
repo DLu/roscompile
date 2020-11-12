@@ -11,20 +11,13 @@ args = parser.parse_args()
 
 pkgs = get_packages()
 
-MIN_CMAKE_VERSION = (3, 0, 2)
-
 # TODO(dlu): Replace Orocos KDL and BFL rosdep keys
 # TODO(dlu): package_dir option for weird Python location
 
 
 for package in pkgs:
     # Upgrade CMake Version
-    for cmd in package.cmake.content_map['cmake_minimum_required']:
-        section = cmd.get_section('VERSION')
-        version = tuple(map(int, section.values[0].split('.')))
-        if version < MIN_CMAKE_VERSION:
-            section.values[0] = '.'.join(map(str, MIN_CMAKE_VERSION))
-        cmd.changed = True
+    package.cmake.upgrade_minimum_version(package.cmake, (3, 0, 2))
 
     # Setuptools instead of Distutils
     if package.setup_py and not package.setup_py.noetic:
