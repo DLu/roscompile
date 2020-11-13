@@ -32,16 +32,15 @@ def update_generators(package):
     # Enabling C++14
     cxx_name = 'CMAKE_CXX_STANDARD'
     cxx_value = '14'
-    cxx_section = Section(cxx_name, [cxx_value])
     if cxx_name in package.cmake.variables:
         for cmd in package.cmake.content_map['set']:
             tokens = cmd.get_tokens(include_name=True)
             if tokens[0] == cxx_name and tokens[1] != cxx_value:
-                cmd.sections = [cxx_section]
+                cmd.sections[0].values = [cxx_value]
                 cmd.changed = True
     else:
         set_cmd = Command('set')
-        set_cmd.add_section(cxx_section)
+        set_cmd.add_section(cxx_name, cxx_value)
         package.cmake.add_command(set_cmd)
 
     # Other msg operations

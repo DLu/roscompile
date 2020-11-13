@@ -1,4 +1,4 @@
-from ros_introspection.cmake import Command, is_testing_group, upgrade_minimum_version
+from ros_introspection.cmake import Command, is_testing_group
 
 from roscompile.cmake import enforce_cmake_ordering, remove_empty_cmake_lines
 
@@ -75,7 +75,7 @@ def remove_cpp11_flag(cmake):
     to_remove = []
     for cmd in cmake.content_map['set_directory_properties']:
         section = cmd.get_section('COMPILE_OPTIONS')
-        bits = filter(None, section.values[0][1:-1].split(';'))
+        bits = list(filter(None, section.values[0][1:-1].split(';')))
         if '-std=c++11' in bits:
             bits.remove('-std=c++11')
         if len(bits) == 0:
@@ -122,14 +122,14 @@ def set_up_catkin_libs(package):
 def update_tests(package):
     for content in package.cmake.content_map['group']:
         if is_testing_group(content):
-            content.initial_cmd.sections[0].name = 'BUILD_TESTING'
-            content.initial_cmd.changed = True
+            content.initial_tag.sections[0].name = 'BUILD_TESTING'
+            content.initial_tag.changed = True
             rename_commands(content.sub, 'catkin_add_gtest', 'ament_add_gtest')
 
     rename_commands(package.cmake, 'catkin_add_gtest', 'ament_add_gtest')
 
 def update_cmake(package):
-    upgrade_minimum_version(package.cmake, (3, 5))
+    package.cmake.upgrade_minimum_version((3, 5))
     split_find_package_commands(package.cmake)
     catkin_to_ament_package(package)
     update_installation_variables(package.cmake)

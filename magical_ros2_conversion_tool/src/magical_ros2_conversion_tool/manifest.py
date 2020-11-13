@@ -18,7 +18,7 @@ def update_manifest(package):
 
     # Remove metapackage tag
     pairs = []
-    for export_tag in manifest.getElementsByTagName('export'):
+    for export_tag in manifest.tree.getElementsByTagName('export'):
         for child in export_tag.childNodes:
             if child.nodeType == child.ELEMENT_NODE and child.nodeName == 'metapackage':
                 pairs.append((export_tag, child))
