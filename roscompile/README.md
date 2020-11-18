@@ -77,6 +77,25 @@ There are also some other useful scripts described at the bottom of this documen
  The `to` name and email must be specified, but you only need to specify either the name or email for the `from`.
 
 # Other Scripts
- * `convert_to_format_2` Convert the `manifest.xml` from format 1 to format 2.
- * `add_tests` Add roslaunch and/or roslint tests to your package, updating both the `manifest.xml` and `CMakeLists.txt`.
- * `add_compile_options` Script to add C++ compile flags to your `CMakeLists.txt`
+The other scripts work similarly to the main tool in that they run on all the packages found within your current folder.
+
+### `upgrade_manifest`
+Upgrade your `package.xml` to either format 2 or 3. Without any arguments, it will convert to format 2. `rosrun roscompile upgrade_manifest 3` will upgrade to format 3.
+
+The deprecated version is `convert_to_format_2` which still exists and works, but is not preferred.
+
+### `noetic_migration`
+Migrates your package from a pre-Noetic version to be compatible with Noetic, invoked with `rosrun roscompile noetic_migration`. Adding the `-m` option is useful when using the same branch for Noetic and other distros AND you're using Python, as it will conditionally depend on the proper `python-` and `python3-` libraries.
+
+### `add_compile_options`
+This script will add C++ compile flags to your `CMakeLists.txt`.
+ * `-1` will add `-std=c++11`
+ * `-w` will add `-Wall`
+ * `-e` will add `-Werror`
+ * `-a` will add all of the above.
+
+### `add_tests`
+This script will add roslaunch and/or roslint tests to your package, updating both the `manifest.xml` and `CMakeLists.txt`.
+ * `-r` will add `roslaunch` tests.
+ * `-l` will add `roslint` tests.
+ * `-a` will add both
