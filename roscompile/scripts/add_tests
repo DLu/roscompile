@@ -17,9 +17,9 @@ def add_test_command(test_section, cmd_name, values=None):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-r', '--roslaunch', action='store_true')
-parser.add_argument('-l', '--lint', action='store_true')
-parser.add_argument('-a', '--all', action='store_true')
+parser.add_argument('-r', '--roslaunch', action='store_true', help='Add roslaunch tests')
+parser.add_argument('-l', '--lint', action='store_true', help='Add roslint tests')
+parser.add_argument('-a', '--all', action='store_true', help='Add roslaunch and roslint tests')
 args = parser.parse_args()
 
 if not args.roslaunch and not args.lint and not args.all:

@@ -4,7 +4,8 @@ import argparse
 from ros_introspection.util import get_packages
 
 parser = argparse.ArgumentParser()
-parser.add_argument('format', choices=[2, 3], type=int, default=2, nargs='?')
+parser.add_argument('format', choices=[2, 3], type=int, default=2, nargs='?',
+                    help='Format version to upgrade to. Default is 2')
 args = parser.parse_args()
 
 for package in get_packages():
