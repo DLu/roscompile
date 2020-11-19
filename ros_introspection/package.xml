@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>ros_introspection</name>
-  <version>1.0.3</version>
+  <version>1.1.0</version>
   <description>The ros_introspection package</description>
 
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>

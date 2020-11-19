@@ -4,7 +4,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>roscompile</name>
-  <version>1.0.3</version>
+  <version>1.1.0</version>
   <description>The roscompile package</description>
 
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
