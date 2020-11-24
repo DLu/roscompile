@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import inspect
 from catkin.find_in_workspaces import find_in_workspaces
-import zipfile_interface
+from . import zipfile_interface
 from ros_introspection.package import Package
 from roscompile import get_functions
 from roscompile.diff import prepare_diff_lines
