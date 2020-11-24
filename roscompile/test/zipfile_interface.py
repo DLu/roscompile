@@ -47,9 +47,9 @@ class ROSCompilePackageFiles:
         if self.is_written:
             full_path = os.path.join(self.root, filename)
             if os.path.exists(full_path):
-                return open(full_path).read()
+                return open(full_path).read().replace('\r\n', '\n')
         elif filename in self.pkg_files:
-            return self.pkg_files[filename]
+            return self.pkg_files[filename].replace('\r\n', '\n')
 
     def compare_filesets(self, other_package):
         in_keys = self.get_filenames()
