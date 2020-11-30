@@ -1,7 +1,9 @@
-import re
 import os
-from .util import roscompile, make_executable
-from ros_introspection.util import get_packages
+import re
+
+from ros_introspection.util import get_sibling_packages
+
+from .util import make_executable, roscompile
 
 MAINPAGE_S = r'/\*\*\s+\\mainpage\s+\\htmlinclude manifest.html\s+\\b %s\s+<!--\s+' + \
              r'Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/'
@@ -33,32 +35,38 @@ def remove_useless_files(package):
 
 
 @roscompile
-def update_metapackage(package, require_matching_name=False):
-    # TODO: Check if metapackage is in CMake
-    # TODO: Ensure export is in there too
-    if not package.manifest.is_metapackage():
+def update_metapackage(package, sibling_packages=None, require_matching_name=False):
+    # Check if there is indication in package.xml or CMake of being a metapackage
+    if not package.is_metapackage():
         return False
 
-    parent_path = os.path.abspath(os.path.join(package.root, '..'))
+    if require_matching_name:
+        parent_path = os.path.abspath(os.path.join(package.root, '..'))
 
-    if require_matching_name and os.path.split(parent_path)[1] != package.name:
-        return False
+        if os.path.split(parent_path)[1] != package.name:
+            return False
 
-    sub_packages = set()
-    for sub_package in get_packages(parent_path, create_objects=False):
-        pkg_name = os.path.split(sub_package)[1]
-        if pkg_name != package.name:
-            sub_packages.add(pkg_name)
+    if sibling_packages is None:
+        sibling_packages = get_sibling_packages(package)
+
     existing_sub_packages = package.manifest.get_packages('run')
-    package.manifest.add_packages(set(), sub_packages, prefer_depend_tag=False)
+    package.manifest.add_packages(set(), sibling_packages, prefer_depend_tag=False)
 
     if package.manifest.format == 1:
         pkg_type = 'run_depend'
     else:
         pkg_type = 'exec_depend'
 
-    package.manifest.remove_dependencies(pkg_type, existing_sub_packages - sub_packages)
+    package.manifest.remove_dependencies(pkg_type, existing_sub_packages - sibling_packages)
+
+    # Ensure proper commands in CMake
     package.cmake.section_check([], 'catkin_metapackage', zero_okay=True)
+
+    # Ensure proper tags in package.xml
+    if not package.manifest.is_metapackage():
+        export_tag = package.manifest.get_export_tag()
+        meta_tag = package.manifest.tree.createElement('metapackage')
+        package.manifest.insert_new_tag_inside_another(export_tag, meta_tag)
 
 
 @roscompile

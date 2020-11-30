@@ -1,6 +1,8 @@
 import os
+import os.path
 import sys
 import traceback
+
 from .package import Package
 
 
@@ -19,3 +21,14 @@ def get_packages(root_fn='.', create_objects=True):
             else:
                 packages.append(root)
     return packages
+
+
+def get_sibling_packages(package):
+    parent_path = os.path.abspath(os.path.join(package.root, '..'))
+
+    sibling_packages = set()
+    for sub_package in get_packages(parent_path, create_objects=False):
+        pkg_name = os.path.split(sub_package)[1]
+        if pkg_name != package.name:
+            sibling_packages.add(pkg_name)
+    return sibling_packages

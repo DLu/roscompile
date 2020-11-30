@@ -359,6 +359,9 @@ class CMake:
         for cmd in cmds:
             self.remove_command(cmd)
 
+    def is_metapackage(self):
+        return len(self.content_map['catkin_metapackage']) > 0
+
     def get_source_build_rules(self, tag, resolve_target_name=False):
         rules = {}
         for cmd in self.content_map[tag]:
