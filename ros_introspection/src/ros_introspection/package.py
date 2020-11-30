@@ -1,4 +1,5 @@
 import collections
+
 from .package_structure import get_package_structure
 from .package_xml import PackageXML
 from .cmake_parser import parse_file
@@ -43,6 +44,9 @@ class Package:
         for rel_fn, path in package_structure['urdf'].items():
             self.urdf_files.append(UrdfFile(rel_fn, path))
         self.misc_files = list(package_structure[None].keys())
+
+    def is_metapackage(self):
+        return self.manifest.is_metapackage() or self.cmake.is_metapackage()
 
     def get_build_dependencies(self):
         return self.source_code.get_build_dependencies()
