@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+
 from ros_introspection.package_xml import DEPEND_ORDERING
 from ros_introspection.util import get_packages
 
@@ -24,8 +25,18 @@ for package in pkgs:
         package.setup_py.noetic = True
         package.setup_py.changed = True
 
+    # Set up python*_setuptools buildtool_depend
+    if package.setup_py and args.multiple_distros:
+        manifest = package.manifest
+        if 'python-setuptools' not in manifest.get_packages_by_tag('buildtool_depend'):
+            new_tag = manifest.tree.createElement('buildtool_depend')
+            new_tag.appendChild(manifest.tree.createTextNode('python-setuptools'))
+            manifest.insert_new_tag(new_tag)
+            manifest.changed = True
+
     # Python 3 Dependencies
     for tag_name in DEPEND_ORDERING:
+        existing = manifest.get_packages_by_tag(tag_name)
         for el in package.manifest.root.getElementsByTagName(tag_name):
             dependency = el.childNodes[0].nodeValue
             if not dependency.startswith('python'):
@@ -35,10 +46,11 @@ for package in pkgs:
                 py3_version = dependency.replace('python-', 'python3-')
                 if args.multiple_distros:
                     el.setAttribute('condition', '$ROS_PYTHON_VERSION == 2')
-                    new_tag = package.manifest.tree.createElement(tag_name)
-                    new_tag.setAttribute('condition', '$ROS_PYTHON_VERSION == 3')
-                    new_tag.appendChild(package.manifest.tree.createTextNode(py3_version))
-                    package.manifest.insert_new_tag(new_tag)
+                    if py3_version not in existing:
+                        new_tag = package.manifest.tree.createElement(tag_name)
+                        new_tag.setAttribute('condition', '$ROS_PYTHON_VERSION == 3')
+                        new_tag.appendChild(package.manifest.tree.createTextNode(py3_version))
+                        package.manifest.insert_new_tag(new_tag)
                 else:
                     el.childNodes[0].nodeValue = py3_version
                 package.manifest.changed = True
