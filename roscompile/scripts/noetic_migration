@@ -25,9 +25,10 @@ for package in pkgs:
         package.setup_py.noetic = True
         package.setup_py.changed = True
 
+    manifest = package.manifest
+
     # Set up python*_setuptools buildtool_depend
     if package.setup_py and args.multiple_distros:
-        manifest = package.manifest
         if 'python-setuptools' not in manifest.get_packages_by_tag('buildtool_depend'):
             new_tag = manifest.tree.createElement('buildtool_depend')
             new_tag.appendChild(manifest.tree.createTextNode('python-setuptools'))
@@ -37,7 +38,7 @@ for package in pkgs:
     # Python 3 Dependencies
     for tag_name in DEPEND_ORDERING:
         existing = manifest.get_packages_by_tag(tag_name)
-        for el in package.manifest.root.getElementsByTagName(tag_name):
+        for el in manifest.root.getElementsByTagName(tag_name):
             dependency = el.childNodes[0].nodeValue
             if not dependency.startswith('python'):
                 continue
@@ -47,15 +48,15 @@ for package in pkgs:
                 if args.multiple_distros:
                     el.setAttribute('condition', '$ROS_PYTHON_VERSION == 2')
                     if py3_version not in existing:
-                        new_tag = package.manifest.tree.createElement(tag_name)
+                        new_tag = manifest.tree.createElement(tag_name)
                         new_tag.setAttribute('condition', '$ROS_PYTHON_VERSION == 3')
-                        new_tag.appendChild(package.manifest.tree.createTextNode(py3_version))
-                        package.manifest.insert_new_tag(new_tag)
+                        new_tag.appendChild(manifest.tree.createTextNode(py3_version))
+                        manifest.insert_new_tag(new_tag)
                 else:
                     el.childNodes[0].nodeValue = py3_version
-                package.manifest.changed = True
+                manifest.changed = True
 
     # Upgrade to package.xml format 3
-    if package.manifest.format < 3 and package.manifest.changed:
-        package.manifest.upgrade(3)
+    if manifest.format < 3 and manifest.changed:
+        manifest.upgrade(3)
     package.write()
