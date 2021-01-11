@@ -1,15 +1,17 @@
 #!/usr/bin/python
 
+import collections
+import difflib
+import inspect
+import os
+import shutil
+import tempfile
+from filecmp import dircmp
+
 from ros_introspection.package import Package
 from ros_introspection.util import get_sibling_packages
-from .terminal import color_header, color_diff
-import collections
-import inspect
-import tempfile
-import shutil
-import os
-import difflib
-from filecmp import dircmp
+
+from .terminal import color_diff, color_header
 
 
 def get_diff_helper(dcmp, folder=''):
@@ -90,6 +92,7 @@ def preview_changes(package, fn_name, fne, use_package_name=False):
         shutil.copytree(package.root, new_package_root)
         shutil.rmtree(temp_dir)
     return True
+
 
 def prepare_diff_lines(string_a, string_b):
     a_lines = string_a.split('\n')

@@ -14,7 +14,7 @@ def check_dynamic_reconfigure(package):
     cfgs = package.dynamic_reconfigs
     if len(cfgs) == 0:
         return
-    pkg_list = set(['dynamic_reconfigure'])
+    pkg_list = {'dynamic_reconfigure'}
     package.manifest.add_packages(pkg_list, pkg_list)
     package.cmake.section_check(cfgs, 'generate_dynamic_reconfigure_options', '')
     package.cmake.section_check(pkg_list, 'find_package', 'COMPONENTS')

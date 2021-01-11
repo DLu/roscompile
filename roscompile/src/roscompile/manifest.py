@@ -1,5 +1,6 @@
 from ros_introspection.package_xml import count_trailing_spaces, get_ordering_index, replace_package_set
-from .util import get_ignore_data, roscompile, get_config
+
+from .util import get_config, get_ignore_data, roscompile
 
 
 @roscompile
@@ -121,8 +122,9 @@ def get_sort_key(node, alphabetize_depends=True):
 
 
 def get_chunks(children):
-    """ Given the children, group the elements into tuples that are
-        (an element node, [(some number of text nodes), that element node again])
+    """Given the children, group the elements into tuples.
+
+    Tuple format: (an element node, [(some number of text nodes), that element node again])
     """
     chunks = []
     current = []

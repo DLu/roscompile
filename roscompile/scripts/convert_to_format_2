@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
 import click
+
+from ros_introspection.util import get_packages
 
 click.secho('Deprecated: Use upgrade_manifest script instead', fg='yellow')
 

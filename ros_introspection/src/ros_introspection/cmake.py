@@ -18,13 +18,13 @@ BASE_ORDERING = ['cmake_minimum_required', 'project', 'set_directory_properties'
 
 
 def get_style(cmake):
-    """ Examines the contents of the cmake parameter and determine the style.
+    """Examine the contents of the cmake parameter and determine the style.
 
-        There are four possible styles:
-        1) test_first (where test commands come strictly before install commands)
-        2) install_first (where test commands come strictly after install commands)
-        3) mixed (where test and install commands are not clearly delineated)
-        4) None (where there are only install commands, or only test commands, or neither)
+    There are four possible styles:
+    1) test_first (where test commands come strictly before install commands)
+    2) install_first (where test commands come strictly after install commands)
+    3) mixed (where test and install commands are not clearly delineated)
+    4) None (where there are only install commands, or only test commands, or neither)
     """
     cats = []
     for content in cmake.contents:
@@ -51,9 +51,7 @@ def get_style(cmake):
 
 
 def get_ordering(style):
-    """
-        Given the style, return the correct ordering.
-    """
+    """Given the style, return the correct ordering."""
     if style == 'install_first':
         return BASE_ORDERING + INSTALL_COMMANDS + ['group'] + TEST_COMMANDS
     else:
@@ -62,16 +60,16 @@ def get_ordering(style):
 
 def get_ordering_index(command_name, ordering):
     """
-        Given a command name, determine the integer index into the ordering
+    Given a command name, determine the integer index into the ordering.
 
-        The ordering is a list of strings and arrays of strings.
+    The ordering is a list of strings and arrays of strings.
 
-        If the command name matches one of the strings in the inner arrays,
-        the index of the inner array is returned.
+    If the command name matches one of the strings in the inner arrays,
+    the index of the inner array is returned.
 
-        If the command name matches one of the other strings, its index is returned.
+    If the command name matches one of the other strings, its index is returned.
 
-         Otherwise, the length of the ordering is returned (putting non-matches at the end)
+     Otherwise, the length of the ordering is returned (putting non-matches at the end)
     """
     for i, o in enumerate(ordering):
         if type(o) == list:
@@ -86,15 +84,15 @@ def get_ordering_index(command_name, ordering):
 
 def get_sort_key(content, anchors, ordering):
     """
-        Given a piece of cmake content, return a tuple representing its sort_key
+    Given a piece of cmake content, return a tuple representing its sort_key.
 
-        The first element of the tuple is the ordering_index of the content.
-        The second element is an additional variable used for sorting among elements with the same ordering_index
+    The first element of the tuple is the ordering_index of the content.
+    The second element is an additional variable used for sorting among elements with the same ordering_index
 
-        Most notably, we want all build commands with a particular library/executable to be grouped together.
-        In that case, we use the anchors parameter, which is an ordered list of all the library/executables in the file.
-        Then, the second variable is a tuple itself, with the first element being the index of library/executable in the
-        anchors list, and the second is an integer representing the canonical order of the build commands.
+    Most notably, we want all build commands with a particular library/executable to be grouped together.
+    In that case, we use the anchors parameter, which is an ordered list of all the library/executables in the file.
+    Then, the second variable is a tuple itself, with the first element being the index of library/executable in the
+    anchors list, and the second is an integer representing the canonical order of the build commands.
     """
     if content is None:
         return len(ordering) + 1, None
@@ -143,17 +141,17 @@ class Section:
         self.values.append(v)
 
     def add_values(self, new_values, alpha_order=True):
-        """ Adds the new_values to the values. If alpha_order is true AND the existing values are already alphabetized,
-            add the new values in alphabetical order.
+        """Add the new_values to the values.
 
-            Return True if values changed.
+        If alpha_order is true AND the existing values are already alphabetized,
+        add the new values in alphabetical order.
         """
         # Check if existing values are sorted
         if alpha_order and self.values == sorted(self.values):
             all_values = self.values + list(new_values)
-            self.values = list(sorted(all_values))
+            self.values = sorted(all_values)
         else:
-            self.values += list(sorted(new_values))
+            self.values += sorted(new_values)
 
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0
@@ -450,9 +448,10 @@ class CMake:
         return cg.sub
 
     def get_command_section(self, command_name, section_name):
-        """ Return the first command that matches the command name and
-            has a matching section name. If the section name is not found,
-            return a command with the matching command name"""
+        """Return the first command that matches the command name and has a matching section name.
+
+        If the section name is not found, return a command with the matching command name
+        """
         if len(self.content_map[command_name]) == 0:
             return None, None
         for cmd in self.content_map[command_name]:
@@ -462,8 +461,7 @@ class CMake:
         return self.content_map[command_name][0], None
 
     def section_check(self, items, cmd_name, section_name='', zero_okay=False, alpha_order=True):
-        """ This function ensures that there's a CMake command of the given type
-            with the given section name and items somewhere in the file. """
+        """Ensure there's a CMake command of the given type with the given section name and items."""
         if len(items) == 0 and not zero_okay:
             return
 
@@ -483,12 +481,10 @@ class CMake:
                 cmd.changed = True
 
     def get_clusters(self, desired_style):
-        """
-            Given a desired_style, generate a sorted list of clusters, where each cluster
-            is an array of strings with a Command/CommandGroup at the end.
+        """Return a list of clusters where each cluster is an array of strings with a Command/CommandGroup at the end.
 
-            The clusters are sorted according to the desired style.
-            The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
+        The clusters are sorted according to the desired style.
+        The strings are grouped at the beginning to maintain the newlines and indenting before each Command.
         """
         anchors = self.get_ordered_build_targets()
         ordering = get_ordering(desired_style)
@@ -507,10 +503,9 @@ class CMake:
         return [kv[1] for kv in sorted(clusters, key=lambda kv: kv[0])]
 
     def get_desired_style(self, default_style=None):
-        """
-            Determine which style to use, install_first or test_first.
+        """Determine which style to use, install_first or test_first.
 
-            If the default style is one of those two, use it
+        If the default style is one of those two, use it
         """
         if default_style in ['install_first', 'test_first']:
             desired_style = default_style
@@ -536,7 +531,7 @@ class CMake:
             group.sub.enforce_ordering(default_style)
 
     def upgrade_minimum_version(self, new_version):
-        """ New version is a tuple """
+        """Upgrade the CMake version to the new version (specified as a tuple)."""
         for cmd in self.content_map['cmake_minimum_required']:
             section = cmd.get_section('VERSION')
             version = tuple(map(int, section.values[0].split('.')))

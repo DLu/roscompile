@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
-from ros_introspection.cmake import Command
 import argparse
+
+from ros_introspection.cmake import Command
+from ros_introspection.util import get_packages
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-1', '--cpp11', action='store_true', help='Add -std=c++11 compile option')

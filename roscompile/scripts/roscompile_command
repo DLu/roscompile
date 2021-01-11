@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
-from roscompile import get_functions
-from roscompile.terminal import query_yes_no
-from roscompile.diff import preview_changes
 import argparse
+
+from ros_introspection.util import get_packages
+
+from roscompile import get_functions
+from roscompile.diff import preview_changes
+from roscompile.terminal import query_yes_no
 
 all_functions = get_functions()
 parser = argparse.ArgumentParser()

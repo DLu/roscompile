@@ -1,6 +1,7 @@
 import re
 import sys
-from .cmake import CMake, Command, Section, SectionStyle, CommandGroup
+
+from .cmake import CMake, Command, CommandGroup, Section, SectionStyle
 
 ALL_CAPS = re.compile('^[A-Z_]+$')
 ALL_WHITESPACE = ['whitespace', 'newline']
@@ -15,13 +16,13 @@ def word_cb(scanner, token):
 
 
 scanner = re.Scanner([
-    (r'#.*\n', lambda scanner, token: ("comment", token)),
-    (r'"[^"]*"', lambda scanner, token: ("string", token)),
-    (r"\(", lambda scanner, token: ("left paren", token)),
-    (r"\)", lambda scanner, token: ("right paren", token)),
+    (r'#.*\n', lambda scanner, token: ('comment', token)),
+    (r'"[^"]*"', lambda scanner, token: ('string', token)),
+    (r'\(', lambda scanner, token: ('left paren', token)),
+    (r'\)', lambda scanner, token: ('right paren', token)),
     (r'[^ \t\r\n()#"]+', word_cb),
-    (r'\n', lambda scanner, token: ("newline", token)),
-    (r"[ \t]+", lambda scanner, token: ("whitespace", token)),
+    (r'\n', lambda scanner, token: ('newline', token)),
+    (r'[ \t]+', lambda scanner, token: ('whitespace', token)),
 ])
 
 

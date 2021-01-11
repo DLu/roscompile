@@ -1,6 +1,7 @@
-import re
 import os
-from .resource_list import is_package, get_python_dependency
+import re
+
+from .resource_list import get_python_dependency, is_package
 
 PKG = r'([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG
@@ -63,11 +64,11 @@ class SourceCodeFile:
 
     def modify_with_patterns(self, patterns, verbose):
         """
-            Given a map of patterns, replace all instances in the source code
+        Given a map of patterns, replace all instances in the source code.
 
-            The key in the map (needle) is a regular expression string literal.
-            If there are no groups, then the matching string is replaced with the map value.
-            If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
+        The key in the map (needle) is a regular expression string literal.
+        If there are no groups, then the matching string is replaced with the map value.
+        If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
         """
         s = self.get_contents()
         changed = False
@@ -96,7 +97,7 @@ class SourceCodeFile:
             pkgs.add(match[0])
         if len(self.search_lines_for_pattern(ROSCPP)) > 0:
             pkgs.add('roscpp')
-        return sorted(list(pkgs))
+        return sorted(pkgs)
 
     def get_dependencies(self):
         deps = []

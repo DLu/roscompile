@@ -1,7 +1,9 @@
 import collections
-import rospkg
 import os
 import stat
+
+import rospkg
+
 import yaml
 
 CONFIG_PATH = os.path.expanduser('~/.ros/roscompile.yaml')

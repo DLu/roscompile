@@ -1,9 +1,11 @@
-import os
 import collections
+import os
+import re
+
 from ros_introspection.plugin_xml import PluginXML
+
 from .manifest import enforce_tabbing_helper
 from .util import roscompile
-import re
 
 PLUGIN_PATTERN = r'PLUGINLIB_EXPORT_CLASS\(([^:]+)::([^,]+),\s*([^:]+)::([^,]+)\)'
 PLUGIN_RE = re.compile(PLUGIN_PATTERN)
@@ -32,13 +34,15 @@ def lookup_library(build_rules, rel_fn):
 
 @roscompile
 def check_plugins(package):
-    """ We have three dictionaries
-          * The plugins that are defined by macros (defined_macros)
-          * The plugins that have associated configuration files (existing_plugins)
-          * The plugins that are linked by the manifest. (plugin_xml_by_package)
-        First, we reconcile the macros with the files.
-        Then we handle the manifest.
-        Then we make sure that the specific classes are in the configurations
+    """Check that all the plugins are properly defined.
+
+    We have three dictionaries
+      * The plugins that are defined by macros (defined_macros)
+      * The plugins that have associated configuration files (existing_plugins)
+      * The plugins that are linked by the manifest. (plugin_xml_by_package)
+    First, we reconcile the macros with the files.
+    Then we handle the manifest.
+    Then we make sure that the specific classes are in the configurations
     """
     defined_macros = package.source_code.search_for_pattern(PLUGIN_RE)
     existing_plugins = plugin_xml_by_package(package)
