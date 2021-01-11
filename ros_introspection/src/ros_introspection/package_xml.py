@@ -46,10 +46,7 @@ def count_trailing_spaces(s):
 
 
 def replace_package_set(manifest, source_tags, new_tag):
-    """
-       Find the set of packages that are defined in the manifest using all of the tags listed in source_tags.
-       Remove all those elements and replace them with the new_tag.
-    """
+    """Replace all the elements with tags in source_tags with new elements with new_tag."""
     intersection = None
     for tag in source_tags:
         pkgs = set(manifest.get_packages_by_tag(tag))
@@ -137,12 +134,13 @@ class PackageXML:
         return self.tree.createTextNode('\n' + ' ' * (self.std_tab * tabs))
 
     def get_child_indexes(self):
-        """
-           Return a dictionary where the keys are the types of nodes in the xml (build_depend, maintainer, etc)
-           and the values are arrays marking the range of elements in the xml root that match that tag.
+        """Return a dictionary based on which children span which indexes.
 
-           For example, tags[build_depend] = [(5, 9), (11, 50)] means that elements [5, 9) and [11, 50) are
-           either build_depend elements (or the strings between them)
+        The keys are the types of nodes in the xml (build_depend, maintainer, etc).
+        The values are arrays marking the range of elements in the xml root that match that tag.
+
+        For example, tags[build_depend] = [(5, 9), (11, 50)] means that elements [5, 9) and [11, 50) are
+        either build_depend elements (or the strings between them)
         """
         tags = collections.defaultdict(list)
         i = 0
@@ -168,11 +166,12 @@ class PackageXML:
         return dict(tags)
 
     def get_insertion_index(self, tag, tag_value=None):
-        """ Returns the index where to insert a new element with the given tag type.
-            If there are already elements of that type, then either insert after the last matching element,
-            or if the list is alphabetized, insert it in the correct place alphabetically using the tag_value.
-            Otherwise, look at the existing elements, and find ones that are supposed to come the closest
-            before the given tag, and insert after them. If none found, add at the end.
+        """Return the index where to insert a new element with the given tag type.
+
+        If there are already elements of that type, then either insert after the last matching element,
+        or if the list is alphabetized, insert it in the correct place alphabetically using the tag_value.
+        Otherwise, look at the existing elements, and find ones that are supposed to come the closest
+        before the given tag, and insert after them. If none found, add at the end.
         """
         indexes = self.get_child_indexes()
         # If there are elements of this type already
@@ -300,7 +299,7 @@ class PackageXML:
             self.insert_new_packages('test_depend', test_depends)
 
     def remove_element(self, element):
-        """ Remove the given element AND the text element before it if it is just an indentation """
+        """Remove the given element AND the text element before it if it is just an indentation."""
         parent = element.parentNode
         index = parent.childNodes.index(element)
         if index > 0:
@@ -368,7 +367,7 @@ class PackageXML:
         return False
 
     def get_plugin_xmls(self):
-        """ Returns a mapping from the package name to a list of the relative path(s) for the plugin xml(s) """
+        """Return a mapping from the package name to a list of the relative path(s) for the plugin xml(s)."""
         xmls = collections.defaultdict(list)
         export = self.root.getElementsByTagName('export')
         if len(export) == 0:
@@ -381,7 +380,7 @@ class PackageXML:
         return xmls
 
     def get_export_tag(self):
-        """ Creates it if it doesn't exist. """
+        """Get the export tag. Create it if it doesn't exist."""
         export_tags = self.root.getElementsByTagName('export')
         if len(export_tags) == 0:
             export_tag = self.tree.createElement('export')
@@ -391,8 +390,7 @@ class PackageXML:
             return export_tags[0]
 
     def add_plugin_export(self, pkg_name, xml_path):
-        """ Adds the plugin configuration if not found. Adds export tag as needed.
-            Returns the export tag it was added to."""
+        """Add the plugin configuration if not found. Add export tag as needed. Return the surrounding export tag."""
         ex_tag = self.get_export_tag()
 
         attr = '${prefix}/' + xml_path

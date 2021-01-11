@@ -22,17 +22,18 @@ INSTALL_CONFIGS = {
 
 
 def get_install_type(destination):
-    """ For a given catkin destination, return the matching install type """
+    """For a given catkin destination, return the matching install type."""
     for name, (kw, destination_map) in INSTALL_CONFIGS.items():
         if destination in destination_map:
             return name
 
 
 def get_install_types(cmd, subfolder=''):
-    """ For a given CMake command, determine the install type(s) that this command uses.
+    """For a given CMake command, determine the install type(s) that this command uses.
 
-        If there is a non-empty subfolder, we only return the install types if the command
-        installs into the catkin_destination with the given subfolder """
+    If there is a non-empty subfolder, we only return the install types if the command
+    installs into the catkin_destination with the given subfolder
+    """
     types = set()
     for section in cmd.get_sections('DESTINATION'):
         the_folder = section.values[0]
@@ -47,11 +48,13 @@ def get_install_types(cmd, subfolder=''):
 
 
 def get_multiword_section(cmd, words):
-    """ Our definition of a CMake command section is ONE all-caps word followed by tokens.
-        Installing stuff requires these weird TWO word sections (i.e. ARCHIVE DESTINATION).
+    """Find a section that matches the last word, assuming all the previous sections matched the other words.
 
-        Ergo, we need to find the section that matches the second word, presuming the section
-        before matched the first word.
+    Our definition of a CMake command section is ONE all-caps word followed by tokens.
+    Installing stuff requires these weird TWO word sections (i.e. ARCHIVE DESTINATION).
+
+    Ergo, we need to find the section that matches the second word, presuming the section
+    before matched the first word.
     """
     i = 0
     for section in cmd.get_real_sections():
@@ -77,9 +80,11 @@ def matches_patterns(item, patterns):
 
 
 def check_complex_section(cmd, key, value):
-    """ This finds the appopriate section of the command (with a possibly multiword key, see get_multiword_section)
-        and ensures the given value is in it. If the appopriate section is not found, it adds it. """
+    """Find the section matching the key and ensure the value is in it.
 
+    Key could be multiple words, see get_multiword_section.
+    If the appopriate section is not found, it adds it.
+    """
     words = key.split()
     if len(words) == 1:
         section = cmd.get_section(key)
@@ -95,9 +100,10 @@ def check_complex_section(cmd, key, value):
 
 
 def install_sections(cmd, destination_map, subfolder=''):
-    """ For a given command and destination_map, ensure that the command has all
-        the appropriate CMake sections with the matching catkin destinations.
-        If the subfolder is defined, the subfolder is appended to the catkin destination."""
+    """Ensure that the command has all the appropriate CMake sections with the matching catkin destinations.
+
+    If the subfolder is defined, the subfolder is appended to the catkin destination.
+    """
     for destination, section_names in destination_map.items():
         for section_name in section_names:
             if len(subfolder) > 0:

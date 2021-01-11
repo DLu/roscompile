@@ -64,11 +64,11 @@ class SourceCodeFile:
 
     def modify_with_patterns(self, patterns, verbose):
         """
-            Given a map of patterns, replace all instances in the source code
+        Given a map of patterns, replace all instances in the source code.
 
-            The key in the map (needle) is a regular expression string literal.
-            If there are no groups, then the matching string is replaced with the map value.
-            If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
+        The key in the map (needle) is a regular expression string literal.
+        If there are no groups, then the matching string is replaced with the map value.
+        If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
         """
         s = self.get_contents()
         changed = False

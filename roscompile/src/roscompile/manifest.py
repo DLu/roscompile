@@ -122,8 +122,9 @@ def get_sort_key(node, alphabetize_depends=True):
 
 
 def get_chunks(children):
-    """ Given the children, group the elements into tuples that are
-        (an element node, [(some number of text nodes), that element node again])
+    """Given the children, group the elements into tuples.
+
+    Tuple format: (an element node, [(some number of text nodes), that element node again])
     """
     chunks = []
     current = []

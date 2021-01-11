@@ -76,11 +76,11 @@ class SourceCode:
 
     def modify_with_patterns(self, patterns, language='c++', verbose=True):
         """
-            Given a map of patterns, replace all instances in the package source code with the given language.
+        Given a map of patterns, replace all instances in the package source code with the given language.
 
-            The key in the map is a regular expression string literal.
-            If there are no groups, then the matching string is replaced with the map value.
-            If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
+        The key in the map is a regular expression string literal.
+        If there are no groups, then the matching string is replaced with the map value.
+        If there are groups, then the literals of the form $0, $1, etc in the map value are replaced with the groups
         """
         for source in self.get_source_by_language(language):
             source.modify_with_patterns(patterns, verbose)
