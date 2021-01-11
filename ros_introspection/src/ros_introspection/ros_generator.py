@@ -8,8 +8,8 @@ PRIMITIVES = ['bool', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'in
 
 
 class GeneratorField:
-    def __init__(self, type, is_array, name, value):
-        self.type = type
+    def __init__(self, field_type, is_array, name, value):
+        self.type = field_type
         self.is_array = is_array
         self.name = name
         self.value = value
@@ -38,8 +38,8 @@ class GeneratorSection:
             return
         m = FIELD_LINE.match(line)
         if m:
-            type, is_array, name, value, comment = m.groups()
-            field = GeneratorField(type, is_array, name, value)
+            field_type, is_array, name, value, comment = m.groups()
+            field = GeneratorField(field_type, is_array, name, value)
             self.contents.append(field)
             self.fields.append(field)
             if comment:

@@ -149,9 +149,9 @@ class Section:
         # Check if existing values are sorted
         if alpha_order and self.values == sorted(self.values):
             all_values = self.values + list(new_values)
-            self.values = list(sorted(all_values))
+            self.values = sorted(all_values)
         else:
-            self.values += list(sorted(new_values))
+            self.values += sorted(new_values)
 
     def is_valid(self):
         return len(self.name) > 0 or len(self.values) > 0

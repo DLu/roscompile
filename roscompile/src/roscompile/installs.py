@@ -123,11 +123,11 @@ def remove_install_section(cmd, destination_map):
     for i, section in enumerate(sections):
         if section.name not in empty_sections_to_remove or len(section.values) != 0:
             continue
-        next = sections[i + 1]
+        next_section = sections[i + 1]
         dest = empty_sections_to_remove[section.name]
-        if next.name == 'DESTINATION' and len(next.values) == 1 and next.values[0] == dest:
+        if next_section.name == 'DESTINATION' and len(next_section.values) == 1 and next_section.values[0] == dest:
             to_remove.append(section)
-            to_remove.append(next)
+            to_remove.append(next_section)
     if len(to_remove) > 0:
         for section in to_remove:
             cmd.sections.remove(section)

@@ -97,7 +97,7 @@ class SourceCodeFile:
             pkgs.add(match[0])
         if len(self.search_lines_for_pattern(ROSCPP)) > 0:
             pkgs.add('roscpp')
-        return sorted(list(pkgs))
+        return sorted(pkgs)
 
     def get_dependencies(self):
         deps = []

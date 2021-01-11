@@ -352,10 +352,10 @@ class PackageXML:
         el = self.get_license_element()
         return el.childNodes[0].nodeValue
 
-    def set_license(self, license):
+    def set_license(self, license_str):
         el = self.get_license_element()
         if license != el.childNodes[0].nodeValue:
-            el.childNodes[0].nodeValue = license
+            el.childNodes[0].nodeValue = license_str
             self.changed = True
 
     def is_metapackage(self):

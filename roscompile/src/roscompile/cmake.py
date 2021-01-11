@@ -45,7 +45,7 @@ def check_cmake_dependencies(package):
 
 
 def get_matching_add_depends(cmake, search_target):
-    valid_targets = set([search_target])
+    valid_targets = {search_target}
     alt_target = cmake.resolve_variables(search_target)
     if alt_target != search_target:
         valid_targets.add(alt_target)
@@ -81,7 +81,7 @@ def get_msg_dependencies_from_source(package, sources):
                 deps.add(pkg)
     if package.dynamic_reconfigs:
         deps.add(package.name)
-    return sorted(list(deps))
+    return sorted(deps)
 
 
 @roscompile
@@ -228,7 +228,7 @@ def alphabetize_sections_helper(cmake):
         if content.__class__ == Command:
             for section in content.get_real_sections():
                 if section.name in SHOULD_ALPHABETIZE:
-                    sorted_values = list(sorted(section.values))
+                    sorted_values = sorted(section.values)
                     if sorted_values != section.values:
                         section.values = sorted_values
                         content.changed = True

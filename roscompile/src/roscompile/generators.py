@@ -6,6 +6,7 @@ STANDARD = {
     'Header': 'std_msgs'
 }
 
+
 @roscompile
 def fill_in_msg_package_names(package):
     all_names = set()
