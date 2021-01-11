@@ -1,11 +1,13 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
-from roscompile import get_functions
-from roscompile.terminal import query_yes_no
-from roscompile.diff import preview_changes
-from roscompile.util import get_config
 import argparse
+
+from ros_introspection.util import get_packages
+
+from roscompile import get_functions
+from roscompile.diff import preview_changes
+from roscompile.terminal import query_yes_no
+from roscompile.util import get_config
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

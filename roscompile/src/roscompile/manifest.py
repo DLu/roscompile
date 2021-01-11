@@ -1,5 +1,6 @@
 from ros_introspection.package_xml import count_trailing_spaces, get_ordering_index, replace_package_set
-from .util import get_ignore_data, roscompile, get_config
+
+from .util import get_config, get_ignore_data, roscompile
 
 
 @roscompile

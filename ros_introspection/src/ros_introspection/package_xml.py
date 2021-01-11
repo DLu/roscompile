@@ -1,7 +1,7 @@
-from xml.dom.minidom import parse
 import collections
 import operator
 import re
+from xml.dom.minidom import parse
 
 DEPEND_ORDERING = ['buildtool_depend', 'depend', 'build_depend', 'build_export_depend',
                    'run_depend', 'exec_depend', 'test_depend', 'doc_depend']

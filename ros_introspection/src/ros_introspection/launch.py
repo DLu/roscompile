@@ -1,6 +1,6 @@
+import re
 from xml.dom.minidom import parse
 from xml.parsers.expat import ExpatError
-import re
 
 
 class Launch:

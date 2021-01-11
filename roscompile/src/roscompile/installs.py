@@ -1,7 +1,9 @@
-import os
-import fnmatch
 import collections
+import fnmatch
+import os
+
 from ros_introspection.cmake import Command, SectionStyle
+
 from .cmake import NEWLINE_PLUS_8
 from .util import roscompile
 

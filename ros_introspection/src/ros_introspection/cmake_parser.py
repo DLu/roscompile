@@ -1,6 +1,7 @@
 import re
 import sys
-from .cmake import CMake, Command, Section, SectionStyle, CommandGroup
+
+from .cmake import CMake, Command, CommandGroup, Section, SectionStyle
 
 ALL_CAPS = re.compile('^[A-Z_]+$')
 ALL_WHITESPACE = ['whitespace', 'newline']

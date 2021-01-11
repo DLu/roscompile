@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
-from ros_introspection.util import get_packages
-from ros_introspection.cmake import Command
-from roscompile.cmake import check_cmake_dependencies_helper
 import argparse
 import os
+
+from ros_introspection.cmake import Command
+from ros_introspection.util import get_packages
+
+from roscompile.cmake import check_cmake_dependencies_helper
 
 
 def add_test_command(test_section, cmd_name, values=None):

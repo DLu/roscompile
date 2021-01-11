@@ -1,4 +1,5 @@
 from ros_introspection.ros_generator import PRIMITIVES
+
 from .util import roscompile
 
 STANDARD = {

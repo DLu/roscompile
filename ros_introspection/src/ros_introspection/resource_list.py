@@ -1,9 +1,13 @@
-import os
-import yaml
-import rospkg
 import datetime
+import os
+
 import requests
+
 from rosmsg import list_types
+
+import rospkg
+
+import yaml
 
 DOT_ROS_FOLDER = os.path.expanduser('~/.ros')
 PY_DEP_FILENAME = os.path.join(DOT_ROS_FOLDER, 'py_deps.yaml')

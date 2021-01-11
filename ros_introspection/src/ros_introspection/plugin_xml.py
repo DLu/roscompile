@@ -1,6 +1,6 @@
-from xml.dom.minidom import parse
-from collections import OrderedDict
 import os.path
+from collections import OrderedDict
+from xml.dom.minidom import parse
 
 NS_PATTERN = '%s::%s'
 

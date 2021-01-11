@@ -1,6 +1,8 @@
-from git import Repo
 import shutil
 import tempfile
+
+from git import Repo
+
 from ros_introspection.util import get_packages
 
 

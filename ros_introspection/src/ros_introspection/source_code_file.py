@@ -1,6 +1,7 @@
-import re
 import os
-from .resource_list import is_package, get_python_dependency
+import re
+
+from .resource_list import get_python_dependency, is_package
 
 PKG = r'([^\.;]+)(\.?[^;]*)?'
 PYTHON1 = '^import ' + PKG

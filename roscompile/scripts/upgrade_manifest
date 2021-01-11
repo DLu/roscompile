@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import argparse
+
 from ros_introspection.util import get_packages
 
 parser = argparse.ArgumentParser()
