@@ -7,6 +7,7 @@ from .util import get_config, get_ignore_data, roscompile
 SHOULD_ALPHABETIZE = ['COMPONENTS', 'DEPENDENCIES', 'FILES', 'CATKIN_DEPENDS']
 NEWLINE_PLUS_4 = '\n    '
 NEWLINE_PLUS_8 = '\n        '
+CATKIN_INSTALL_PYTHON_PRENAME = '\n                      '  # newline plus len('catkin_install_python(')
 
 
 def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
@@ -291,6 +292,12 @@ def prettify_installs(package):
                 section.style.prename = NEWLINE_PLUS_8
             else:
                 section.style.prename = ''
+
+    for cmd in package.cmake.content_map['catkin_install_python']:
+        section = cmd.sections[1]
+        if section.style.prename != CATKIN_INSTALL_PYTHON_PRENAME:
+            section.style.prename = CATKIN_INSTALL_PYTHON_PRENAME
+            cmd.changed = True
 
 
 def remove_empty_strings(a):
