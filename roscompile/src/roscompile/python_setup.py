@@ -1,8 +1,9 @@
 import os
 
-from ros_introspection.cmake import Command
+from ros_introspection.cmake import Command, SectionStyle
 from ros_introspection.setup_py import SetupPy
 
+from .cmake import CATKIN_INSTALL_PYTHON_PRENAME
 from .util import roscompile
 
 
@@ -41,7 +42,8 @@ def update_python_installs(package):
     if cmd not in package.cmake.content_map:
         cmake_cmd = Command(cmd)
         cmake_cmd.add_section('PROGRAMS', execs)
-        cmake_cmd.add_section('DESTINATION', ['${CATKIN_PACKAGE_BIN_DESTINATION}'])
+        cmake_cmd.add_section('DESTINATION', ['${CATKIN_PACKAGE_BIN_DESTINATION}'],
+                              SectionStyle(CATKIN_INSTALL_PYTHON_PRENAME))
         package.cmake.add_command(cmake_cmd)
     else:
         package.cmake.section_check(execs, cmd, 'PROGRAMS')
