@@ -2,7 +2,7 @@ import re
 
 from ros_introspection.resource_list import MESSAGES, SERVICES
 
-from .util import convert_to_caps_notation, convert_to_underscore_notation
+from roscompile.util import convert_to_caps_notation, convert_to_underscore_notation
 
 ROS2_INCLUDE_PATTERN = '#include <%s/%s/%s.hpp>'
 
