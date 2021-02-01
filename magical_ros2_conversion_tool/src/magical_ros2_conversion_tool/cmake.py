@@ -17,8 +17,9 @@ CATKIN_CMAKE_VARS = {
     '${CATKIN_PACKAGE_SHARE_DESTINATION}': 'share/${PROJECT_NAME}',
 }
 
+
 def split_find_package_commands(cmake):
-    """ convert find_package commands to find one package at a time """
+    """Convert find_package commands to find one package at a time."""
     components = ['ament_cmake']
     for cmd in cmake.content_map['find_package']:
         tokens = cmd.get_tokens()
@@ -63,6 +64,7 @@ def catkin_to_ament_package(package):
     cmd = Command('ament_package')
     package.cmake.add_command(cmd)
 
+
 def update_installation_variables(cmake):
     for cmd in cmake.content_map['install']:
         for section in cmd.get_sections('DESTINATION'):
@@ -70,6 +72,7 @@ def update_installation_variables(cmake):
                 if value in CATKIN_CMAKE_VARS:
                     section.values[i] = CATKIN_CMAKE_VARS[value]
                     cmd.changed = True
+
 
 def remove_cpp11_flag(cmake):
     to_remove = []
@@ -86,8 +89,10 @@ def remove_cpp11_flag(cmake):
     for cmd in to_remove:
         cmake.remove_command(cmd)
 
+
 def get_clean_build_dependencies(package):
     return [REPLACE_PACKAGES.get(k, k) for k in package.source_code.get_build_dependencies()]
+
 
 def set_up_include_exports(package):
     cat_var = '${catkin_INCLUDE_DIRS}'
@@ -98,6 +103,7 @@ def set_up_include_exports(package):
             section.values.remove(cat_var)
             cmd.changed = True
 
+
 def rename_commands(cmake, source_name, target_name, remove_sections=[]):
     for cmd in cmake.content_map[source_name]:
         cmd.command_name = target_name
@@ -106,6 +112,7 @@ def rename_commands(cmake, source_name, target_name, remove_sections=[]):
             cmd.remove_sections(name)
     cmake.content_map[target_name] = cmake.content_map[source_name]
     del cmake.content_map[source_name]
+
 
 def set_up_catkin_libs(package):
     deps = ['"{}"'.format(s) for s in get_clean_build_dependencies(package)]
@@ -119,6 +126,7 @@ def set_up_catkin_libs(package):
                 section.values += deps
                 cmd.changed = True
 
+
 def update_tests(package):
     for content in package.cmake.content_map['group']:
         if is_testing_group(content):
@@ -127,6 +135,7 @@ def update_tests(package):
             rename_commands(content.sub, 'catkin_add_gtest', 'ament_add_gtest')
 
     rename_commands(package.cmake, 'catkin_add_gtest', 'ament_add_gtest')
+
 
 def update_cmake(package):
     package.cmake.upgrade_minimum_version((3, 5))

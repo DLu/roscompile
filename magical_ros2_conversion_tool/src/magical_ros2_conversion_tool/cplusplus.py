@@ -13,6 +13,7 @@ LOGGERS = {
     'ROS_WARN': 'RCLCPP_WARN'
 }
 
+
 def make_include_pattern(s):
     return r'#include\s*[<\\"]' + s + '[>\\"]'
 
@@ -60,6 +61,7 @@ CPP_CODE_REPLACEMENTS = {
     'tf::get': 'tf2::get',
 }
 
+
 def get_full_msg_dependencies_from_source(package):
     messages = set()
     for gen_type, full_list in [('msg', MESSAGES), ('srv', SERVICES)]:
@@ -68,6 +70,7 @@ def get_full_msg_dependencies_from_source(package):
             if package.source_code.search_for_pattern(gen_pattern):
                 messages.add((pkg, gen_name, gen_type))
     return messages
+
 
 def get_generator_based_replacements(package):
     service_replacements = {}
@@ -91,6 +94,7 @@ def get_generator_based_replacements(package):
             value += 'std::shared_ptr<' + four_colons + '::Response> $3)'
             service_replacements[key] = value
     return generator_replacements, service_replacements
+
 
 def get_logger_replacements(package):
     LOGGER_REPLACEMENTS = {}

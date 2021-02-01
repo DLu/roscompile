@@ -1,5 +1,6 @@
 from .util import REPLACE_PACKAGES
 
+
 def set_build_type(manifest, build_type):
     ex_el = manifest.get_export_tag()
     built_type_tag = manifest.tree.createElement('build_type')
@@ -10,6 +11,7 @@ def set_build_type(manifest, build_type):
         name = build_tool.childNodes[0].nodeValue
         if name == 'catkin':
             build_tool.childNodes[0] = manifest.tree.createTextNode(build_type)
+
 
 def update_manifest(package):
     manifest = package.manifest

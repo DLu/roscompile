@@ -1,9 +1,10 @@
-from ros_introspection.cmake import Command, Section, SectionStyle
+from ros_introspection.cmake import Command, SectionStyle
 
 BUILTIN_INTERFACES = {
     'duration': 'builtin_interfaces/Duration',
     'time': 'builtin_interfaces/Time'
 }
+
 
 def fix_generator_definition(gen):
     for section in gen.sections:
@@ -14,6 +15,7 @@ def fix_generator_definition(gen):
             elif field.type == 'Header':
                 field.type = 'std_msgs/Header'
                 gen.changed = True
+
 
 def update_generators(package):
     if not package.generators:

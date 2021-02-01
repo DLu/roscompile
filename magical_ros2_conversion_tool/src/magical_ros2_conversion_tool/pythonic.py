@@ -5,5 +5,6 @@ PYTHON_REPLACEMENTS = {
     r'rospy.Service\(([^\,]+), ([^\,]+), ([^\)]+)\)': 'node.create_service($1, $0, $2)',
 }
 
+
 def update_python(package):
     package.source_code.modify_with_patterns(PYTHON_REPLACEMENTS, language='python')

@@ -10,6 +10,7 @@ from magical_ros2_conversion_tool.pythonic import update_python
 
 from ros_introspection.util import get_packages
 
+
 def is_pure_python(package):
     if len(package.generators) != 0:
         return False
