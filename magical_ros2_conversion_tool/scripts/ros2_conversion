@@ -29,7 +29,9 @@ for package in pkgs:
 
     if is_pure_python(package):
         set_build_type(package.manifest, 'ament_python')
-        os.remove(package.cmake.file_path)
+        if package.cmake:
+            os.remove(package.cmake.file_path)
+            package.cmake = None
         # TODO(dlu): Update the ``setup.py`` file to be a standard Python setup script
     else:
         set_build_type(package.manifest, 'ament_cmake')
