@@ -41,7 +41,11 @@ class SourceCodeFile:
 
     def replace_contents(self, contents):
         self.changed_contents = contents
-        self.lines = map(unicode.strip, unicode(contents).split('\n'))
+        try:
+            self.lines = map(unicode.strip, unicode(contents).split('\n'))
+        except NameError:
+            # Python3 Case
+            self.lines = list(map(str.strip, contents.split('\n')))
 
     def search_for_patterns(self, patterns):
         matches = []

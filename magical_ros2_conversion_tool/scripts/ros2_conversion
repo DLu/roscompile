@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import os
+
+from magical_ros2_conversion_tool.cmake import update_cmake
+from magical_ros2_conversion_tool.cplusplus import update_cplusplus
+from magical_ros2_conversion_tool.generators import update_generators
+from magical_ros2_conversion_tool.manifest import set_build_type, update_manifest
+from magical_ros2_conversion_tool.pythonic import update_python
+
+from ros_introspection.util import get_packages
+
+
+def is_pure_python(package):
+    if len(package.generators) != 0:
+        return False
+    python_code = package.source_code.get_source_by_language('python')
+    cplus_code = package.source_code.get_source_by_language('c++')
+    return len(python_code) > 0 and len(cplus_code) == 0
+
+
+pkgs = get_packages()
+
+for package in pkgs:
+    print(package.name)
+
+    update_manifest(package)
+    update_generators(package)
+
+    if is_pure_python(package):
+        set_build_type(package.manifest, 'ament_python')
+        if package.cmake:
+            os.remove(package.cmake.file_path)
+            package.cmake = None
+        # TODO(dlu): Update the ``setup.py`` file to be a standard Python setup script
+    else:
+        set_build_type(package.manifest, 'ament_cmake')
+        update_cmake(package)
+        update_cplusplus(package)
+
+    update_python(package)
+
+    package.write()

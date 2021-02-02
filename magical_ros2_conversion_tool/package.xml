@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>magical_ros2_conversion_tool</name>
+  <version>0.0.0</version>
+  <description>The magical_ros2_conversion_tool package</description>
+
+  <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>ros_introspection</depend>
+  <depend>roscompile</depend>
+  <test_depend>roslint</test_depend>
+</package>
