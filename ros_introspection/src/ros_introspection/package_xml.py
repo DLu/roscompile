@@ -79,7 +79,7 @@ class PackageXML:
         if not name_tags:
             return
         name_tag = name_tags[0]
-        self._name = name_tag.childNodes[0].nodeValue
+        self._name = name_tag.firstChild.nodeValue
         return self._name
 
     @property

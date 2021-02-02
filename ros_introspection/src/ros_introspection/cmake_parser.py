@@ -1,3 +1,4 @@
+import os.path
 import re
 import sys
 
@@ -215,6 +216,8 @@ def parse_command(s):
 
 
 def parse_file(filename):
+    if not os.path.exists(filename):
+        return
     with open(filename) as f:
         s = f.read()
         return CMake(file_path=filename, initial_contents=parse_commands(s))

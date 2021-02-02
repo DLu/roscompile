@@ -23,7 +23,9 @@ Use build_depend for packages you need at compile time:
 Use buildtool_depend for build tool packages:
 <buildtool_depend>catkin</buildtool_depend>
 Use run_depend for packages you need at runtime:
+Use run_depend for packages you need in order to build against this package:
 <run_depend>message_runtime</run_depend>
+<run_depend>message_generation</run_depend>
 Use test_depend for packages you need only for testing:
 <test_depend>gtest</test_depend>
 The export tag contains other, unspecified, tags
