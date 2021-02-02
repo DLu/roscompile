@@ -1,11 +1,17 @@
+from ros_introspection.package_xml import DEPEND_ORDERING
+
 from .util import REPLACE_PACKAGES
 
 
 def set_build_type(manifest, build_type):
     ex_el = manifest.get_export_tag()
-    built_type_tag = manifest.tree.createElement('build_type')
-    built_type_tag.appendChild(manifest.tree.createTextNode(build_type))
-    manifest.insert_new_tag_inside_another(ex_el, built_type_tag)
+    build_type_node = ex_el.getElementsByTagName('build_type')
+    if build_type_node:
+        pass
+    else:
+        built_type_tag = manifest.tree.createElement('build_type')
+        built_type_tag.appendChild(manifest.tree.createTextNode(build_type))
+        manifest.insert_new_tag_inside_another(ex_el, built_type_tag)
 
     if build_type != 'ament_cmake':
         continue
@@ -33,7 +39,9 @@ def update_manifest(package):
 
     # Replace some packages
     for old_and_busted, new_hotness in REPLACE_PACKAGES.items():
-        if old_and_busted in package.manifest.get_packages():
-            package.manifest.remove_dependencies('depend', [old_and_busted])
-            if new_hotness not in package.manifest.get_packages():
-                package.manifest.insert_new_packages('depend', [new_hotness])
+        for tag_name in DEPEND_ORDERING:
+            pkgs = package.manifest.get_packages_by_tag(tag_name)
+            if old_and_busted in pkgs:
+                package.manifest.remove_dependencies(tag_name, [old_and_busted])
+                if new_hotness not in pkgs:
+                    package.manifest.insert_new_packages(tag_name, [new_hotness])
