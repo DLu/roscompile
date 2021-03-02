@@ -14,7 +14,7 @@ def set_build_type(manifest, build_type):
         manifest.insert_new_tag_inside_another(ex_el, built_type_tag)
 
     if build_type != 'ament_cmake':
-        continue
+        return
 
     for build_tool in manifest.root.getElementsByTagName('buildtool_depend'):
         name = build_tool.childNodes[0].nodeValue
