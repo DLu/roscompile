@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>magical_ros2_conversion_tool</name>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <description>The magical_ros2_conversion_tool package</description>
 
   <maintainer email="davidvlu@gmail.com">David V. Lu!!</maintainer>
