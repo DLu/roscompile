@@ -1,0 +1,26 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  - id: check-yaml
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+  - id: check-ast
+  - id: check-executables-have-shebangs
+  - id: double-quote-string-fixer
+  - id: check-merge-conflict
+  - id: mixed-line-ending
+- repo: https://github.com/pre-commit/mirrors-autopep8
+  rev: v1.5.7
+  hooks:
+  - id: autopep8
+- repo: https://github.com/PyCQA/flake8
+  rev: 3.9.2
+  hooks:
+  - id: flake8
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.0.0
+  hooks:
+  - id: codespell
+    args: ['--write-changes']
+    exclude: roscompile/data

@@ -21,7 +21,7 @@ There are also some other useful scripts described at the bottom of this documen
  * `remove_empty_manifest_lines` - Remove empty lines
  * `greedy_depend_tag` If a format 2 `package.xml`, collapses matching `build_depend/build_export_depend/exec_depend` commands into a single `depend` command
  * `enforce_manifest_tabbing` Ensure standard indentation of each tag
- * `enforce_manifest_ordering` - Sort all fo the tags by type and value
+ * `enforce_manifest_ordering` - Sort all of the tags by type and value
  * `update_people` - Reads the &lt;author> and &lt;maintainer> tags and allows you to programmatically replace them. (i.e. 'dlu', 'Dave Lu', 'David Lu'', 'dlu@TODO' can all become 'David V. Lu!!') (see configuration section below)
  * `update_license` - Updates TODO licenses to a configurable default license (see configuration section below)
  * `update_metapackage` - Update your metapackage dependencies

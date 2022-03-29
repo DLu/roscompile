@@ -83,7 +83,7 @@ def check_complex_section(cmd, key, value):
     """Find the section matching the key and ensure the value is in it.
 
     Key could be multiple words, see get_multiword_section.
-    If the appopriate section is not found, it adds it.
+    If the appropriate section is not found, it adds it.
     """
     words = key.split()
     if len(words) == 1:
