@@ -1,12 +1,18 @@
 import os
 import re
+import yaml
 
+from ros_introspection.rviz_config import dictionary_subtract
 from ros_introspection.util import get_sibling_packages
 
-from .util import make_executable, roscompile
+from .util import PKG_PATH, make_executable, roscompile
 
 MAINPAGE_S = r'/\*\*\s+\\mainpage\s+\\htmlinclude manifest.html\s+\\b %s\s+<!--\s+' + \
              r'Provide an overview of your package.\s+-->\s+-->\s+[^\*]*\*/'
+
+RVIZ_CLASS_DEFAULTS = yaml.safe_load(open(PKG_PATH + '/data/rviz_class_defaults.yaml'))
+RVIZ_GLOBAL_DEFAULTS = yaml.safe_load(open(PKG_PATH + '/data/rviz_global_defaults.yaml'))
+ROBOT_MODEL_LINK_DEFAULTS = {'Alpha': 1, 'Show Axes': False, 'Show Trail': False, 'Value': True}
 
 
 @roscompile
@@ -74,3 +80,33 @@ def misc_xml_formatting(package):
     package.manifest.changed = True
     for config in package.plugin_configs:
         config.changed = True
+
+
+@roscompile
+def clean_up_rviz_configs(package):
+    for rviz_config in package.rviz_configs:
+        for config in rviz_config.get_class_dicts():
+            the_defaults = RVIZ_CLASS_DEFAULTS.get(config['Class'], {})
+            if dictionary_subtract(config, the_defaults):
+                rviz_config.changed = True
+
+            # Special Case(s)
+            if config['Class'] == 'rviz_default_plugins/RobotModel':
+                for k, v in list(config.get('Links', {}).items()):
+                    if not isinstance(v, dict):
+                        continue
+                    if dictionary_subtract(config['Links'][k], ROBOT_MODEL_LINK_DEFAULTS):
+                        rviz_config.changed = True
+                        if not config['Links'][k]:
+                            del config['Links'][k]
+
+            if config['Class'] == 'rviz/Camera' and 'Visibility' in config:
+                visibility = config['Visibility']
+                for key in list(visibility.keys()):
+                    if visibility[key]:
+                        rviz_config.changed = True
+                        del visibility[key]
+                if not visibility:
+                    del config['Visibility']
+        if dictionary_subtract(rviz_config.contents, RVIZ_GLOBAL_DEFAULTS):
+            rviz_config.changed = True

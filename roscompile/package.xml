@@ -27,6 +27,7 @@
   <test_depend>pluginlib</test_depend>
   <test_depend>pluginlib_tutorials</test_depend>
   <test_depend>roslint</test_depend>
+  <test_depend>rviz_plugin_tutorials</test_depend>
   <test_depend>stereo_msgs</test_depend>
   <test_depend>tf</test_depend>
 

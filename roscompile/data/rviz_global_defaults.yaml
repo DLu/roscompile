@@ -1,0 +1,30 @@
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ''
+  Global Options:
+    Background Color: 48; 48; 48
+    Default Light: true
+    Frame Rate: 30
+  Name: root
+  Views:
+    Saved: null
+Window Geometry:
+  Camera:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Image:
+    collapsed: false
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
