@@ -14,7 +14,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 %(var)s = generate_distutils_setup(
     packages=['%(name)s'],%(exec)s
-    package_dir={'': 'src'}
+    package_dir={'': 'src'},
 )
 
 setup(**%(var)s)
