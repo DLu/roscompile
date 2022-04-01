@@ -11,14 +11,16 @@ my_yaml_writer.representer.add_representer(type(None),
 
 
 def get_class_dicts(entry):
+    classes = []
     if isinstance(entry, list):
         for sub in entry:
-            yield from get_class_dicts(sub)
+            classes += get_class_dicts(sub)
     elif isinstance(entry, dict):
         if entry.get('Class'):
-            yield entry
+            classes.append(entry)
         for k, v in entry.items():
-            yield from get_class_dicts(v)
+            classes += get_class_dicts(v)
+    return classes
 
 
 def dictionary_subtract(alpha, beta):
