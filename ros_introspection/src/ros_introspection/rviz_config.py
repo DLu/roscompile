@@ -1,3 +1,4 @@
+import sys
 import yaml
 import ruamel.yaml  # For custom yaml dumping
 
@@ -8,6 +9,19 @@ my_yaml_writer.representer.add_representer(type(None),
                                            lambda self, data:
                                            self.represent_scalar('tag:yaml.org,2002:null', '~')
                                            )
+
+if sys.version_info[0] == 2:
+    # If this is running Python2, we need to manually sort the dictionaries
+    def sorted_dict_representer(self, data):
+        value = []
+        node = ruamel.yaml.nodes.MappingNode('tag:yaml.org,2002:map', value)
+        for item_key, item_value in sorted(data.items()):
+            node_key = self.represent_key(item_key)
+            node_value = self.represent_data(item_value)
+            value.append((node_key, node_value))
+        return node
+
+    my_yaml_writer.representer.add_representer(dict, sorted_dict_representer)
 
 
 def get_class_dicts(entry):
