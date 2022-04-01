@@ -6,6 +6,7 @@ from .package_structure import get_package_structure
 from .package_xml import PackageXML
 from .plugin_xml import PluginXML
 from .ros_generator import ROSGenerator
+from .rviz_config import RVizConfig
 from .setup_py import SetupPy
 from .source_code import SourceCode
 from .urdf import UrdfFile
@@ -43,6 +44,10 @@ class Package:
         self.urdf_files = []
         for rel_fn, path in package_structure['urdf'].items():
             self.urdf_files.append(UrdfFile(rel_fn, path))
+        self.rviz_configs = []
+        for rel_fn, path in package_structure[None].items():
+            if path.endswith('.rviz'):
+                self.rviz_configs.append(RVizConfig(rel_fn, path))
         self.misc_files = list(package_structure[None].keys())
 
     def is_metapackage(self):
@@ -60,6 +65,9 @@ class Package:
 
         for urdf in self.urdf_files:
             packages.update(urdf.get_dependencies())
+
+        for rviz_config in self.rviz_configs:
+            packages.update(rviz_config.get_dependencies())
 
         if self.name in packages:
             packages.remove(self.name)
@@ -99,6 +107,8 @@ class Package:
             gen.write()
         for src in self.source_code.sources.values():
             src.write()
+        for config in self.rviz_configs:
+            config.write()
 
     def __repr__(self):
         s = '== {} ========\n'.format(self.name)
