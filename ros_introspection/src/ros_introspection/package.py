@@ -21,7 +21,8 @@ class Package:
 
         package_structure = get_package_structure(root)
         self.source_code = SourceCode(package_structure['source'], self.name)
-        self.source_code.setup_tags(self.cmake)
+        if self.cmake:
+            self.source_code.setup_tags(self.cmake)
 
         self.launches = []
         self.plugin_configs = []
@@ -51,7 +52,7 @@ class Package:
         self.misc_files = list(package_structure[None].keys())
 
     def is_metapackage(self):
-        return self.manifest.is_metapackage() or self.cmake.is_metapackage()
+        return self.manifest.is_metapackage() or (self.cmake and self.cmake.is_metapackage())
 
     def get_build_dependencies(self):
         return self.source_code.get_build_dependencies()
@@ -98,7 +99,8 @@ class Package:
 
     def write(self):
         self.manifest.write()
-        self.cmake.write()
+        if self.cmake:
+            self.cmake.write()
         for plugin_config in self.plugin_configs:
             plugin_config.write()
         if self.setup_py:
