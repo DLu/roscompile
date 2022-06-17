@@ -4,7 +4,9 @@ import re
 VARIABLE_PATTERN = re.compile(r'\$\{([^\}]+)\}')
 QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 
-BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
+BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest',
+                         'target_include_directories', 'add_dependencies', 'target_link_libraries',
+                         'set_target_properties', 'ament_target_dependencies']
 TEST_COMMANDS = [('group', 'CATKIN_ENABLE_TESTING'), 'catkin_download_test_data',
                  'roslint_cpp', 'roslint_python', 'roslint_add_test',
                  'catkin_add_nosetests', 'catkin_add_gtest', 'add_rostest_gtest']
@@ -81,7 +83,7 @@ def get_ordering_index(command_name, ordering):
         elif command_name == o:
             return i
     if command_name:
-        print('\tUnsure of ordering for ' + command_name)
+        print('\tUnsure of ordering for ' + str(command_name))
     return len(ordering)
 
 
@@ -166,7 +168,7 @@ class Section:
         s = self.style.prename
         if len(self.name) > 0:
             s += self.name
-            if len(self.values) > 0:
+            if len(self.values) > 0 or '\n' in self.style.name_val_sep:
                 s += self.style.name_val_sep
         s += self.style.val_sep.join(self.values)
         return s

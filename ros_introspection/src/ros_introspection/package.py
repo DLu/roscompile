@@ -96,6 +96,8 @@ class Package:
         packages = set()
         for gen in self.get_all_generators():
             packages.update(gen.dependencies)
+        if self.name in packages:
+            packages.remove(self.name)
         return packages
 
     def write(self):

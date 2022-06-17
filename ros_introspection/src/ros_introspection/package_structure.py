@@ -4,7 +4,7 @@ import os
 from .source_code_file import is_python_hashbang_line
 
 KEY = ['package.xml', 'CMakeLists.txt', 'setup.py']
-SRC_EXTS = ['.py', '.cpp', '.h', '.hpp', '.c']
+SRC_EXTS = ['.py', '.cpp', '.h', '.hpp', '.c', '.cc']
 GENERATORS = ['.msg', '.srv', '.action']
 
 

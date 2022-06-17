@@ -63,7 +63,7 @@ def check_plugins(package):
                 package.plugin_configs.append(p_xml)
                 existing_plugins[pkg2] = [p_xml]
 
-            # Make sure plugins are used in manifest
+            # Make sure plugins are properly exported
             for plugin_xml in existing_plugins[pkg2]:
                 if plugin_xml.rel_fn not in defined_plugins[pkg2]:
                     ex_el = package.manifest.add_plugin_export(pkg2, plugin_xml.rel_fn)

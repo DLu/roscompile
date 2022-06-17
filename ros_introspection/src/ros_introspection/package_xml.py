@@ -142,7 +142,7 @@ class PackageXML:
             keys.append('build_depend')
         if self.format == 1 and mode == 'run':
             keys.append('run_depend')
-        if self.format == 2 and mode != 'test':
+        if self.format >= 2 and mode != 'test':
             keys.append('depend')
             if mode == 'run':
                 keys.append('exec_depend')
