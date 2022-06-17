@@ -17,6 +17,7 @@ class Package:
         self.root = root
         self.manifest = PackageXML(self.root + '/package.xml')
         self.name = self.manifest.name
+        self.build_type = self.manifest.build_type
         self.cmake = parse_file(self.root + '/CMakeLists.txt')
 
         package_structure = get_package_structure(root)
@@ -113,7 +114,7 @@ class Package:
             config.write()
 
     def __repr__(self):
-        s = '== {} ========\n'.format(self.name)
+        s = '== {} ({})========\n'.format(self.name, self.build_type)
         s += '  package.xml\n'
         s += '  CMakeLists.txt\n'
         if self.setup_py:
