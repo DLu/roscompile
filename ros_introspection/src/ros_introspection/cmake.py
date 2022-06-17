@@ -5,7 +5,7 @@ VARIABLE_PATTERN = re.compile(r'\$\{([^\}]+)\}')
 QUOTED_PATTERN = re.compile(r'"([^"]+)"')
 
 BUILD_TARGET_COMMANDS = ['add_library', 'add_executable', 'add_rostest', 'add_dependencies', 'target_link_libraries']
-TEST_COMMANDS = ['catkin_download_test_data',
+TEST_COMMANDS = [('group', 'CATKIN_ENABLE_TESTING'), 'catkin_download_test_data',
                  'roslint_cpp', 'roslint_python', 'roslint_add_test',
                  'catkin_add_nosetests', 'catkin_add_gtest', 'add_rostest_gtest']
 INSTALL_COMMANDS = ['install', 'catkin_install_python']
@@ -56,9 +56,9 @@ def get_style(cmake):
 def get_ordering(style):
     """Given the style, return the correct ordering."""
     if style == 'install_first':
-        return BASE_ORDERING + INSTALL_COMMANDS + ['group'] + TEST_COMMANDS
+        return BASE_ORDERING + INSTALL_COMMANDS + TEST_COMMANDS
     else:
-        return BASE_ORDERING + TEST_COMMANDS + ['group'] + INSTALL_COMMANDS
+        return BASE_ORDERING + TEST_COMMANDS + INSTALL_COMMANDS
 
 
 def get_ordering_index(command_name, ordering):
@@ -102,10 +102,13 @@ def get_sort_key(content, anchors, ordering):
     index = None
     key = ()
     if content.__class__ == CommandGroup:
-        index = get_ordering_index('group', ordering)
-        sections = content.initial_tag.get_real_sections()
-        if len(sections) > 0:
-            key = sections[0].name
+        key_token = ()
+        for token in content.initial_tag.get_tokens(include_name=True):
+            if token == 'NOT':
+                continue
+            key_token = token
+            break
+        index = get_ordering_index(('group', key_token), ordering)
     else:  # Command
         index = get_ordering_index(content.command_name, ordering)
         if content.command_name in BUILD_TARGET_COMMANDS:
