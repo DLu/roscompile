@@ -55,6 +55,7 @@ class GeneratorSection:
 
 class ROSGenerator:
     def __init__(self, rel_fn, file_path):
+        self.rel_fn = rel_fn
         self.file_path = file_path
         parts = os.path.splitext(rel_fn)
         self.base_name = os.path.split(parts[0])[-1]
@@ -66,12 +67,14 @@ class ROSGenerator:
         self.dependencies = set()
 
         with open(file_path) as f:
-            for line in f:
-                if AT_LEAST_THREE_DASHES.match(line):
-                    self.sections.append(GeneratorSection())
-                    continue
-                else:
-                    self.sections[-1].add_line(line)
+            self.contents = f.read()
+
+        for line in self.contents.split('\n'):
+            if AT_LEAST_THREE_DASHES.match(line):
+                self.sections.append(GeneratorSection())
+                continue
+            else:
+                self.sections[-1].add_line(line)
 
         for section in self.sections:
             for field in section.fields:

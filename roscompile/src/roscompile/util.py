@@ -10,6 +10,7 @@ import yaml
 CONFIG_PATH = os.path.expanduser('~/.ros/roscompile.yaml')
 CONFIG = None
 PKG_PATH = rospkg.RosPack().get_path('roscompile')
+TRAILING_PATTERN = re.compile(r'^(.*[^\w])\w+\n$')
 
 roscompile_functions = collections.OrderedDict()
 
