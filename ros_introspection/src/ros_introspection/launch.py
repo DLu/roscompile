@@ -7,6 +7,21 @@ class Launch:
     def __init__(self, rel_fn, file_path):
         self.rel_fn = rel_fn
         self.file_path = file_path
+
+    def get_dependencies(self):
+        d = set()
+        d.update(self.get_node_pkgs())
+        d.update(self.get_include_pkgs())
+        d.update(self.get_misc_pkgs())
+        return sorted(d)
+
+    def __repr__(self):
+        return self.rel_fn
+
+
+class LaunchXML(Launch):
+    def __init__(self, rel_fn, file_path):
+        Launch.__init__(self, rel_fn, file_path)
         try:
             self.tree = parse(self.file_path)
             self.test = len(self.tree.getElementsByTagName('test')) > 0
@@ -38,13 +53,3 @@ class Launch:
         for x in re.finditer(r'rosrun\s+(\w+)\s', xml_str):
             s.add(x.group(1))
         return s
-
-    def get_dependencies(self):
-        d = set()
-        d.update(self.get_node_pkgs())
-        d.update(self.get_include_pkgs())
-        d.update(self.get_misc_pkgs())
-        return sorted(d)
-
-    def __repr__(self):
-        return self.rel_fn

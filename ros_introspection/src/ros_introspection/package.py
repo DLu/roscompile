@@ -1,7 +1,7 @@
 import collections
 
 from .cmake_parser import parse_file
-from .launch import Launch
+from .launch import LaunchXML
 from .package_structure import get_package_structure
 from .package_xml import PackageXML
 from .plugin_xml import PluginXML
@@ -29,7 +29,7 @@ class Package:
         self.plugin_configs = []
         self.urdf_files = []
         for rel_fn, file_path in package_structure['launch'].items():
-            self.launches.append(Launch(rel_fn, file_path))
+            self.launches.append(LaunchXML(rel_fn, file_path))
         for rel_fn, file_path in package_structure['plugin_config'].items():
             self.plugin_configs.append(PluginXML(rel_fn, file_path))
         for rel_fn, file_path in package_structure['urdf'].items():
