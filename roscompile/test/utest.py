@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 import inspect
 from catkin.find_in_workspaces import find_in_workspaces
-from . import zipfile_interface
 from ros_introspection.package import Package
 from roscompile import get_functions
 from roscompile.diff import prepare_diff_lines
+from roscompile.zipfile_interface import get_use_cases_from_zip
 import os.path
 
 FILE_ERROR_MESSAGE = 'These files should have been {} but weren\'t: {}'
 
 zipfile = find_in_workspaces(path='roscompile/test/test_data.zip', first_match_only=True)[0]
-config, cases = zipfile_interface.get_test_cases(zipfile)
+config, cases = get_use_cases_from_zip(zipfile)
 roscompile_functions = get_functions()
 
 

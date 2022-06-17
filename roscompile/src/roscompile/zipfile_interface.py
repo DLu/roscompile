@@ -110,3 +110,8 @@ def get_test_cases(zip_filename):
             D['functions'] = [D['function']]
             del D['function']
     return config, test_data
+
+
+def get_use_cases_from_zip(zip_filename):
+    """Alias to avoid having the word "test" in utest.py"""
+    return get_test_cases(zip_filename)

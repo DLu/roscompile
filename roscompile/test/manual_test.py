@@ -1,11 +1,13 @@
 import argparse
 import inspect
-from zipfile_interface import get_test_cases
+import os.path
+
+import click
+
 from ros_introspection.package import Package
 from roscompile import get_functions
 from roscompile.diff import prepare_diff_lines
-import os.path
-import click
+from roscompile.zipfile_interface import get_test_cases
 
 
 def compare(pkg_in, pkg_out, debug=True):
