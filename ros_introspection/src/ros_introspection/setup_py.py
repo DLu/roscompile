@@ -1,6 +1,15 @@
 import ast
 import collections
 import os
+import sys
+
+# Version-Dependent AST operation
+if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+    def is_constant(el):
+        return isinstance(el.value, ast.Constant)
+else:
+    def is_constant(el):
+        return isinstance(el.value, ast.Str)
 
 HELPER_FUNCTIONS = {
     'catkin_pkg.python_setup': 'generate_distutils_setup'
@@ -182,7 +191,7 @@ class SetupPy:
         # Determine variable name and dictionary args
         for el in body_elements:
             if isinstance(el, ast.Assign):
-                if isinstance(el.value, ast.Constant):
+                if is_constant(el):
                     self.declare_package_name = True
                 else:
                     self.helper_variable = el.targets[0].id
