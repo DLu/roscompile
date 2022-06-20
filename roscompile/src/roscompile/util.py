@@ -10,6 +10,7 @@ import yaml
 CONFIG_PATH = os.path.expanduser('~/.ros/roscompile.yaml')
 CONFIG = None
 PKG_PATH = rospkg.RosPack().get_path('roscompile')
+TRAILING_PATTERN = re.compile(r'^(.*[^\w])\w+\n$')
 
 roscompile_functions = collections.OrderedDict()
 
@@ -22,6 +23,8 @@ def roscompile(f):
 def get_ignore_data_helper(basename, add_newline=True):
     fn = os.path.join(PKG_PATH, 'data', basename + '.ignore')
     lines = []
+    if not os.path.exists(fn):
+        return lines
     for s in open(fn):
         if s == '\n':
             continue
@@ -44,6 +47,11 @@ def get_ignore_data(name, variables=None, add_newline=True):
 def make_executable(fn):
     existing_permissions = stat.S_IMODE(os.lstat(fn).st_mode)
     os.chmod(fn, existing_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def make_not_executable(fn):
+    existing_permissions = stat.S_IMODE(os.lstat(fn).st_mode)
+    os.chmod(fn, existing_permissions | ~stat.S_IXUSR | ~stat.S_IXGRP | ~stat.S_IXOTH)
 
 
 def get_config():

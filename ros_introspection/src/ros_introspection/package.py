@@ -1,7 +1,7 @@
 import collections
 
 from .cmake_parser import parse_file
-from .launch import Launch
+from .launch import LaunchXML
 from .package_structure import get_package_structure
 from .package_xml import PackageXML
 from .plugin_xml import PluginXML
@@ -17,17 +17,19 @@ class Package:
         self.root = root
         self.manifest = PackageXML(self.root + '/package.xml')
         self.name = self.manifest.name
+        self.build_type = self.manifest.build_type
         self.cmake = parse_file(self.root + '/CMakeLists.txt')
 
         package_structure = get_package_structure(root)
         self.source_code = SourceCode(package_structure['source'], self.name)
-        self.source_code.setup_tags(self.cmake)
+        if self.cmake:
+            self.source_code.setup_tags(self.cmake)
 
         self.launches = []
         self.plugin_configs = []
         self.urdf_files = []
         for rel_fn, file_path in package_structure['launch'].items():
-            self.launches.append(Launch(rel_fn, file_path))
+            self.launches.append(LaunchXML(rel_fn, file_path))
         for rel_fn, file_path in package_structure['plugin_config'].items():
             self.plugin_configs.append(PluginXML(rel_fn, file_path))
         for rel_fn, file_path in package_structure['urdf'].items():
@@ -51,7 +53,7 @@ class Package:
         self.misc_files = list(package_structure[None].keys())
 
     def is_metapackage(self):
-        return self.manifest.is_metapackage() or self.cmake.is_metapackage()
+        return self.manifest.is_metapackage() or (self.cmake and self.cmake.is_metapackage())
 
     def get_build_dependencies(self):
         return self.source_code.get_build_dependencies()
@@ -94,11 +96,14 @@ class Package:
         packages = set()
         for gen in self.get_all_generators():
             packages.update(gen.dependencies)
+        if self.name in packages:
+            packages.remove(self.name)
         return packages
 
     def write(self):
         self.manifest.write()
-        self.cmake.write()
+        if self.cmake:
+            self.cmake.write()
         for plugin_config in self.plugin_configs:
             plugin_config.write()
         if self.setup_py:
@@ -111,7 +116,7 @@ class Package:
             config.write()
 
     def __repr__(self):
-        s = '== {} ========\n'.format(self.name)
+        s = '== {} ({})========\n'.format(self.name, self.build_type)
         s += '  package.xml\n'
         s += '  CMakeLists.txt\n'
         if self.setup_py:

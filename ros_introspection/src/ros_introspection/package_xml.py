@@ -13,6 +13,8 @@ INDENT_PATTERN = re.compile('\n *')
 
 PEOPLE_TAGS = ['maintainer', 'author']
 
+BUILD_TYPES = {'catkin', 'cmake'}
+
 FORMAT_3_HEADER = """<?xml version="1.0"?>
 <?xml-model
   href="http://download.ros.org/schema/package_format3.xsd"
@@ -69,6 +71,7 @@ class PackageXML:
         self._name = None
         self._format = None
         self._std_tab = None
+        self._build_type = None
         self.changed = False
 
     @property
@@ -91,6 +94,26 @@ class PackageXML:
         else:
             self._format = int(self.root.attributes['format'].value)
         return self._format
+
+    @property
+    def build_type(self):
+        if self._build_type is not None:
+            return self._build_type
+
+        build_types = set()
+
+        for tag in self.root.getElementsByTagName('build_type') + self.root.getElementsByTagName('buildtool_depend'):
+            value = tag.firstChild.nodeValue
+            if value in BUILD_TYPES:
+                build_types.add(value)
+
+        if len(build_types) == 1:
+            self._build_type = list(build_types)[0]
+            return self._build_type
+        elif not build_types:
+            raise RuntimeError('Unable to determine buildtool type in {}'.format(self.fn))
+        else:
+            raise RuntimeError('Too many valid buildtool types')
 
     @property
     def std_tab(self):
@@ -119,7 +142,7 @@ class PackageXML:
             keys.append('build_depend')
         if self.format == 1 and mode == 'run':
             keys.append('run_depend')
-        if self.format == 2 and mode != 'test':
+        if self.format >= 2 and mode != 'test':
             keys.append('depend')
             if mode == 'run':
                 keys.append('exec_depend')

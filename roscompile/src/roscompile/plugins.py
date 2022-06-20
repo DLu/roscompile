@@ -44,6 +44,8 @@ def check_plugins(package):
     Then we handle the manifest.
     Then we make sure that the specific classes are in the configurations
     """
+    if not package.cmake:
+        return
     defined_macros = package.source_code.search_for_pattern(PLUGIN_RE)
     existing_plugins = plugin_xml_by_package(package)
     defined_plugins = package.manifest.get_plugin_xmls()
@@ -61,7 +63,7 @@ def check_plugins(package):
                 package.plugin_configs.append(p_xml)
                 existing_plugins[pkg2] = [p_xml]
 
-            # Make sure plugins are used in manifest
+            # Make sure plugins are properly exported
             for plugin_xml in existing_plugins[pkg2]:
                 if plugin_xml.rel_fn not in defined_plugins[pkg2]:
                     ex_el = package.manifest.add_plugin_export(pkg2, plugin_xml.rel_fn)

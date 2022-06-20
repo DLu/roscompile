@@ -40,6 +40,8 @@ def check_cmake_dependencies_helper(cmake, dependencies, check_catkin_pkg=True):
 
 @roscompile
 def check_cmake_dependencies(package):
+    if not package.cmake:
+        return
     dependencies = package.get_dependencies_from_msgs()
     dependencies.update(package.get_build_dependencies())
     check_cmake_dependencies_helper(package.cmake, dependencies)
@@ -87,6 +89,8 @@ def get_msg_dependencies_from_source(package, sources):
 
 @roscompile
 def check_exported_dependencies(package):
+    if not package.cmake:
+        return
     targets = package.cmake.get_target_build_rules()
     for target, sources in targets.items():
         deps = get_msg_dependencies_from_source(package, sources)
@@ -137,6 +141,8 @@ def remove_pattern(section, pattern):
 
 @roscompile
 def remove_old_style_cpp_dependencies(package):
+    if not package.cmake:
+        return
     global_changed = False
     targets = package.cmake.get_target_build_rules()
     for target in targets:
@@ -157,6 +163,9 @@ def remove_old_style_cpp_dependencies(package):
 
 @roscompile
 def target_catkin_libraries(package):
+    if not package.cmake:
+        return
+
     CATKIN = '${catkin_LIBRARIES}'
     targets = package.cmake.get_libraries() + package.cmake.get_executables()
     for cmd in package.cmake.content_map['target_link_libraries']:
@@ -176,7 +185,7 @@ def target_catkin_libraries(package):
 
 @roscompile
 def check_generators(package):
-    if len(package.generators) == 0:
+    if len(package.generators) == 0 or not package.cmake:
         return
 
     for gen_type, cmake_cmd in [('msg', 'add_message_files'),
@@ -204,6 +213,9 @@ def check_generators(package):
 
 @roscompile
 def check_includes(package):
+    if not package.cmake or not package.source_code.get_source_by_language('c++'):
+        return
+
     has_includes = False
     if package.source_code.has_header_files():
         package.cmake.section_check(['include'], 'catkin_package', 'INCLUDE_DIRS')
@@ -221,6 +233,8 @@ def check_includes(package):
 
 @roscompile
 def check_library_setup(package):
+    if not package.cmake:
+        return
     package.cmake.section_check(package.cmake.get_libraries(), 'catkin_package', 'LIBRARIES')
 
 
@@ -239,11 +253,15 @@ def alphabetize_sections_helper(cmake):
 
 @roscompile
 def alphabetize_sections(package):
+    if not package.cmake:
+        return
     alphabetize_sections_helper(package.cmake)
 
 
 @roscompile
 def prettify_catkin_package_cmd(package):
+    if not package.cmake:
+        return
     for cmd in package.cmake.content_map['catkin_package']:
         for section in cmd.get_real_sections():
             section.style.prename = NEWLINE_PLUS_4
@@ -252,6 +270,8 @@ def prettify_catkin_package_cmd(package):
 
 @roscompile
 def prettify_package_lists(package):
+    if not package.cmake:
+        return
     acceptable_styles = [(NEWLINE_PLUS_8, NEWLINE_PLUS_8), (NEWLINE_PLUS_4, NEWLINE_PLUS_8)]
 
     for cmd_name, section_name in [('find_package', 'COMPONENTS'), ('catkin_package', 'CATKIN_DEPENDS')]:
@@ -270,6 +290,8 @@ def prettify_package_lists(package):
 
 @roscompile
 def prettify_msgs_srvs(package):
+    if not package.cmake:
+        return
     for cmd in package.cmake.content_map['add_message_files'] + package.cmake.content_map['add_service_files']:
         for section in cmd.get_real_sections():
             if len(section.values) > 1:
@@ -280,6 +302,8 @@ def prettify_msgs_srvs(package):
 
 @roscompile
 def prettify_installs(package):
+    if not package.cmake:
+        return
     for cmd in package.cmake.content_map['install']:
         cmd.changed = True
         cmd.sections = [s for s in cmd.sections if type(s) != str]
@@ -333,6 +357,8 @@ def remove_cmake_comments_helper(cmake, ignorables, replacement=''):
 
 @roscompile
 def remove_boilerplate_cmake_comments(package):
+    if not package.cmake:
+        return
     ignorables = get_ignore_data('cmake', {'package': package.name})
     remove_cmake_comments_helper(package.cmake, ignorables)
     remove_empty_cmake_lines(package)
@@ -340,6 +366,8 @@ def remove_boilerplate_cmake_comments(package):
 
 @roscompile
 def remove_empty_cmake_lines(package):
+    if not package.cmake:
+        return
     for i, content in enumerate(package.cmake.contents[:-2]):
         if str(content)[-1] == '\n' and package.cmake.contents[i + 1] == '\n' and package.cmake.contents[i + 2] == '\n':
             package.cmake.contents[i + 1] = ''
@@ -348,6 +376,8 @@ def remove_empty_cmake_lines(package):
 
 @roscompile
 def enforce_cmake_ordering(package, config=None):
+    if not package.cmake:
+        return
     if config is None:
         config = get_config()
     default_style = config.get('cmake_style')

@@ -244,7 +244,7 @@ def update_people(package, config=None):
 def update_license(package, config=None):
     if config is None:
         config = get_config()
-    if 'default_license' not in config or package.manifest.get_license() != 'TODO':
+    if 'default_license' not in config or 'TODO' not in package.manifest.get_license():
         return
 
     package.manifest.set_license(config['default_license'])

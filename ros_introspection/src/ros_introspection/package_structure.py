@@ -4,7 +4,7 @@ import os
 from .source_code_file import is_python_hashbang_line
 
 KEY = ['package.xml', 'CMakeLists.txt', 'setup.py']
-SRC_EXTS = ['.py', '.cpp', '.h', '.hpp', '.c']
+SRC_EXTS = ['.py', '.cpp', '.h', '.hpp', '.c', '.cc']
 GENERATORS = ['.msg', '.srv', '.action']
 
 
@@ -37,10 +37,10 @@ def get_package_structure(pkg_root):
                 continue
             if fn in KEY:
                 structure['key'][rel_fn] = full
-            elif ext in SRC_EXTS:
-                structure['source'][rel_fn] = full
             elif ext == '.launch':
                 structure['launch'][rel_fn] = full
+            elif ext in SRC_EXTS:
+                structure['source'][rel_fn] = full
             elif ext in GENERATORS:
                 structure['generators'][rel_fn] = full
             elif ext == '.cfg' and 'cfg/' in full:
