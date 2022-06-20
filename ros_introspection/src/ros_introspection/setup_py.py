@@ -3,13 +3,40 @@ import collections
 import os
 import sys
 
-# Version-Dependent AST operation
+# Version-Dependent AST operations
 if sys.version_info.major == 3 and sys.version_info.minor >= 8:
     def is_constant(el):
         return isinstance(el.value, ast.Constant)
+
+    get_source_segment = ast.get_source_segment
 else:
     def is_constant(el):
         return isinstance(el.value, ast.Str)
+
+    def get_source_segment(source, node):
+        """Get source code segment of the *source* that generated *node*.
+        If some location information (`lineno`, `end_lineno`, `col_offset`,
+        or `end_col_offset`) is missing, return None.
+        """
+        try:
+            lineno = node.lineno - 1
+            end_lineno = node.end_lineno - 1
+            col_offset = node.col_offset
+            end_col_offset = node.end_col_offset
+        except AttributeError:
+            return None
+
+        lines = ast._splitlines_no_ff(source)
+        if end_lineno == lineno:
+            return lines[lineno].encode()[col_offset:end_col_offset].decode()
+
+        first = lines[lineno].encode()[col_offset:].decode()
+        last = lines[end_lineno].encode()[:end_col_offset].decode()
+        lines = lines[lineno + 1:end_lineno]
+
+        lines.insert(0, first)
+        lines.append(last)
+        return ''.join(lines)
 
 HELPER_FUNCTIONS = {
     'catkin_pkg.python_setup': 'generate_distutils_setup'
@@ -186,7 +213,7 @@ class SetupPy:
             elif isinstance(el, ast.Tuple):
                 return tuple(ast_to_python(elt) for elt in el.elts)
             else:
-                return ast.get_source_segment(original_contents, el)
+                return get_source_segment(original_contents, el)
 
         # Determine variable name and dictionary args
         for el in body_elements:
