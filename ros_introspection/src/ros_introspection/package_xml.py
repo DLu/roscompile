@@ -324,12 +324,13 @@ class PackageXML:
     def remove_element(self, element):
         """Remove the given element AND the text element before it if it is just an indentation."""
         parent = element.parentNode
-        index = parent.childNodes.index(element)
-        if index > 0:
-            previous = parent.childNodes[index - 1]
-            if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
-                parent.removeChild(previous)
-        parent.removeChild(element)
+        if parent is not None:
+            index = parent.childNodes.index(element)
+            if index > 0:
+                previous = parent.childNodes[index - 1]
+                if previous.nodeType == previous.TEXT_NODE and INDENT_PATTERN.match(previous.nodeValue):
+                    parent.removeChild(previous)
+            parent.removeChild(element)
         self.changed = True
 
     def remove_dependencies(self, name, pkgs, quiet=False):
