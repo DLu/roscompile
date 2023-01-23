@@ -42,8 +42,8 @@ class SourceCodeFile:
     def replace_contents(self, contents):
         self.changed_contents = contents
         try:
-            self.lines = map(unicode.strip, unicode(contents).split('\n'))
-        except NameError:
+            self.lines = map(str.strip, str(contents).split('\n'))
+        except (NameError, UnicodeDecodeError):
             # Python3 Case
             self.lines = list(map(str.strip, contents.split('\n')))
 
