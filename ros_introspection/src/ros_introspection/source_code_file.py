@@ -43,7 +43,7 @@ class SourceCodeFile:
         self.changed_contents = contents
         try:
             self.lines = map(str.strip, str(contents).split('\n'))
-        except NameError:
+        except (NameError, UnicodeDecodeError):
             # Python3 Case
             self.lines = list(map(str.strip, contents.split('\n')))
 
